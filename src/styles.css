@@ -95,6 +95,7 @@ button { font-family: inherit; }
 
 /* Hero Card */
 .hero-card {
+  position: relative;
   background-color: var(--c-surface);
   border-radius: var(--r-lg);
   box-shadow: var(--c-shadow);
@@ -130,6 +131,40 @@ button { font-family: inherit; }
   transition: background-color var(--transition-speed) ease;
 }
 .cta-pill:hover { background-color: var(--c-primary-hover); }
+
+/* Profile Section */
+.profile-section {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  right: var(--space-4);
+  z-index: 5;
+  background-color: color-mix(in srgb, var(--c-surface) 80%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-radius: var(--r-pill);
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-shadow: var(--c-shadow);
+}
+.level-chip {
+  background-color: var(--c-primary);
+  color: var(--c-primary-text);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-pill);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.xp-info { flex: 1; }
+.xp-bar { width: 100%; height: 8px; background-color: var(--c-border); border-radius: var(--r-pill); overflow: hidden; }
+.xp-bar .fill { height: 100%; width: var(--xp-progress, 0%); background-color: var(--c-mint); border-radius: var(--r-pill); transition: width var(--transition-speed) ease; }
+.xp-text { font-size: 0.75rem; font-family: var(--font-mono); color: var(--c-text-muted); text-align: right; margin-top: var(--space-1); }
+
+[data-theme="dark"] .xp-bar .fill {
+  background-color: var(--c-primary);
+}
 
 /* Info Chips */
 .info-chips {
@@ -229,6 +264,12 @@ button { font-family: inherit; }
   padding: var(--space-3);
   border-radius: var(--r-md);
   border: 1px solid var(--c-border);
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+}
+.exercise-preview li:hover,
+.exercise-preview li:focus-visible {
+  background-color: var(--c-primary-soft-bg);
 }
 .exercise-preview li img {
   width: 50px;
@@ -239,6 +280,56 @@ button { font-family: inherit; }
 .exercise-preview .ex-info { flex: 1; }
 .exercise-preview .ex-name { font-weight: 600; }
 .exercise-preview .ex-duration { font-size: 0.9rem; color: var(--c-text-muted); }
+
+/* --- Goals Section --- */
+.goals-section h3 {
+  font-size: 1.25rem;
+  margin-bottom: var(--space-4);
+}
+.goals-list {
+  display: grid;
+  gap: var(--space-4);
+}
+.goal-card {
+  background-color: var(--c-surface);
+  border-radius: var(--r-md);
+  padding: var(--space-4);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--c-shadow);
+}
+.goal-card .goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+}
+.goal-card .goal-name {
+  font-weight: 600;
+}
+.goal-card .goal-progress-text {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--c-text-muted);
+}
+.goal-card .goal-description {
+  font-size: 0.9rem;
+  color: var(--c-text-muted);
+  margin-bottom: var(--space-4);
+}
+.goal-progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--c-border);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.goal-progress-bar .fill {
+  height: 100%;
+  width: var(--progress, 0%);
+  background-color: var(--c-mint);
+  border-radius: var(--r-pill);
+  transition: width var(--transition-speed) ease;
+}
 
 /* --- Session View --- */
 #session-view {
@@ -279,31 +370,6 @@ button { font-family: inherit; }
   overflow-y: auto;
   padding-bottom: 120px; /* Space for control dock */
 }
-.breathing-card {
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-lg);
-  box-shadow: var(--c-shadow);
-  padding: var(--space-4);
-  margin-bottom: var(--space-6);
-  display: grid;
-  gap: var(--space-4);
-}
-.breath-visual { display: grid; place-items: center; gap: var(--space-2); }
-.breath-circle {
-  width: 140px; height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, var(--c-primary) 0%, var(--c-blush) 70%, var(--c-primary-soft-bg) 100%);
-  transform: scale(var(--breath-scale, 1));
-  transition: transform 100ms linear;
-}
-.breath-phase { font-weight: 600; color: var(--c-text-muted); }
-.breath-controls { display: flex; gap: var(--space-3); align-items: center; justify-content: center; flex-wrap: wrap; }
-.breath-select { padding: 0.35rem 0.5rem; border-radius: var(--r-sm); border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text); }
-.breath-label { color: var(--c-text-muted); font-size: 0.9rem; }
-.breath-toggle { color: var(--c-text-muted); display: inline-flex; gap: 0.35rem; align-items: center; }
-.breath-progress { height: 6px; background: var(--c-border); border-radius: var(--r-pill); overflow: hidden; }
-.breath-progress .bar { height: 100%; width: 0%; background: var(--c-primary); transition: width 100ms linear; }
 .media {
   aspect-ratio: 16 / 9;
   border-radius: var(--r-lg);
@@ -471,6 +537,51 @@ button { font-family: inherit; }
 .theme-toggle:hover {
   background-color: var(--c-primary-soft-bg);
 }
+
+[data-theme="dark"] .goal-progress-bar .fill {
+  background-color: var(--c-primary);
+}
+
+[data-theme="dark"] .goal-progress-bar .fill {
+  background-color: var(--c-primary);
+}
+
+/* Celebration Overlay */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity var(--transition-speed) ease;
+}
+.celebration-overlay:not([hidden]) { opacity: 1; }
+.celebration-card {
+  background-color: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: var(--space-8);
+  text-align: center;
+  box-shadow: var(--c-shadow);
+  transform: scale(0.95);
+  transition: transform var(--transition-speed) ease;
+}
+.celebration-overlay:not([hidden]) .celebration-card {
+  transform: scale(1);
+}
+.celebration-card .confetti {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+}
+.celebration-card h2 {
+  font-size: 1.75rem;
+  color: var(--c-primary);
+}
+.celebration-card p { margin: var(--space-2) 0 var(--space-6); color: var(--c-text-muted); }
 
 /* Accessibility */
 *:focus-visible {

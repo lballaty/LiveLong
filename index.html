@@ -23,6 +23,19 @@
       <!-- Home/Pre-session View -->
       <div id="home-view">
         <section class="hero-card">
+          <div id="profile-section" class="profile-section" hidden>
+            <div class="level-chip">
+              Level <span id="profile-level">1</span>
+            </div>
+            <div class="xp-info">
+              <div class="xp-bar">
+                <div id="xp-bar-fill" class="fill"></div>
+              </div>
+              <div class="xp-text">
+                <span id="profile-xp">0</span> / <span id="profile-next-level-xp">100</span> XP
+              </div>
+            </div>
+          </div>
           <div class="hero-media">
             <img src="src/assets/images/hero-banner.svg" alt="Calm natural scene for longevity exercises" />
             <div class="hero-overlay">
@@ -77,6 +90,13 @@
           <ul id="preview-list">
             <!-- JS will populate this -->
           </ul>
+        </section>
+
+        <section id="goals-section" class="goals-section" hidden>
+          <h3>Your Goals</h3>
+          <div id="goals-list" class="goals-list">
+            <!-- JS will populate this -->
+          </div>
         </section>
       </div>
 
@@ -163,6 +183,15 @@
         </div>
       </div>
     </main>
+
+    <div id="celebration-overlay" class="celebration-overlay" hidden>
+      <div class="celebration-card">
+        <div class="confetti">🎉</div>
+        <h2 id="celebration-title">Level Up!</h2>
+        <p id="celebration-description">You've reached Level 2!</p>
+        <button id="celebration-close" class="cta-pill">Continue</button>
+      </div>
+    </div>
 
     <footer class="site-footer">
       <small>&copy; <span id="year"></span> LiveLong</small>

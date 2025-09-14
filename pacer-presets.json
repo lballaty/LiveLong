@@ -1,0 +1,35 @@
+{
+  "spec_version": 1,
+  "presets": [
+    {
+      "id": "calm_4_6",
+      "name": "Calm (4-6s)",
+      "style": "circle",
+      "pattern": {
+        "inhale_sec": 4,
+        "exhale_sec": 6
+      }
+    },
+    {
+      "id": "box_4",
+      "name": "Box (4-4-4-4)",
+      "style": "box",
+      "pattern": {
+        "inhale_sec": 4,
+        "hold1_sec": 4,
+        "exhale_sec": 4,
+        "hold2_sec": 4
+      }
+    },
+    {
+      "id": "relax_478",
+      "name": "Relax (4-7-8)",
+      "style": "triangle",
+      "pattern": {
+        "inhale_sec": 4,
+        "hold1_sec": 7,
+        "exhale_sec": 8
+      }
+    }
+  ]
+}

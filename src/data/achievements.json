@@ -2,61 +2,79 @@
   "spec_version": 1,
   "xp": {
     "per_exercise": 10,
-    "per_session": 40,
-    "streak_bonus": [
-      { "days": 3, "xp": 20 },
-      { "days": 7, "xp": 50 },
-      { "days": 30, "xp": 150 }
-    ],
-    "daily_cap": 200
+    "per_session": 50
   },
-  "levels": [0, 300, 900, 1800, 3000, 4500, 6300],
+  "levels": [
+    0,
+    100,
+    250,
+    500,
+    1000,
+    2000,
+    3500,
+    5000
+  ],
   "badges": [
     {
-      "id": "streak_champ",
-      "name": "Streak Champion",
-      "description": "Practice on consecutive days",
+      "id": "first_session",
+      "name": "First Step",
+      "category": "consistency",
+      "description": "Complete your first session.",
+      "trigger": {
+        "type": "sessions",
+        "metric": "count"
+      },
+      "tiers": [
+        {
+          "tier": "bronze",
+          "threshold": 1,
+          "xpReward": 25
+        }
+      ]
+    },
+    {
+      "id": "session_count",
+      "name": "Consistent Practitioner",
+      "category": "consistency",
+      "description": "Complete multiple sessions.",
+      "trigger": {
+        "type": "sessions",
+        "metric": "count"
+      },
+      "tiers": [
+        {
+          "tier": "bronze",
+          "threshold": 10,
+          "xpReward": 100
+        },
+        {
+          "tier": "silver",
+          "threshold": 50,
+          "xpReward": 250
+        },
+        {
+          "tier": "gold",
+          "threshold": 100,
+          "xpReward": 500
+        }
+      ]
+    },
+    {
+      "id": "streak_3_day",
+      "name": "On a Roll",
       "category": "streak",
-      "icon": "src/assets/icons/streak.svg",
-      "trigger": { "type": "streak", "metric": "days" },
+      "description": "Complete a session 3 days in a row.",
+      "trigger": {
+        "type": "streak",
+        "metric": "days"
+      },
       "tiers": [
-        { "tier": "bronze", "threshold": 3, "xpReward": 20 },
-        { "tier": "silver", "threshold": 7, "xpReward": 50 },
-        { "tier": "gold", "threshold": 30, "xpReward": 150 }
-      ],
-      "repeatable": false,
-      "hidden": false
-    },
-    {
-      "id": "session_master",
-      "name": "Session Master",
-      "description": "Complete total sessions",
-      "category": "volume",
-      "icon": "src/assets/icons/sessions.svg",
-      "trigger": { "type": "sessions", "metric": "count" },
-      "tiers": [
-        { "tier": "bronze", "threshold": 10, "xpReward": 50 },
-        { "tier": "silver", "threshold": 25, "xpReward": 100 },
-        { "tier": "gold", "threshold": 50, "xpReward": 200 }
-      ],
-      "repeatable": false,
-      "hidden": false
-    },
-    {
-      "id": "variety_seeker",
-      "name": "Variety Seeker",
-      "description": "Try different exercises in a week",
-      "category": "variety",
-      "icon": "src/assets/icons/variety.svg",
-      "trigger": { "type": "variety", "metric": "unique_exercises", "windowDays": 7 },
-      "tiers": [
-        { "tier": "bronze", "threshold": 5, "xpReward": 30 },
-        { "tier": "silver", "threshold": 8, "xpReward": 60 },
-        { "tier": "gold", "threshold": 11, "xpReward": 120 }
-      ],
-      "repeatable": true,
-      "hidden": false
+        {
+          "tier": "bronze",
+          "threshold": 3,
+          "xpReward": 50
+        }
+      ]
     }
   ]
 }
-

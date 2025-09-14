@@ -5,15 +5,17 @@ Public web app scaffold using vanilla HTML/CSS/JS. You can start building featur
 ## Quick Start
 
 - Open `index.html` in a browser, or serve locally:
-  - Python: `python3 -m http.server 8000` then visit `http://localhost:8000`
+  - Python: `python3 -m http.server 11000` then visit `http://localhost:11000`
   - Node (if installed): `npx serve` in the project root
 
 ## Start/Stop Scripts
 
 - Start the local server and open your browser:
-  - `./scripts/start.sh` (defaults to port 8000)
+  - `./scripts/start.sh` (defaults to port 11000)
   - `./scripts/start.sh 8080` or `./scripts/start.sh --port 8080` to use a different port
   - Optionally set `PORT=9090 ./scripts/start.sh`
+- Run the test suite:
+  - `./scripts/start.sh test` (starts server, runs Playwright tests, then stops server)
 - Stop the local server:
   - `./scripts/stop.sh`
 
