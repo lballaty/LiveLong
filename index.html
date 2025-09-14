@@ -134,6 +134,20 @@
           <ul id="ex-cues" class="cues"></ul>
         </div>
 
+        <div id="breathing-card" class="breathing-card" hidden>
+          <div class="breath-visual">
+            <div id="breath-circle" class="breath-circle"></div>
+            <div id="breath-phase" class="breath-phase">Inhale</div>
+          </div>
+          <div class="breath-controls">
+            <select id="pacer-preset" class="breath-select" aria-label="Breathing Pattern"></select>
+            <label class="breath-toggle">
+              <input type="checkbox" id="pacer-tick" />
+              <span>Audio Tick</span>
+            </label>
+          </div>
+        </div>
+
         <div id="paused-overlay" class="paused-overlay" hidden>
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
           <h2>Paused</h2>
