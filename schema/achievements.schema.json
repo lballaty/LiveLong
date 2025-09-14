@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schema/achievements.schema.json",
+  "title": "LiveLong Achievements Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "xp", "levels", "badges"],
+  "properties": {
+    "spec_version": { "type": "integer", "minimum": 1 },
+    "xp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["per_exercise", "per_session"],
+      "properties": {
+        "per_exercise": { "type": "integer", "minimum": 0 },
+        "per_session": { "type": "integer", "minimum": 0 },
+        "streak_bonus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["days", "xp"],
+            "additionalProperties": false,
+            "properties": {
+              "days": { "type": "integer", "minimum": 1 },
+              "xp": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "daily_cap": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "category", "trigger", "tiers"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_\-]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "category": { "type": "string", "enum": ["streak", "consistency", "volume", "variety"] },
+          "icon": { "type": "string" },
+          "trigger": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "metric"],
+            "properties": {
+              "type": { "type": "string", "enum": ["streak", "sessions", "exercises", "variety"] },
+              "metric": { "type": "string", "enum": ["days", "count", "unique_exercises"] },
+              "windowDays": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "tiers": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tier", "threshold"],
+              "properties": {
+                "tier": { "type": "string", "enum": ["bronze", "silver", "gold"] },
+                "threshold": { "type": "integer", "minimum": 1 },
+                "xpReward": { "type": "integer", "minimum": 0 }
+              }
+            }
+          },
+          "repeatable": { "type": "boolean" },
+          "hidden": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
+

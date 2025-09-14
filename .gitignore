@@ -6,6 +6,8 @@
 # Node / Tooling
 node_modules/
 dist/
+.server.pid
+server.log
 build/
 .parcel-cache/
 .cache/
@@ -20,3 +22,6 @@ pnpm-debug.log*
 coverage/
 .env
 
+# Temporary files
+~$*
+*.tmp

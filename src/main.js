@@ -1,15 +1,602 @@
-// LiveLong app bootstrap
-const yearEl = document.getElementById('year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
+/**
+ * LiveLong - v2 Main Application Logic
+ * This file defines the LiveLongApp class which encapsulates all application state and logic for the redesigned UI.
+ */
 
-const btn = document.getElementById('cta');
-const status = document.getElementById('status');
-if (btn && status) {
-  btn.addEventListener('click', () => {
-    status.textContent = 'Hello from LiveLong!';
-    setTimeout(() => (status.textContent = ''), 2000);
-  });
+class LiveLongApp {
+  constructor() {
+    this.dom = this._getDomElements();
+
+    this.PREF_KEYS = {
+      MUSIC: 'LL_music',
+      TTS: 'LL_tts',
+      VIDEO: 'LL_video',
+      TEXT_SIZE: 'LL_textSize',
+      PREPARE_TIME: 'LL_prepareTime',
+    };
+
+    this.prefs = {
+      music: false,
+      tts: false,
+      video: false,
+      textSize: '100',
+      prepareTime: 5,
+    };
+
+    this.audio = {
+      music: null,
+      musicPath: 'src/assets/audio/calm-loop.mp3',
+      audioContext: null,
+      initPromise: null,
+    };
+
+    this.tts = {
+      isSupported: 'speechSynthesis' in window,
+      queue: [],
+      isSpeaking: false,
+    };
+
+    this.state = {
+      routine: null,
+      currentIndex: -1,
+      currentExercise: null,
+      appStatus: 'idle', // idle, preparing, exercising, complete
+      remainingSec: 0,
+      totalDuration: 0,
+      totalRemainingSec: 0,
+      timerId: null,
+      isRunning: false,
+      isPaused: false,
+      repCount: 0,
+    };
+
+    this.ROUTINE_PATH = 'src/data/routine.json';
+
+    this._init();
+  }
+
+  // --- Initialization ---
+
+  async _init() {
+    this.dom.year.textContent = new Date().getFullYear();
+    this._loadPreferences();
+
+    if (!this.tts.isSupported) {
+      this.dom.toggleTts.disabled = true;
+      this.dom.toggleTts.title = 'Voice guidance is not supported by your browser.';
+    }
+
+    this._bindEventListeners();
+
+    try {
+      const response = await fetch(this.ROUTINE_PATH);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      this.state.routine = await response.json();
+      this._populatePreviewList();
+      this._updateTotalTime();
+    } catch (error) {
+      console.error('Failed to load routine:', error);
+      // In a real app, you might show an error message in the UI here.
+    }
+  }
+
+  _getDomElements() {
+    return {
+      // Views
+      homeView: document.getElementById('home-view'),
+      sessionView: document.getElementById('session-view'),
+      summaryView: document.getElementById('summary-view'),
+
+      // Home View
+      startBtn: document.getElementById('start-btn'),
+      previewList: document.getElementById('preview-list'),
+
+      // Settings
+      toggleMusic: document.getElementById('toggle-music'),
+      toggleTts: document.getElementById('toggle-tts'),
+      toggleVideo: document.getElementById('toggle-video'),
+      textSize: document.getElementById('text-size'),
+      prepareTime: document.getElementById('prepare-time'),
+
+      // Session View
+      backBtn: document.getElementById('back-btn'),
+      restartBtn: document.getElementById('restart-btn'),
+      exTitle: document.getElementById('ex-title'),
+      media: document.getElementById('media'),
+      mediaVideo: document.getElementById('media-video'),
+      mediaImageWrap: document.getElementById('media-image-wrap'),
+      mediaImage: document.getElementById('media-image'),
+      exCues: document.getElementById('ex-cues'),
+
+      // Control Dock
+      prevBtn: document.getElementById('prev-btn'),
+      playPauseBtn: document.getElementById('play-pause-btn'),
+      playIcon: document.querySelector('.icon-play'),
+      pauseIcon: document.querySelector('.icon-pause'),
+      nextBtn: document.getElementById('next-btn'),
+      timerDisplay: document.getElementById('timer'),
+      progressRing: document.getElementById('progress-ring'),
+      progressPercent: document.getElementById('progress-percent'),
+      stepCount: document.getElementById('step'),
+      repIncBtn: document.getElementById('rep-inc'),
+      repCountDisplay: document.getElementById('rep-count-display'),
+
+      // Summary View
+      summaryTime: document.getElementById('summary-time'),
+      summaryExercises: document.getElementById('summary-exercises'),
+      summaryRestart: document.getElementById('summary-restart'),
+
+      // Global
+      year: document.getElementById('year'),
+      body: document.body,
+    };
+  }
+
+  _bindEventListeners() {
+    // View switching
+    this.dom.startBtn.addEventListener('click', () => this._handleStart());
+    this.dom.backBtn.addEventListener('click', () => this._handleBack());
+
+    // Session controls
+    this.dom.playPauseBtn.addEventListener('click', () => this._handlePauseResume());
+    this.dom.nextBtn.addEventListener('click', () => this._handleSkip());
+    this.dom.prevBtn.addEventListener('click', () => this._handlePrev());
+    this.dom.restartBtn.addEventListener('click', () => this._handleRestart());
+    this.dom.summaryRestart.addEventListener('click', () => this._handleRestart());
+    this.dom.repIncBtn.addEventListener('click', () => this._handleRepIncrement());
+
+    // Settings
+    this.dom.toggleMusic.addEventListener('click', () => this._handlePillToggle(this.dom.toggleMusic, this.PREF_KEYS.MUSIC, 'music'));
+    this.dom.toggleTts.addEventListener('click', () => this._handlePillToggle(this.dom.toggleTts, this.PREF_KEYS.TTS, 'tts'));
+    this.dom.toggleVideo.addEventListener('click', () => this._handlePillToggle(this.dom.toggleVideo, this.PREF_KEYS.VIDEO, 'video'));
+    this.dom.textSize.addEventListener('click', (e) => this._handleSegmentedControl(e, this.dom.textSize, this.PREF_KEYS.TEXT_SIZE, 'textSize', this._applyTextSize.bind(this)));
+    this.dom.prepareTime.addEventListener('click', (e) => this._handleSegmentedControl(e, this.dom.prepareTime, this.PREF_KEYS.PREPARE_TIME, 'prepareTime', this._updateTotalTime.bind(this)));
+
+    // Media fallbacks
+    this.dom.mediaVideo.onerror = () => {
+      console.warn(`Video failed to load: ${this.dom.mediaVideo.currentSrc}`);
+      this.dom.mediaVideo.hidden = true;
+      const hasImages = this.state.currentExercise?.media?.images?.length > 0;
+      if (hasImages) {
+        this.dom.mediaImageWrap.hidden = false;
+        this._renderCurrentImage();
+      }
+    };
+    this.dom.mediaImage.onerror = () => {
+      console.warn(`Image failed to load: ${this.dom.mediaImage.src}`);
+      this.dom.mediaImageWrap.hidden = true;
+    };
+  }
+
+  // --- View Management ---
+
+  _showView(view) {
+    this.dom.homeView.hidden = (view !== 'home');
+    this.dom.sessionView.hidden = (view !== 'session');
+    this.dom.summaryView.hidden = (view !== 'summary');
+    this.dom.body.className = `mode-${view}`;
+  }
+
+  _populatePreviewList() {
+    if (!this.state.routine) return;
+    const list = this.dom.previewList;
+    list.innerHTML = '';
+    this.state.routine.exercises.slice(0, 5).forEach(ex => {
+      const li = document.createElement('li');
+      const poster = ex.media?.video?.poster || ex.media?.images?.[0] || 'src/assets/images/placeholder.jpg';
+      li.innerHTML = `
+        <img src="${poster}" alt="${ex.name}" />
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-duration">${ex.type === 'time' ? `${ex.duration_sec}s` : `${ex.target_reps} reps`}</div>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  // --- Core Logic / State Machine ---
+
+  _tick() {
+    if (this.state.isPaused) return;
+
+    this.state.remainingSec--;
+    this.state.totalRemainingSec--;
+    this._updateTimerDisplay();
+    this._updateProgress();
+
+    if (this.state.remainingSec <= 0) {
+      if (this.state.appStatus === 'exercising') {
+        this._prepareForExercise(this.state.currentIndex + 1);
+      } else if (this.state.appStatus === 'preparing') {
+        this._startExercise(this.state.currentIndex);
+      }
+    }
+  }
+
+  _prepareForExercise(index) {
+    if (this.state.timerId) clearInterval(this.state.timerId);
+
+    if (index >= this.state.routine.exercises.length) {
+      this._completeSession();
+      return;
+    }
+
+    this.state.appStatus = 'preparing';
+    this.state.currentIndex = index;
+    const nextExercise = this.state.routine.exercises[index];
+
+    this.dom.exTitle.textContent = 'Get Ready...';
+    this.dom.exCues.innerHTML = `<li>Next: ${nextExercise.name}</li>`;
+    this.dom.media.hidden = true;
+    this.dom.repIncBtn.hidden = true;
+
+    this.state.remainingSec = this.prefs.prepareTime;
+    this._updateTimerDisplay();
+    this._updateProgress();
+    this._speak({ text: `Get ready for ${nextExercise.name}`, element: this.dom.exCues.querySelector('li') });
+
+    this.state.timerId = setInterval(this._tick.bind(this), 1000);
+  }
+
+  _startExercise(index) {
+    this.state.appStatus = 'exercising';
+    const exercise = this.state.routine.exercises[index];
+    this.state.remainingSec = exercise.duration_sec || 0;
+    this.state.repCount = 0;
+    this._renderExercise(exercise);
+
+    const cuesToSpeak = [{ text: exercise.name, element: this.dom.exTitle }];
+    this.dom.exCues.querySelectorAll('li').forEach(li => {
+      cuesToSpeak.push({ text: li.textContent, element: li });
+    });
+    this._speak(cuesToSpeak);
+
+    if (!this.state.isPaused && !this.dom.mediaVideo.hidden) {
+      this.dom.mediaVideo.play().catch(e => console.warn('Video play failed.', e));
+    }
+  }
+
+  _completeSession() {
+    if (this.state.timerId) clearInterval(this.state.timerId);
+    this.state.isRunning = false;
+    this.state.isPaused = false;
+    this.state.appStatus = 'complete';
+
+    this._updateMusicState();
+    this._cancelSpeech();
+    this._speak({ text: 'Routine complete. Well done!' });
+
+    const totalTime = this.state.totalDuration;
+    const totalExercises = this.state.routine.exercises.length;
+
+    this.dom.summaryTime.textContent = this._formatTime(totalTime);
+    this.dom.summaryExercises.textContent = totalExercises;
+    this._showView('summary');
+  }
+
+  // --- Event Handlers ---
+
+  _handleStart() {
+    if (this.state.isRunning || !this.state.routine) return;
+    this.state.isRunning = true;
+    this.state.isPaused = false;
+    this._updateTotalTime();
+    this._showView('session');
+    this._updateControls();
+    this._prepareForExercise(0);
+    this._updateMusicState();
+  }
+
+  _handleBack() {
+    if (this.state.isRunning) {
+      if (!window.confirm('Are you sure you want to end the session? Your progress will be lost.')) {
+        return;
+      }
+    }
+    this._resetSession();
+    this._showView('home');
+  }
+
+  _handlePauseResume() {
+    if (!this.state.isRunning) return;
+    this.state.isPaused = !this.state.isPaused;
+    this._updateControls();
+    if (!this.dom.mediaVideo.hidden) {
+      if (this.state.isPaused) this.dom.mediaVideo.pause();
+      else this.dom.mediaVideo.play().catch(e => console.warn('Video resume failed.', e));
+    }
+    this._updateMusicState();
+    if (this.tts.isSupported) {
+      if (this.state.isPaused) window.speechSynthesis.pause();
+      else window.speechSynthesis.resume();
+    }
+  }
+
+  _handleSkip() {
+    if (!this.state.isRunning || this.state.isPaused) return;
+    this._cancelSpeech();
+
+    if (this.state.appStatus === 'exercising') {
+      this.state.totalRemainingSec -= this.state.remainingSec;
+      this._prepareForExercise(this.state.currentIndex + 1);
+    } else if (this.state.appStatus === 'preparing') {
+      this.state.totalRemainingSec -= this.state.remainingSec;
+      this._startExercise(this.state.currentIndex);
+    }
+  }
+
+  _handlePrev() {
+    if (!this.state.isRunning || this.state.isPaused || this.state.currentIndex === 0) return;
+    this._cancelSpeech();
+    // This is a simplified "previous" logic. A more robust implementation might need more complex time recalculation.
+    this._updateTotalTime();
+    this._prepareForExercise(this.state.currentIndex - 1);
+  }
+
+  _handleRestart() {
+    if (!this.state.routine) return;
+    if (this.state.isRunning) {
+      if (!window.confirm('Are you sure you want to restart the routine?')) {
+        return;
+      }
+    }
+    this._resetSession();
+    this._handleStart();
+  }
+
+  _handleRepIncrement() {
+    if (!this.state.currentExercise || this.state.currentExercise.type !== 'reps' || this.state.isPaused) return;
+    this.state.repCount++;
+    this.dom.repCountDisplay.textContent = `${this.state.repCount}/${this.state.currentExercise.target_reps}`;
+    if (this.state.repCount >= this.state.currentExercise.target_reps) {
+      this.state.totalRemainingSec -= this.state.remainingSec;
+      this._prepareForExercise(this.state.currentIndex + 1);
+    }
+  }
+
+  _resetSession() {
+    if (this.state.timerId) clearInterval(this.state.timerId);
+    this._cancelSpeech();
+    this.state.isRunning = false;
+    this.state.isPaused = false;
+    this.state.appStatus = 'idle';
+    this.state.currentIndex = -1;
+    this._updateMusicState();
+    this._updateTotalTime();
+  }
+
+  // --- Preferences ---
+
+  _handlePillToggle(element, key, prefName) {
+    const isPressed = element.getAttribute('aria-pressed') === 'true';
+    const newValue = !isPressed;
+    element.setAttribute('aria-pressed', String(newValue));
+    this.prefs[prefName] = newValue;
+    this._savePreference(key, newValue);
+
+    if (prefName === 'music') this._updateMusicState();
+    if (prefName === 'tts' && !newValue) this._cancelSpeech();
+    if (prefName === 'video' && this.state.isRunning) this._renderExercise(this.state.currentExercise);
+  }
+
+  _handleSegmentedControl(event, container, key, prefName, callback) {
+    const button = event.target.closest('button');
+    if (!button) return;
+
+    const newValue = button.dataset.value;
+    this.prefs[prefName] = (typeof this.prefs[prefName] === 'number') ? parseInt(newValue, 10) : newValue;
+    this._savePreference(key, this.prefs[prefName]);
+
+    container.querySelectorAll('button').forEach(btn => {
+      btn.setAttribute('aria-pressed', 'false');
+    });
+    button.setAttribute('aria-pressed', 'true');
+
+    if (callback) callback(this.prefs[prefName]);
+  }
+
+  // --- UI Update & Rendering ---
+
+  _renderExercise(exercise) {
+    this.state.currentExercise = exercise;
+    this.dom.exTitle.textContent = exercise.name;
+    this.dom.exCues.innerHTML = '';
+    exercise.cues.forEach(cue => { const li = document.createElement('li'); li.textContent = cue; this.dom.exCues.appendChild(li); });
+
+    if (exercise.type === 'reps') {
+      this.dom.repIncBtn.hidden = false;
+      this.dom.repCountDisplay.textContent = `${this.state.repCount}/${exercise.target_reps}`;
+    } else {
+      this.dom.repIncBtn.hidden = true;
+    }
+
+    this.dom.media.hidden = true;
+    this.dom.mediaVideo.hidden = true;
+    this.dom.mediaImageWrap.hidden = true;
+    this.dom.mediaVideo.pause();
+    this.dom.mediaVideo.removeAttribute('src');
+
+    const useVideo = this.prefs.video && exercise.media?.video?.src;
+    const useImages = exercise.media?.images?.length > 0;
+
+    if (useVideo) {
+      this.dom.media.hidden = false;
+      this.dom.mediaVideo.hidden = false;
+      this.dom.mediaVideo.src = exercise.media.video.src;
+      this.dom.mediaVideo.poster = exercise.media.video.poster || '';
+      this.dom.mediaVideo.load();
+    } else if (useImages) {
+      this.dom.media.hidden = false;
+      this.dom.mediaImageWrap.hidden = false;
+      this._renderCurrentImage();
+    }
+
+    this._updateTimerDisplay();
+    this._updateProgress();
+  }
+
+  _renderCurrentImage() {
+    const images = this.state.currentExercise?.media?.images;
+    if (!images || images.length === 0) { this.dom.mediaImageWrap.hidden = true; return; }
+    // The new UI doesn't have prev/next for images, so we just show the first one.
+    this.dom.mediaImage.src = images[0];
+    this.dom.mediaImage.alt = `${this.state.currentExercise.name} - view 1 of ${images.length}`;
+  }
+
+  _updateTimerDisplay() { this.dom.timerDisplay.textContent = this._formatTime(this.state.remainingSec); }
+
+  _updateProgress() {
+    if (!this.state.routine) return;
+    const total = this.state.routine.exercises.length;
+    const current = this.state.currentIndex + 1;
+    this.dom.stepCount.textContent = `${current > total ? total : current}/${total}`;
+
+    const percent = this.state.totalDuration > 0
+      ? Math.floor(((this.state.totalDuration - this.state.totalRemainingSec) / this.state.totalDuration) * 100)
+      : 0;
+    
+    this.dom.progressRing.style.setProperty('--progress', `${percent}%`);
+    this.dom.progressRing.setAttribute('aria-valuenow', String(percent));
+    this.dom.progressPercent.textContent = `${percent}%`;
+  }
+
+  _updateControls() {
+    const isRunning = this.state.isRunning;
+    const isPaused = this.state.isPaused;
+
+    this.dom.playPauseBtn.disabled = !isRunning;
+    this.dom.playPauseBtn.setAttribute('aria-label', isPaused ? 'Play' : 'Pause');
+    this.dom.playIcon.hidden = !isPaused;
+    this.dom.pauseIcon.hidden = isPaused;
+
+    this.dom.prevBtn.disabled = !isRunning || isPaused || this.state.currentIndex < 1;
+    this.dom.nextBtn.disabled = !isRunning || isPaused;
+  }
+
+  // --- Persistence & Utilities ---
+
+  _loadPreferences() {
+    try {
+      this.prefs.music = localStorage.getItem(this.PREF_KEYS.MUSIC) === 'true';
+      this.prefs.tts = localStorage.getItem(this.PREF_KEYS.TTS) === 'true';
+      this.prefs.video = localStorage.getItem(this.PREF_KEYS.VIDEO) === 'true';
+      this.prefs.textSize = localStorage.getItem(this.PREF_KEYS.TEXT_SIZE) || '100';
+      this.prefs.prepareTime = parseInt(localStorage.getItem(this.PREF_KEYS.PREPARE_TIME) || 5, 10);
+
+      this.dom.toggleMusic.setAttribute('aria-pressed', String(this.prefs.music));
+      this.dom.toggleTts.setAttribute('aria-pressed', String(this.prefs.tts));
+      this.dom.toggleVideo.setAttribute('aria-pressed', String(this.prefs.video));
+
+      this.dom.textSize.querySelectorAll('button').forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.value === this.prefs.textSize)));
+      this.dom.prepareTime.querySelectorAll('button').forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.value == this.prefs.prepareTime)));
+
+      this._applyTextSize(this.prefs.textSize);
+    } catch (e) {
+      console.warn('Could not load preferences from localStorage.', e);
+    }
+  }
+
+  _savePreference(key, value) { try { localStorage.setItem(key, String(value)); } catch (e) { console.warn('Could not save preference to localStorage.', e); } }
+  _applyTextSize(size) { this.dom.body.classList.remove('text-125', 'text-150'); if (size === '125') this.dom.body.classList.add('text-125'); else if (size === '150') this.dom.body.classList.add('text-150'); }
+  _formatTime(seconds) { const min = Math.floor(seconds / 60); const sec = seconds % 60; return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`; }
+  
+  _calculateTotalTime(exercises) {
+    const exerciseTime = exercises.reduce((total, ex) => total + (ex.duration_sec || 0), 0);
+    const prepareTime = exercises.length * this.prefs.prepareTime;
+    return exerciseTime + prepareTime;
+  }
+
+  _updateTotalTime() {
+    if (!this.state.routine) return;
+    this.state.totalDuration = this._calculateTotalTime(this.state.routine.exercises);
+    this.state.totalRemainingSec = this.state.totalDuration;
+  }
+
+  // --- TTS and Audio Methods ---
+
+  _cancelSpeech() {
+    if (!this.tts.isSupported) return;
+    this.tts.queue = [];
+    this.tts.isSpeaking = false;
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.speaking').forEach(el => el.classList.remove('speaking'));
+  }
+
+  _speak(items) {
+    if (!this.tts.isSupported || !this.prefs.tts) return;
+    const newQueue = (Array.isArray(items) ? items : [items]);
+    this.tts.queue.push(...newQueue);
+    if (!this.tts.isSpeaking) {
+      this._processTtsQueue();
+    }
+  }
+
+  _processTtsQueue() {
+    if (this.tts.queue.length === 0) {
+      this.tts.isSpeaking = false;
+      return;
+    }
+    this.tts.isSpeaking = true;
+    const currentItem = this.tts.queue[0];
+    const utterance = new SpeechSynthesisUtterance(currentItem.text);
+    let lastHighlightedElement = null;
+    utterance.onstart = () => {
+      if (currentItem.element) {
+        currentItem.element.classList.add('speaking');
+        lastHighlightedElement = currentItem.element;
+      }
+    };
+    utterance.onend = () => {
+      if (lastHighlightedElement) {
+        lastHighlightedElement.classList.remove('speaking');
+      }
+      this.tts.queue.shift();
+      this._processTtsQueue();
+    };
+    utterance.onerror = (event) => {
+      console.warn('TTS error:', event.error);
+      utterance.onend();
+    };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  async _updateMusicState() {
+    const shouldPlay = this.prefs.music && this.state.isRunning && !this.state.isPaused;
+    if (shouldPlay) {
+      if (!this.audio.initPromise) await this._initMusic();
+      if (this.audio.music) this.audio.music.play().catch(e => console.warn('Music playback failed.', e));
+    } else {
+      if (this.audio.music) this.audio.music.pause();
+    }
+  }
+
+  _initMusic() {
+    if (this.audio.initPromise) return this.audio.initPromise;
+    this.audio.initPromise = new Promise((resolve) => {
+      const musicEl = new Audio(this.audio.musicPath);
+      musicEl.loop = true;
+      musicEl.volume = 0.5;
+      const loadTimeout = setTimeout(() => musicEl.onerror(new Event('error')), 5000);
+      musicEl.onerror = () => {
+        clearTimeout(loadTimeout);
+        console.warn(`Failed to load music file: ${this.audio.musicPath}.`);
+        this.audio.music = { play: () => {}, pause: () => {}, set currentTime(val) {} };
+        resolve();
+      };
+      musicEl.oncanplaythrough = () => {
+        clearTimeout(loadTimeout);
+        this.audio.music = musicEl;
+        resolve();
+      };
+      musicEl.load();
+    });
+    return this.audio.initPromise;
+  }
 }
 
-console.log('LiveLong loaded');
-
+// --- Application Entry Point ---
+(() => {
+  'use strict';
+  new LiveLongApp();
+})();

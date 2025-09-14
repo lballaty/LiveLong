@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schema/goals.schema.json",
+  "title": "LiveLong Suggested Goals Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "goals"],
+  "properties": {
+    "spec_version": { "type": "integer", "minimum": 1 },
+    "goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "type", "target"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_\-]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "type": { "enum": ["daily_minutes", "weekly_sessions", "session_count", "streak_days"] },
+          "target": { "type": "integer", "minimum": 1 },
+          "unit": { "type": "string", "enum": ["minutes", "sessions", "days"] },
+          "category": { "type": "string", "enum": ["streak", "consistency", "volume", "time"] },
+          "icon": { "type": "string" },
+          "auto_progression": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["nextTarget"],
+            "properties": {
+              "nextTarget": { "type": "integer", "minimum": 1 },
+              "maxTarget": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

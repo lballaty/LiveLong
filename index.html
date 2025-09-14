@@ -9,27 +9,200 @@
   </head>
   <body>
     <header class="site-header">
-      <h1>LiveLong</h1>
-      <p class="tagline">Your new web app starts here.</p>
+      <div class="header-content">
+        <h1>LiveLong</h1>
+        <p class="tagline">Japanese Longevity Exercises</p>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle color theme">
+        <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
     </header>
 
     <main class="container">
-      <section class="card">
-        <h2>Welcome</h2>
-        <p>
-          This is a minimal vanilla HTML/CSS/JS scaffold. Edit
-          <code>src/main.js</code> and <code>src/styles.css</code> to begin.
-        </p>
-        <button id="cta">Click me</button>
-        <p id="status" aria-live="polite" class="status"></p>
-      </section>
+      <!-- Home/Pre-session View -->
+      <div id="home-view">
+        <section class="hero-card">
+          <div class="hero-media">
+            <img src="src/assets/images/hero-banner.jpg" alt="Calm natural scene for longevity exercises" />
+            <div class="hero-overlay">
+              <h2>A Daily Ritual</h2>
+              <h1>Japanese Longevity Exercises</h1>
+              <button id="start-btn" class="primary cta-pill">Start Session</button>
+            </div>
+          </div>
+          <div class="info-chips">
+            <div class="chip">Beginner</div>
+            <div class="chip">~12 min</div>
+            <div class="chip">Balance & Strength</div>
+          </div>
+        </section>
+
+        <section class="settings-pills">
+          <h3>Settings</h3>
+          <div class="pill-group">
+            <button id="toggle-music" class="pill-toggle" aria-pressed="false" aria-label="Toggle Music">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span>Music</span>
+            </button>
+            <button id="toggle-tts" class="pill-toggle" aria-pressed="false" aria-label="Toggle Voice Guidance">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              <span>Voice</span>
+            </button>
+            <button id="toggle-video" class="pill-toggle" aria-pressed="false" aria-label="Toggle Video">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <span>Video</span>
+            </button>
+          </div>
+          <div class="segmented-control-group">
+            <label id="text-size-label">Text Size</label>
+            <div id="text-size" class="segmented-control" role="group" aria-labelledby="text-size-label">
+              <button data-value="100" aria-pressed="true">100%</button>
+              <button data-value="125" aria-pressed="false">125%</button>
+              <button data-value="150" aria-pressed="false">150%</button>
+            </div>
+          </div>
+          <div class="segmented-control-group">
+            <label id="prepare-time-label">Prepare Time</label>
+            <div id="prepare-time" class="segmented-control" role="group" aria-labelledby="prepare-time-label">
+              <button data-value="3" aria-pressed="false">3s</button>
+              <button data-value="5" aria-pressed="true">5s</button>
+              <button data-value="10" aria-pressed="false">10s</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="exercise-preview">
+          <h3>What's Inside</h3>
+          <ul id="preview-list">
+            <!-- JS will populate this -->
+          </ul>
+        </section>
+      </div>
+
+      <!-- In-Session View -->
+      <div id="session-view" hidden>
+        <header class="session-top-bar">
+          <button id="back-btn" class="icon-btn" aria-label="End Session and Go Back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <h2 id="ex-title">Exercise Title</h2>
+          <button id="restart-btn" class="icon-btn" aria-label="Restart Routine">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6"/><path d="M22 11.5A10 10 0 0 1 3.2 7.2M2 12.5a10 10 0 0 1 18.8 4.2"/></svg>
+          </button>
+        </header>
+
+        <div class="session-content">
+          <div id="media" class="media" aria-live="polite">
+            <video id="media-video" playsinline muted preload="metadata"></video>
+            <div id="media-image-wrap">
+              <img id="media-image" alt="Exercise demonstration" />
+            </div>
+          </div>
+          <ul id="ex-cues" class="cues"></ul>
+        </div>
+
+        <div id="paused-overlay" class="paused-overlay" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          <h2>Paused</h2>
+        </div>
+
+        <footer class="control-dock">
+          <button id="prev-btn" class="icon-btn" aria-label="Previous Exercise" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+          </button>
+          <button id="play-pause-btn" class="primary cta-pill" aria-label="Pause" disabled>
+            <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+          <button id="next-btn" class="icon-btn" aria-label="Next Exercise" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+          </button>
+          <div id="timer" class="timer-display" aria-live="polite">--:--</div>
+          <div class="progress-chip">
+            <div id="progress-ring" class="progress-ring" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+              <span id="progress-percent">0%</span>
+            </div>
+            <div id="step" class="step-count">0/11</div>
+          </div>
+          <button id="rep-inc" class="icon-btn rep-btn" aria-label="Add one repetition" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span id="rep-count-display"></span>
+          </button>
+        </footer>
+      </div>
+
+      <!-- Summary Screen -->
+      <div id="summary-view" class="summary-view" hidden>
+        <h2>Workout Complete!</h2>
+        <p>Congratulations on finishing your session.</p>
+        <div class="summary-stats">
+          <div>
+            <span class="stat-value" id="summary-time">--:--</span>
+            <span class="stat-label">Total Time</span>
+          </div>
+          <div>
+            <span class="stat-value" id="summary-exercises">0</span>
+            <span class="stat-label">Exercises</span>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="summary-restart" class="primary cta-pill">Restart Routine</button>
+        </div>
+      </div>
     </main>
 
     <footer class="site-footer">
       <small>&copy; <span id="year"></span> LiveLong</small>
     </footer>
 
-    <script src="src/main.js" type="module"></script>
+    <!--
+      The main application logic is in `src/main.js`.
+      For the theme switcher to work, the following script should be included there.
+    -->
+    <script>
+      // This script block is for the theme switcher.
+      // It's placed here to run early and prevent a "flash of wrong theme".
+      // In a full setup, this logic would be part of the main JS bundle.
+      (() => {
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+        const themeKey = 'LL_theme';
+
+        const applyTheme = (theme) => {
+          document.documentElement.setAttribute('data-theme', theme);
+          localStorage.setItem(themeKey, theme);
+          if (theme === 'dark') {
+            lightIcon.hidden = true;
+            darkIcon.hidden = false;
+          } else {
+            lightIcon.hidden = false;
+            darkIcon.hidden = true;
+          }
+        };
+
+        const storedTheme = localStorage.getItem(themeKey);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+        applyTheme(initialTheme);
+
+        themeToggle.addEventListener('click', () => {
+          const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          applyTheme(newTheme);
+        });
+      })();
+    </script>
+    <script>
+      // Register the service worker for offline capabilities
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered.', reg))
+            .catch(err => console.log('Service Worker registration failed: ', err));
+        });
+      }
+    </script>
+    <script src="src/main.js" type="module"></script> <!-- Main app logic for exercises -->
   </body>
   </html>
-

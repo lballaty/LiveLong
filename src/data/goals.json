@@ -1,0 +1,39 @@
+{
+  "spec_version": 1,
+  "goals": [
+    {
+      "id": "daily_5min",
+      "name": "Move 5 Minutes",
+      "description": "Complete at least 5 minutes today.",
+      "type": "daily_minutes",
+      "target": 5,
+      "unit": "minutes",
+      "category": "time",
+      "icon": "src/assets/icons/time.svg",
+      "auto_progression": { "nextTarget": 10, "maxTarget": 20 }
+    },
+    {
+      "id": "weekly_3_sessions",
+      "name": "3 Sessions This Week",
+      "description": "Complete 3 sessions in the current week.",
+      "type": "weekly_sessions",
+      "target": 3,
+      "unit": "sessions",
+      "category": "consistency",
+      "icon": "src/assets/icons/week.svg",
+      "auto_progression": { "nextTarget": 4, "maxTarget": 7 }
+    },
+    {
+      "id": "streak_3_days",
+      "name": "3‑Day Streak",
+      "description": "Practice on 3 consecutive days.",
+      "type": "streak_days",
+      "target": 3,
+      "unit": "days",
+      "category": "streak",
+      "icon": "src/assets/icons/streak.svg",
+      "auto_progression": { "nextTarget": 7, "maxTarget": 30 }
+    }
+  ]
+}
+

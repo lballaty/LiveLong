@@ -1,0 +1,145 @@
+{
+  "spec_version": 1,
+  "routine_id": "jpn-longevity-001",
+  "title": "Japanese Longevity Exercises",
+  "exercises": [
+    {
+      "id": "breathing",
+      "name": "Breathing — Kokyū Taiso",
+      "type": "time",
+      "duration_sec": 120,
+      "cues": [
+        "Posture tall, hands on belly",
+        "Inhale nose 4s, exhale mouth 6s",
+        "10 calm breaths"
+      ],
+      "media": {
+        "video": { "src": "src/assets/video/breathing.mp4", "poster": "src/assets/images/breathing.jpg" },
+        "images": [
+          "src/assets/images/breathing-1.jpg",
+          "src/assets/images/breathing-2.jpg"
+        ]
+      }
+    },
+    {
+      "id": "towel_twist",
+      "name": "Towel Twist — Tenugui Hibiki",
+      "type": "time",
+      "duration_sec": 90,
+      "cues": [
+        "Hold towel shoulder‑width",
+        "Twist right ↔ left with relaxed shoulders",
+        "10–15 each side"
+      ],
+      "media": {
+        "images": [
+          "src/assets/images/towel-center.jpg",
+          "src/assets/images/towel-right.jpg",
+          "src/assets/images/towel-left.jpg"
+        ]
+      }
+    },
+    {
+      "id": "hand_finger",
+      "name": "Hand & Finger Mobility — Yubi Undō",
+      "type": "time",
+      "duration_sec": 90,
+      "cues": [
+        "Open/close fists ×10; spread ×5",
+        "Thumb taps each finger",
+        "Breathe naturally"
+      ]
+    },
+    {
+      "id": "eye_neck",
+      "name": "Eye & Neck — Me no Taiso",
+      "type": "time",
+      "duration_sec": 90,
+      "cues": [
+        "Eyes up/down/left/right ×2, circles",
+        "Neck turns ×4/side",
+        "Move gently"
+      ]
+    },
+    {
+      "id": "floor_sitting",
+      "name": "Floor Sitting — Seiza Henka",
+      "type": "reps",
+      "target_reps": 5,
+      "duration_sec": 120,
+      "cues": [
+        "Stand → kneel/cross‑leg sit → stand",
+        "3–5 reps, use support if needed",
+        "Steady breathing"
+      ]
+    },
+    {
+      "id": "deep_squat",
+      "name": "Deep Squat — Shinku Zuwari",
+      "type": "reps",
+      "target_reps": 5,
+      "duration_sec": 120,
+      "cues": [
+        "Feet shoulder‑width, heels down",
+        "Hold 3 breaths in squat",
+        "5 reps"
+      ]
+    },
+    {
+      "id": "gentle_resistance",
+      "name": "Gentle Resistance",
+      "type": "reps",
+      "target_reps": 10,
+      "duration_sec": 120,
+      "cues": [
+        "Light weights/water bottles",
+        "Curls + shoulder press",
+        "8–10 reps each"
+      ]
+    },
+    {
+      "id": "single_leg",
+      "name": "Single‑Leg Standing — Ippon Ashi",
+      "type": "time",
+      "duration_sec": 120,
+      "cues": [
+        "Stand near support",
+        "Lift foot, hold 10s",
+        "2 holds/side"
+      ]
+    },
+    {
+      "id": "daily_stretching",
+      "name": "Daily Stretching — Rajio Taiso",
+      "type": "time",
+      "duration_sec": 180,
+      "cues": [
+        "Arm swings, side bends, light squats",
+        "Heel raises, arm circles",
+        "3‑minute flow"
+      ]
+    },
+    {
+      "id": "slow_walking",
+      "name": "Slow Walking — Sanpo",
+      "type": "time",
+      "duration_sec": 240,
+      "cues": [
+        "Inhale 2 steps, exhale 2 steps",
+        "Upright posture",
+        "Light, even steps"
+      ]
+    },
+    {
+      "id": "cognitive_motor",
+      "name": "Cognitive‑Motor Drill",
+      "type": "time",
+      "duration_sec": 150,
+      "cues": [
+        "March + count aloud",
+        "Clap on every 2nd step",
+        "Say days of the week"
+      ]
+    }
+  ]
+}
