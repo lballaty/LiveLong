@@ -88,7 +88,7 @@ class LiveLongApp {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       this.state.routine = await response.json();
       this._populatePreviewList();
-      this._updateTotalTime();
+      this._updateTotalTime(0);
     } catch (error) {
       console.error('Failed to load routine:', error);
       // In a real app, you might show an error message in the UI here.
@@ -176,9 +176,12 @@ class LiveLongApp {
 
   _bindEventListeners() {
     // View switching
-    this.dom.startBtn.addEventListener('click', () => this._handleStart());
+    this.dom.startBtn.addEventListener('click', () => this._startSession(0));
     this.dom.backBtn.addEventListener('click', () => this._handleBack());
-
+    this.dom.previewList.addEventListener('click', (e) => this._handlePreviewClick(e));
+    this.dom.previewList.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') this._handlePreviewClick(e);
+    });
     // Session controls
     this.dom.playPauseBtn.addEventListener('click', () => this._handlePauseResume());
     this.dom.nextBtn.addEventListener('click', () => this._handleSkip());
@@ -241,7 +244,12 @@ class LiveLongApp {
     const list = this.dom.previewList;
     list.innerHTML = '';
     this.state.routine.exercises.slice(0, 5).forEach(ex => {
+    this.state.routine.exercises.slice(0, 5).forEach((ex, index) => {  
       const li = document.createElement('li');
+      li.setAttribute('role', 'button');
+      li.setAttribute('tabindex', '0');
+      li.dataset.index = index;
+
       const poster = ex.media?.video?.poster || ex.media?.images?.[0] || 'src/assets/images/placeholder.jpg';
       li.innerHTML = `
         <img src="${poster}" alt="${ex.name}" />
@@ -345,16 +353,6 @@ class LiveLongApp {
 
   // --- Event Handlers ---
 
-  _handleStart() {
-    if (this.state.isRunning || !this.state.routine) return;
-    this.state.isRunning = true;
-    this.state.isPaused = false;
-    this._updateTotalTime();
-    this._showView('session');
-    this._updateControls();
-    this._prepareForExercise(0);
-    this._updateMusicState();
-  }
 
   _handleBack() {
     if (this.state.isRunning) {
@@ -369,6 +367,7 @@ class LiveLongApp {
   _handlePauseResume() {
     if (!this.state.isRunning) return;
     this.state.isPaused = !this.state.isPaused;
+    this.dom.pausedOverlay.hidden = !this.state.isPaused;
     this._updateControls();
     if (!this.dom.mediaVideo.hidden) {
       if (this.state.isPaused) this.dom.mediaVideo.pause();
@@ -404,8 +403,14 @@ class LiveLongApp {
   _handlePrev() {
     if (!this.state.isRunning || this.state.isPaused || this.state.currentIndex === 0) return;
     this._cancelSpeech();
-    // This is a simplified "previous" logic. A more robust implementation might need more complex time recalculation.
-    this._updateTotalTime();
+    
+    
+    const prevExercise = this.state.routine.exercises[this.state.currentIndex - 1];
+    const timeToAdd = (prevExercise.duration_sec || 0) + this.prefs.prepareTime;
+    this.state.totalRemainingSec += timeToAdd;  
+
+
+
     this._prepareForExercise(this.state.currentIndex - 1);
   }
 
@@ -417,7 +422,7 @@ class LiveLongApp {
       }
     }
     this._resetSession();
-    this._handleStart();
+    this._startSession(0);
   }
 
   _handleRepIncrement() {
@@ -430,6 +435,28 @@ class LiveLongApp {
     }
   }
 
+  _handlePreviewClick(event) {
+    const targetLi = event.target.closest('li[data-index]');
+    if (targetLi) {
+        event.preventDefault();
+        const index = parseInt(targetLi.dataset.index, 10);
+        this._startSession(index);
+    }
+  }
+
+  _startSession(startIndex = 0) {
+    if (this.state.isRunning || !this.state.routine) return;
+    this.state.isRunning = true;
+    this.state.isPaused = false;
+    this._updateTotalTime(startIndex);
+    this._showView('session');
+    this._updateControls();
+    this._prepareForExercise(startIndex);
+    this._updateMusicState();
+  }
+
+
+
   _resetSession() {
     if (this.state.timerId) clearInterval(this.state.timerId);
     this._cancelSpeech();
@@ -438,7 +465,7 @@ class LiveLongApp {
     this.state.appStatus = 'idle';
     this.state.currentIndex = -1;
     this._updateMusicState();
-    this._updateTotalTime();
+    this._updateTotalTime(0);
     this._stopPacer();
   }
 
@@ -581,15 +608,16 @@ class LiveLongApp {
   _applyTextSize(size) { this.dom.body.classList.remove('text-125', 'text-150'); if (size === '125') this.dom.body.classList.add('text-125'); else if (size === '150') this.dom.body.classList.add('text-150'); }
   _formatTime(seconds) { const min = Math.floor(seconds / 60); const sec = seconds % 60; return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`; }
   
-  _calculateTotalTime(exercises) {
-    const exerciseTime = exercises.reduce((total, ex) => total + (ex.duration_sec || 0), 0);
-    const prepareTime = exercises.length * this.prefs.prepareTime;
+  _calculateTotalTime(exercises, startIndex = 0) {
+    const remainingExercises = exercises.slice(startIndex);
+    const exerciseTime = remainingExercises.reduce((total, ex) => total + (ex.duration_sec || 0), 0);
+    const prepareTime = remainingExercises.length * this.prefs.prepareTime;
     return exerciseTime + prepareTime;
   }
 
-  _updateTotalTime() {
+  _updateTotalTime(startIndex = 0) {
     if (!this.state.routine) return;
-    this.state.totalDuration = this._calculateTotalTime(this.state.routine.exercises);
+    this.state.totalDuration = this._calculateTotalTime(this.state.routine.exercises, startIndex);
     this.state.totalRemainingSec = this.state.totalDuration;
   }
 

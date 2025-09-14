@@ -46,25 +46,6 @@
               { "if": { "properties": { "style": { "const": "box" } } }, "then": { "required": ["hold1_sec", "hold2_sec"] } }
             ]
           },
-          "pacer": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": { "type": "string", "enum": ["breath", "cycle", "preset"] },
-              "inhale_sec": { "type": "integer", "minimum": 1 },
-              "exhale_sec": { "type": "integer", "minimum": 1 },
-              "hold1_sec": { "type": "integer", "minimum": 0 },
-              "hold2_sec": { "type": "integer", "minimum": 0 },
-              "style": { "type": "string", "enum": ["circle", "wave", "image", "box", "triangle"] },
-              "image": { "type": "string" },
-              "preset_id": { "type": "string" }
-            },
-            "allOf": [
-              { "if": { "properties": { "type": { "const": "preset" } } }, "then": { "required": ["preset_id"] } },
-              { "if": { "properties": { "type": { "const": "cycle" } } }, "then": { "required": ["inhale_sec", "exhale_sec"] } },
-              { "if": { "properties": { "style": { "const": "box" } } }, "then": { "required": ["hold1_sec", "hold2_sec"] } }
-            ]
-          },
           "media": {
             "type": "object",
             "additionalProperties": false,
