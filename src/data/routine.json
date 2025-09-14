@@ -8,16 +8,16 @@
       "name": "Breathing — Kokyū Taiso",
       "type": "time",
       "duration_sec": 120,
+      "pacer": { "type": "breath", "inhale_sec": 4, "exhale_sec": 6, "style": "circle" },
       "cues": [
         "Posture tall, hands on belly",
         "Inhale nose 4s, exhale mouth 6s",
         "10 calm breaths"
       ],
       "media": {
-        "video": { "src": "src/assets/video/breathing.mp4", "poster": "src/assets/images/breathing.jpg" },
+        "video": { "src": "", "poster": "src/assets/images/placeholder.svg" },
         "images": [
-          "src/assets/images/breathing-1.jpg",
-          "src/assets/images/breathing-2.jpg"
+          "src/assets/images/placeholder.svg"
         ]
       }
     },
@@ -33,9 +33,7 @@
       ],
       "media": {
         "images": [
-          "src/assets/images/towel-center.jpg",
-          "src/assets/images/towel-right.jpg",
-          "src/assets/images/towel-left.jpg"
+          "src/assets/images/placeholder.svg"
         ]
       }
     },

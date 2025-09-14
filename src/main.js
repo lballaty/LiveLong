@@ -13,6 +13,8 @@ class LiveLongApp {
       VIDEO: 'LL_video',
       TEXT_SIZE: 'LL_textSize',
       PREPARE_TIME: 'LL_prepareTime',
+      PACER_PRESET: 'LL_pacerPresetId',
+      PACER_TICK: 'LL_pacerTick',
     };
 
     this.prefs = {
@@ -50,6 +52,19 @@ class LiveLongApp {
       repCount: 0,
     };
 
+    // Breathing pacer runtime state
+    this.pacer = {
+      presets: { presets: [] },
+      timerId: null,
+      phases: null,
+      phaseIndex: 0,
+      phaseStart: 0,
+      reducedMotion: false,
+      presetId: null,
+      tickEnabled: false,
+      audioCtx: null,
+    };
+
     this.ROUTINE_PATH = 'src/data/routine.json';
 
     this._init();
@@ -77,6 +92,25 @@ class LiveLongApp {
     } catch (error) {
       console.error('Failed to load routine:', error);
       // In a real app, you might show an error message in the UI here.
+    }
+
+    // Load pacer presets (best‑effort)
+    try {
+      const pr = await fetch('src/data/pacer-presets.json');
+      if (pr.ok) this.pacer.presets = await pr.json();
+    } catch {}
+
+    // Populate pacer preset select if present
+    if (this.dom.pacerPreset && this.pacer.presets?.presets?.length) {
+      this.dom.pacerPreset.innerHTML = '';
+      for (const p of this.pacer.presets.presets) {
+        const opt = document.createElement('option');
+        opt.value = p.id; opt.textContent = p.name;
+        this.dom.pacerPreset.appendChild(opt);
+      }
+      if (this.pacer.presetId) {
+        this.dom.pacerPreset.value = this.pacer.presetId;
+      }
     }
   }
 
@@ -107,6 +141,14 @@ class LiveLongApp {
       mediaImageWrap: document.getElementById('media-image-wrap'),
       mediaImage: document.getElementById('media-image'),
       exCues: document.getElementById('ex-cues'),
+
+      // Breathing Card
+      breathingCard: document.getElementById('breathing-card'),
+      breathCircle: document.getElementById('breath-circle'),
+      breathPhase: document.getElementById('breath-phase'),
+      pacerPreset: document.getElementById('pacer-preset'),
+      pacerTick: document.getElementById('pacer-tick'),
+      breathProgress: document.querySelector('#breath-progress .bar'),
 
       // Control Dock
       prevBtn: document.getElementById('prev-btn'),
@@ -144,6 +186,23 @@ class LiveLongApp {
     this.dom.restartBtn.addEventListener('click', () => this._handleRestart());
     this.dom.summaryRestart.addEventListener('click', () => this._handleRestart());
     this.dom.repIncBtn.addEventListener('click', () => this._handleRepIncrement());
+
+    // Pacer controls
+    if (this.dom.pacerPreset) {
+      this.dom.pacerPreset.addEventListener('change', () => {
+        this.pacer.presetId = this.dom.pacerPreset.value;
+        this._savePreference(this.PREF_KEYS.PACER_PRESET, this.pacer.presetId);
+        if (this.state.isRunning && this.state.appStatus === 'exercising' && this._isBreathingExercise(this.state.currentExercise)) {
+          this._startPacer(this.state.currentExercise, true);
+        }
+      });
+    }
+    if (this.dom.pacerTick) {
+      this.dom.pacerTick.addEventListener('change', () => {
+        this.pacer.tickEnabled = this.dom.pacerTick.checked;
+        this._savePreference(this.PREF_KEYS.PACER_TICK, this.pacer.tickEnabled);
+      });
+    }
 
     // Settings
     this.dom.toggleMusic.addEventListener('click', () => this._handlePillToggle(this.dom.toggleMusic, this.PREF_KEYS.MUSIC, 'music'));
@@ -230,6 +289,8 @@ class LiveLongApp {
     this.dom.exCues.innerHTML = `<li>Next: ${nextExercise.name}</li>`;
     this.dom.media.hidden = true;
     this.dom.repIncBtn.hidden = true;
+    if (this.dom.breathingCard) this.dom.breathingCard.hidden = true;
+    this._stopPacer();
 
     this.state.remainingSec = this.prefs.prepareTime;
     this._updateTimerDisplay();
@@ -254,6 +315,13 @@ class LiveLongApp {
 
     if (!this.state.isPaused && !this.dom.mediaVideo.hidden) {
       this.dom.mediaVideo.play().catch(e => console.warn('Video play failed.', e));
+    }
+
+    // Start breathing pacer if applicable
+    if (this._isBreathingExercise(exercise)) {
+      this._startPacer(exercise, true);
+    } else {
+      this._stopPacer();
     }
   }
 
@@ -311,6 +379,13 @@ class LiveLongApp {
       if (this.state.isPaused) window.speechSynthesis.pause();
       else window.speechSynthesis.resume();
     }
+    // Pause/resume pacer visuals
+    if (this.state.isPaused) {
+      // keep timer but freeze visuals by not advancing (handled in _pacerTick)
+    } else {
+      // ensure pacer tick resumes
+      if (this._isBreathingExercise(this.state.currentExercise) && !this.pacer.timerId) this._startPacer(this.state.currentExercise, false);
+    }
   }
 
   _handleSkip() {
@@ -364,6 +439,7 @@ class LiveLongApp {
     this.state.currentIndex = -1;
     this._updateMusicState();
     this._updateTotalTime();
+    this._stopPacer();
   }
 
   // --- Preferences ---
@@ -483,6 +559,8 @@ class LiveLongApp {
       this.prefs.video = localStorage.getItem(this.PREF_KEYS.VIDEO) === 'true';
       this.prefs.textSize = localStorage.getItem(this.PREF_KEYS.TEXT_SIZE) || '100';
       this.prefs.prepareTime = parseInt(localStorage.getItem(this.PREF_KEYS.PREPARE_TIME) || 5, 10);
+      this.pacer.presetId = localStorage.getItem(this.PREF_KEYS.PACER_PRESET) || '';
+      this.pacer.tickEnabled = localStorage.getItem(this.PREF_KEYS.PACER_TICK) === 'true' || localStorage.getItem(this.PREF_KEYS.PACER_TICK) === '1';
 
       this.dom.toggleMusic.setAttribute('aria-pressed', String(this.prefs.music));
       this.dom.toggleTts.setAttribute('aria-pressed', String(this.prefs.tts));
@@ -490,6 +568,8 @@ class LiveLongApp {
 
       this.dom.textSize.querySelectorAll('button').forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.value === this.prefs.textSize)));
       this.dom.prepareTime.querySelectorAll('button').forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.value == this.prefs.prepareTime)));
+      if (this.dom.pacerPreset && this.pacer.presetId) this.dom.pacerPreset.value = this.pacer.presetId;
+      if (this.dom.pacerTick) this.dom.pacerTick.checked = !!this.pacer.tickEnabled;
 
       this._applyTextSize(this.prefs.textSize);
     } catch (e) {
@@ -511,6 +591,100 @@ class LiveLongApp {
     if (!this.state.routine) return;
     this.state.totalDuration = this._calculateTotalTime(this.state.routine.exercises);
     this.state.totalRemainingSec = this.state.totalDuration;
+  }
+
+  // --- Breathing Pacer ---
+  _isBreathingExercise(ex) {
+    return !!(ex && (ex.id === 'breathing' || ex.pacer));
+  }
+
+  _getPresetById(id) {
+    return this.pacer.presets?.presets?.find(p => p.id === id);
+  }
+
+  _buildPacerPhases(ex) {
+    let style = 'circle';
+    let pattern = { inhale_sec: 4, hold1_sec: 0, exhale_sec: 6, hold2_sec: 0 };
+    const preset = this.pacer.presetId ? this._getPresetById(this.pacer.presetId) : null;
+    if (preset?.pattern) {
+      style = preset.style || style;
+      pattern = preset.pattern;
+    } else if (ex.pacer) {
+      style = ex.pacer.style || style;
+      pattern = {
+        inhale_sec: ex.pacer.inhale_sec || 4,
+        hold1_sec: ex.pacer.hold1_sec || 0,
+        exhale_sec: ex.pacer.exhale_sec || 6,
+        hold2_sec: ex.pacer.hold2_sec || 0,
+      };
+    }
+    const phases = [];
+    phases.push({ key: 'inhale', label: 'Inhale', dur: (pattern.inhale_sec || 0) * 1000 });
+    if (pattern.hold1_sec) phases.push({ key: 'hold', label: 'Hold', dur: pattern.hold1_sec * 1000 });
+    phases.push({ key: 'exhale', label: 'Exhale', dur: (pattern.exhale_sec || 0) * 1000 });
+    if (pattern.hold2_sec) phases.push({ key: 'hold2', label: 'Hold', dur: pattern.hold2_sec * 1000 });
+    return { style, phases };
+  }
+
+  _startPacer(ex, showCard) {
+    this._stopPacer();
+    const built = this._buildPacerPhases(ex);
+    this.pacer.phases = built.phases;
+    this.pacer.phaseIndex = 0;
+    this.pacer.phaseStart = performance.now();
+    this.pacer.reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (this.dom.breathPhase) this.dom.breathPhase.textContent = this.pacer.phases[0]?.label || '';
+    if (this.dom.breathCircle) this.dom.breathCircle.style.setProperty('--breath-scale', '1');
+    if (this.dom.breathingCard && showCard) this.dom.breathingCard.hidden = false;
+    this.pacer.timerId = setInterval(() => this._pacerTick(), 100);
+  }
+
+  _stopPacer() {
+    clearInterval(this.pacer.timerId);
+    this.pacer.timerId = null;
+    this.pacer.phases = null;
+    if (this.dom.breathingCard) this.dom.breathingCard.hidden = true;
+  }
+
+  _pacerTick() {
+    if (!this.pacer.phases || this.state.isPaused || !this.state.isRunning) return;
+    const now = performance.now();
+    const current = this.pacer.phases[this.pacer.phaseIndex];
+    if (!current) return;
+    const elapsed = now - this.pacer.phaseStart;
+    if (elapsed >= current.dur) {
+      // Phase boundary
+      if (this.pacer.tickEnabled) this._pacerBeep();
+      this.pacer.phaseIndex = (this.pacer.phaseIndex + 1) % this.pacer.phases.length;
+      this.pacer.phaseStart = now;
+      const next = this.pacer.phases[this.pacer.phaseIndex];
+      if (this.dom.breathPhase) this.dom.breathPhase.textContent = next?.label || '';
+      return;
+    }
+    const progress = current.dur > 0 ? elapsed / current.dur : 0;
+    if (this.dom.breathProgress) this.dom.breathProgress.style.width = `${Math.round(progress * 100)}%`;
+    if (!this.pacer.reducedMotion && this.dom.breathCircle) {
+      let scale = 1.0;
+      if (current.key === 'inhale') scale = 0.8 + 0.4 * progress; // 0.8 -> 1.2
+      else if (current.key === 'exhale') scale = 1.2 - 0.4 * progress; // 1.2 -> 0.8
+      else scale = 1.2; // hold at full size
+      this.dom.breathCircle.style.setProperty('--breath-scale', String(scale));
+    }
+  }
+
+  _pacerBeep() {
+    try {
+      if (!this.pacer.audioCtx) this.pacer.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = this.pacer.audioCtx.createOscillator();
+      const g = this.pacer.audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = 660;
+      g.gain.value = 0.0001;
+      o.connect(g).connect(this.pacer.audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.05, this.pacer.audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, this.pacer.audioCtx.currentTime + 0.12);
+      o.stop(this.pacer.audioCtx.currentTime + 0.14);
+    } catch {}
   }
 
   // --- TTS and Audio Methods ---

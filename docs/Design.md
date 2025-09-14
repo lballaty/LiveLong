@@ -223,3 +223,88 @@ Timers & Reps
 - Duration: ≤ 2 seconds, user‑dismissible via a close button or clicking outside.
 - Performance: Use GPU‑accelerated transforms; batch DOM changes; throttle confetti count on low‑end devices.
 - Accessibility: Respect `prefers-reduced-motion` → replace with static card and sound off by default; announce via `aria-live`.
+
+---
+
+## Developer Experience
+
+- Service Worker in Dev: Document how to bypass or clear the SW cache during development (use an alternate port, unregister in DevTools, or provide a one‑shot unregister script) to avoid stale files masking changes.
+- Safari Compatibility: If supporting Safari versions prior to 14, provide a transpiled fallback bundle that removes optional chaining and other modern syntax to prevent parse errors.
+- Placeholder Assets: Include default posters/placeholders so the media card is never empty in environments without the optional demo assets.
+
+---
+
+## Exercise Picker Design
+
+- Home “Start Here”: Each item in the preview list provides a Start action. Selecting it sets `currentIndex` to that item, recomputes `totalRemainingSec`, then enters the `preparing` state for that index.
+- In‑Session Jump: A compact menu lists exercises (1..N). Choosing an item cancels current timers and speech, updates `currentIndex`, recomputes totals, and transitions to `preparing` for the chosen index.
+- Progress Integrity: Step count and overall remaining time update immediately to reflect the jump or alternate start.
+
+---
+
+## Voice Guidance Orchestration (TTS)
+
+- Speaking Policy: Speak only on state transitions — Prepare start and Exercise start.
+- Verbosity: Brief (default: title + first cue) and Full (title + all cues once) modes.
+- Rate Control: Map Slow/Normal/Fast to rates (≈0.85 / 1.0 / 1.15); persist per device.
+- Pause/Resume: On Pause, cancel the current utterance; on Resume, queue the next item to avoid unreliable pause/resume on some engines.
+- Highlighting: Apply a `.speaking` class to the element being read; remove when finished.
+
+---
+
+## Breathing Pacer Design
+
+Timing Model
+- Default cycle inhale 4s, exhale 6s; future‑configurable via routine metadata.
+- Use the session timer as the source of truth; derive phase and progress from elapsed time.
+
+Audio
+- Short, soft ticks or bell at phase boundaries (start inhale, start exhale). Volume respects global sound settings; a pacer on/off control is provided.
+
+Visual
+- Option A (wave): A smooth up/down wave; crest aligns with inhale end, trough with exhale end.
+- Option B (circle): Circle scales up during inhale and down during exhale with eased motion.
+- Reduced Motion: Replace animation with textual “Inhale/Exhale” cues and a progress bar.
+
+State Integration
+- Pause freezes audio/visual at the current phase; Resume recalculates from current `remainingSec` to prevent drift.
+
+Multi‑Phase Cycles & Presets
+- The pacer supports multi‑phase cycles with per‑phase durations and labels:
+  - inhale → hold1 → exhale → hold2 (holds optional, zero = omitted)
+- Presets (via `src/data/pacer-presets.json`): Box 4‑4‑4‑4, 4‑7‑8, 5/5, Triangle 4‑4‑4‑0, Wim Hof guided sequence.
+- Rendering logic:
+  - Display current phase label (“Inhale”, “Hold”, “Exhale”).
+  - Show visual affordance for “box” style: animate along a square path with corners as holds (pause or subtle pulse at corners).
+  - For triangle style: animate along a triangular path with three phases (inhale‑hold‑exhale), omitting hold2.
+- Timing:
+  - Derive phase and remaining phase time from the session tick (no separate timers) to keep sync.
+  - Allow a phase change tolerance of ±100ms.
+
+---
+
+## Breathing Card Component
+
+Purpose
+- Provide a dedicated, calming visual and textual guide for breathing exercises.
+
+Layout
+- Large, centered card above the cues with a rounded container and soft background.
+- Contains: animated visual (circle/wave or image animation), current phase label (“Inhale”/“Exhale”), and optional pacer controls (sound on/off, speed preset).
+
+Animation Options
+- CSS/SVG animation for circle scale or wave translate/shape morph — preferred for performance and bundle size.
+- Animated image path (SVG/Lottie/GIF) if `ex.pacer.style == 'image'` and `ex.pacer.image` is provided.
+ - Box animation: an SVG path animation around a rounded square; pauses or pulses at corners to indicate holds.
+
+Timing & Sync
+- Uses `ex.pacer.inhale_sec`/`ex.pacer.exhale_sec` from `src/data/routine.json` when present; default 4/6 if absent.
+- Drives the animation timeline and phase text off the same source of truth as the session timer to avoid drift.
+
+Accessibility
+- Respect `prefers-reduced-motion`: replace motion with a static progress bar and the phase text; ensure sufficient contrast and readable size.
+- Announce phase changes via `aria-live="polite"`.
+
+Performance
+- Keep animations to transform/opacity when possible; avoid layout thrash.
+- Target 60fps; cap CPU usage; no long tasks > 50ms.

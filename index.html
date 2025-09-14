@@ -24,7 +24,7 @@
       <div id="home-view">
         <section class="hero-card">
           <div class="hero-media">
-            <img src="src/assets/images/hero-banner.jpg" alt="Calm natural scene for longevity exercises" />
+            <img src="src/assets/images/hero-banner.svg" alt="Calm natural scene for longevity exercises" />
             <div class="hero-overlay">
               <h2>A Daily Ritual</h2>
               <h1>Japanese Longevity Exercises</h1>
@@ -93,6 +93,18 @@
         </header>
 
         <div class="session-content">
+          <div id="breathing-card" class="breathing-card" hidden>
+            <div class="breath-visual">
+              <div id="breath-circle" class="breath-circle" aria-hidden="true"></div>
+              <div id="breath-phase" class="breath-phase" aria-live="polite">Inhale</div>
+            </div>
+            <div class="breath-controls">
+              <label for="pacer-preset" class="breath-label">Preset</label>
+              <select id="pacer-preset" class="breath-select" aria-label="Breathing preset"></select>
+              <label class="breath-toggle"><input type="checkbox" id="pacer-tick" /> Tick</label>
+            </div>
+            <div id="breath-progress" class="breath-progress" aria-hidden="true"><div class="bar"></div></div>
+          </div>
           <div id="media" class="media" aria-live="polite">
             <video id="media-video" playsinline muted preload="metadata"></video>
             <div id="media-image-wrap">

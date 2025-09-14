@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schema/pacer-presets.schema.json",
+  "title": "LiveLong Breathing Pacer Presets",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "presets"],
+  "properties": {
+    "spec_version": { "type": "integer", "minimum": 1 },
+    "presets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "style", "pattern"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_\-]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "style": { "type": "string", "enum": ["circle", "wave", "box", "triangle"] },
+          "pattern": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["inhale_sec", "exhale_sec"],
+            "properties": {
+              "inhale_sec": { "type": "integer", "minimum": 1 },
+              "hold1_sec": { "type": "integer", "minimum": 0 },
+              "exhale_sec": { "type": "integer", "minimum": 1 },
+              "hold2_sec": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}
+

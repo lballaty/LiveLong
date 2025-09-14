@@ -1,0 +1,41 @@
+{
+  "spec_version": 1,
+  "presets": [
+    {
+      "id": "box_4_4_4_4",
+      "name": "Box Breathing (4‑4‑4‑4)",
+      "style": "box",
+      "pattern": { "inhale_sec": 4, "hold1_sec": 4, "exhale_sec": 4, "hold2_sec": 4 },
+      "notes": "Equal inhale/hold/exhale/hold; calming and balancing."
+    },
+    {
+      "id": "four_seven_eight",
+      "name": "4‑7‑8 Breathing",
+      "style": "circle",
+      "pattern": { "inhale_sec": 4, "hold1_sec": 7, "exhale_sec": 8, "hold2_sec": 0 },
+      "notes": "Promotes relaxation; exhale longer than inhale."
+    },
+    {
+      "id": "five_five",
+      "name": "5/5 Breathing",
+      "style": "wave",
+      "pattern": { "inhale_sec": 5, "hold1_sec": 0, "exhale_sec": 5, "hold2_sec": 0 },
+      "notes": "Coherent breathing at ~6 breaths per minute."
+    },
+    {
+      "id": "triangle_4_4_4",
+      "name": "Triangle Breathing (4‑4‑4)",
+      "style": "triangle",
+      "pattern": { "inhale_sec": 4, "hold1_sec": 4, "exhale_sec": 4, "hold2_sec": 0 },
+      "notes": "Inhale‑hold‑exhale; no second hold."
+    },
+    {
+      "id": "wim_hof_guided",
+      "name": "Wim Hof (guided)",
+      "style": "circle",
+      "pattern": { "inhale_sec": 2, "hold1_sec": 0, "exhale_sec": 2, "hold2_sec": 0 },
+      "notes": "Simplified guidance: ~30 deep breaths (~2s in/2s out), then long exhale hold (~60s) and short inhale hold (~15s). Use with care."
+    }
+  ]
+}
+

@@ -28,6 +28,7 @@ Notes:
 - `src/styles.css`: Base styles
 - `src/main.js`: App bootstrap script
 - `src/data/routine.json`: Routine data (validated by `schema/routine.schema.json`)
+- `src/data/pacer-presets.json`: Breathing pacer presets (validated by `schema/pacer-presets.schema.json`)
 - `src/data/achievements.json`: XP policy, levels, and badges (validated by `schema/achievements.schema.json`)
 - `src/data/goals.json`: Suggested incremental goals (validated by `schema/goals.schema.json`)
 - `sw.js`: Service worker for offline
@@ -46,6 +47,19 @@ Notes:
 
 - Validate the achievements JSON:
   - `./scripts/validate.sh -s schema/achievements.schema.json -d src/data/achievements.json`
+- Validate breathing pacer presets:
+  - `./scripts/validate.sh -s schema/pacer-presets.schema.json -d src/data/pacer-presets.json`
+
+## Dev Notes
+
+- Service worker caching during development can serve stale files.
+  - Chrome/Edge: DevTools → Application → Service Workers → Unregister, then hard reload (Cmd/Ctrl+Shift+R). Or run on a new port: `./scripts/start.sh 8081`.
+  - Safari: Enable the Develop menu, then Develop → Empty Caches and reload. You can also temporarily disable Service Workers in the Develop menu.
+- Placeholder assets are included so the UI isn’t empty if you don’t have media yet.
+  - Hero banner: `src/assets/images/hero-banner.svg`
+  - Generic placeholder: `src/assets/images/placeholder.svg`
+- Music loop (optional): place your MP3 at `src/assets/audio/calm-loop.mp3`.
+  - Any short calm loop works; volume is low by default. If absent, the app falls back to a silent/no‑op player.
 
 ## Next Steps
 

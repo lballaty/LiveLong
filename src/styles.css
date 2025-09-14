@@ -279,6 +279,31 @@ button { font-family: inherit; }
   overflow-y: auto;
   padding-bottom: 120px; /* Space for control dock */
 }
+.breathing-card {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--c-shadow);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+.breath-visual { display: grid; place-items: center; gap: var(--space-2); }
+.breath-circle {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--c-primary) 0%, var(--c-blush) 70%, var(--c-primary-soft-bg) 100%);
+  transform: scale(var(--breath-scale, 1));
+  transition: transform 100ms linear;
+}
+.breath-phase { font-weight: 600; color: var(--c-text-muted); }
+.breath-controls { display: flex; gap: var(--space-3); align-items: center; justify-content: center; flex-wrap: wrap; }
+.breath-select { padding: 0.35rem 0.5rem; border-radius: var(--r-sm); border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text); }
+.breath-label { color: var(--c-text-muted); font-size: 0.9rem; }
+.breath-toggle { color: var(--c-text-muted); display: inline-flex; gap: 0.35rem; align-items: center; }
+.breath-progress { height: 6px; background: var(--c-border); border-radius: var(--r-pill); overflow: hidden; }
+.breath-progress .bar { height: 100%; width: 0%; background: var(--c-primary); transition: width 100ms linear; }
 .media {
   aspect-ratio: 16 / 9;
   border-radius: var(--r-lg);
