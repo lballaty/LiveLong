@@ -1,0 +1,17 @@
+{
+  "name": "livelong",
+  "version": "1.0.0",
+  "description": "Public web app scaffold using vanilla HTML/CSS/JS. You can start building features directly or later migrate to Flutter Web if desired.",
+  "main": "e2e.spec.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.4.0"
+  }
+}
