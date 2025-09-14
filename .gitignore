@@ -1,0 +1,22 @@
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+
+# Node / Tooling
+node_modules/
+dist/
+build/
+.parcel-cache/
+.cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage / misc
+coverage/
+.env
+

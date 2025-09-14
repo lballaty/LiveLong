@@ -1,0 +1,38 @@
+/* LiveLong base styles */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: #0f172a;
+  background: #f8fafc;
+}
+.site-header, .site-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+.tagline { color: #475569; margin-top: 0.25rem; }
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.05);
+}
+button {
+  appearance: none;
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button:hover { background: #1d4ed8; }
+.status { margin-top: 0.75rem; color: #0ea5e9; min-height: 1.25rem; }
+
