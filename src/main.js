@@ -243,14 +243,13 @@ class LiveLongApp {
     if (!this.state.routine) return;
     const list = this.dom.previewList;
     list.innerHTML = '';
-    this.state.routine.exercises.slice(0, 5).forEach(ex => {
-    this.state.routine.exercises.slice(0, 5).forEach((ex, index) => {  
+    this.state.routine.exercises.forEach((ex, index) => {
       const li = document.createElement('li');
       li.setAttribute('role', 'button');
       li.setAttribute('tabindex', '0');
-      li.dataset.index = index;
+      li.dataset.index = String(index);
 
-      const poster = ex.media?.video?.poster || ex.media?.images?.[0] || 'src/assets/images/placeholder.jpg';
+      const poster = ex.media?.video?.poster || ex.media?.images?.[0] || 'src/assets/images/placeholder.svg';
       li.innerHTML = `
         <img src="${poster}" alt="${ex.name}" />
         <div class="ex-info">
@@ -865,7 +864,7 @@ class LiveLongApp {
         this.dom.homeView.hidden = (view !== 'home');
         this.dom.sessionView.hidden = (view !== 'session');
         this.dom.summaryView.hidden = (view !== 'summary');
-        this.dom.body.className = `mode-`;
+    this.dom.body.className = `mode-${view}`;
       }
     
       _populatePreviewList() {
@@ -876,11 +875,11 @@ class LiveLongApp {
           const li = document.createElement('li');
           li.setAttribute('role', 'button');
           li.setAttribute('tabindex', '0');
-          li.dataset.index = index;
+          li.dataset.index = String(index);
     
           const poster = ex.media?.video?.poster || ex.media?.images?.[0] || 'src/assets/images/placeholder.svg';
           li.innerHTML = `
-            <img src="" alt="${ex.name}" />
+            <img src="${poster}" alt="${ex.name}" />
             <div class="ex-info">
               <div class="ex-name">${ex.name}</div>
               <div class="ex-duration">${ex.type === 'time' ? `${ex.duration_sec}s` : `${ex.target_reps} reps`}</div>
