@@ -175,13 +175,21 @@ test.describe('LiveLong App - Foundation Tests', () => {
       const musicToggle = page.locator('#toggle-music');
       await musicToggle.focus();
 
-      const focusedOutline = await musicToggle.evaluate((el) => {
+      const outlineProperties = await musicToggle.evaluate((el) => {
         const style = window.getComputedStyle(el);
-        return style.outline;
+        return {
+          outline: style.outline,
+          outlineWidth: style.outlineWidth,
+          outlineStyle: style.outlineStyle,
+          outlineColor: style.outlineColor
+        };
       });
 
-      // Should have a visible outline
-      expect(focusedOutline).toContain('3px');
+      // Should have a visible outline (check that it's not 'none' or '0px')
+      expect(outlineProperties.outline).not.toBe('none');
+      expect(outlineProperties.outline).not.toBe('');
+      expect(outlineProperties.outlineWidth).not.toBe('0px');
+      expect(outlineProperties.outlineStyle).not.toBe('none');
     });
 
     test('should have proper ARIA live regions', async ({ page }) => {

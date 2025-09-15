@@ -133,6 +133,9 @@ input:focus,
 [tabindex]:focus {
   outline: 3px solid var(--color-primary) !important;
   outline-offset: 2px !important;
+  /* Remove any browser default outlines that might interfere */
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 /* Support for browsers without focus-visible */
@@ -284,6 +287,11 @@ input:focus,
   background: var(--color-primary);
   color: white;
   border-color: var(--color-primary);
+}
+
+.setting-toggle:focus {
+  outline: 3px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
 }
 
 .toggle-icon {
