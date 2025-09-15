@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveLong - Japanese Longevity Exercises</title>
+    <meta name="description" content="Gentle Japanese longevity exercises for strength, balance, and independence">
+
+    <!-- Accessibility and Performance -->
+    <link rel="preload" href="src/styles/main.css" as="style">
+    <link rel="stylesheet" href="src/styles/main.css">
+
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e8f2ff">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="src/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="src/assets/icons/favicon.png">
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading-overlay" aria-hidden="false">
+        <div class="loading-content">
+            <div class="loading-spinner" aria-label="Loading exercises"></div>
+            <p class="loading-text">Loading your exercises...</p>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="app" aria-hidden="true">
+
+        <!-- Home View -->
+        <main id="home-view" class="view home-view" role="main">
+            <header class="hero-header">
+                <h1 class="hero-title">LiveLong Exercises</h1>
+                <p class="hero-subtitle">11 gentle Japanese movements for strength, balance, and independence</p>
+            </header>
+
+            <!-- Quick Settings -->
+            <section class="quick-settings" aria-label="Exercise preferences">
+                <h2 class="section-title">Settings</h2>
+                <div class="settings-grid">
+                    <button id="toggle-music" class="setting-toggle" role="switch" aria-pressed="false" aria-label="Background music">
+                        <span class="toggle-icon">🎵</span>
+                        <span class="toggle-label">Music</span>
+                    </button>
+
+                    <button id="toggle-voice" class="setting-toggle" role="switch" aria-pressed="false" aria-label="Voice guidance">
+                        <span class="toggle-icon">🔊</span>
+                        <span class="toggle-label">Voice</span>
+                    </button>
+
+                    <button id="toggle-video" class="setting-toggle" role="switch" aria-pressed="false" aria-label="Video demonstrations">
+                        <span class="toggle-icon">📹</span>
+                        <span class="toggle-label">Video</span>
+                    </button>
+
+                    <div class="setting-group">
+                        <label for="text-size" class="setting-label">Text Size</label>
+                        <select id="text-size" class="setting-select">
+                            <option value="normal">Normal</option>
+                            <option value="large">Large</option>
+                            <option value="extra-large">Extra Large</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exercise Preview -->
+            <section class="exercise-preview" aria-label="Exercise sequence">
+                <div class="preview-header">
+                    <h2 class="section-title">Your Exercise Routine</h2>
+                    <div class="total-time" id="total-time" aria-label="Total session time">
+                        <span class="time-icon">⏱️</span>
+                        <span class="time-text">Total: 25 minutes</span>
+                    </div>
+                </div>
+
+                <ol class="exercise-list" id="exercise-list" role="list">
+                    <!-- Exercises will be populated by JavaScript -->
+                </ol>
+
+                <div class="start-section">
+                    <button id="start-routine" class="start-button" aria-label="Begin exercise routine">
+                        <span class="button-icon">▶️</span>
+                        <span class="button-text">Start Exercises</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Session View -->
+        <main id="session-view" class="view session-view" role="main" hidden>
+            <header class="session-header">
+                <button id="back-button" class="nav-button" aria-label="Return to home">
+                    <span class="button-icon">◀️</span>
+                    <span class="button-text">Back</span>
+                </button>
+
+                <div class="session-progress">
+                    <div class="progress-info">
+                        <span id="current-step" class="step-count">1 / 11</span>
+                        <span id="remaining-time" class="time-remaining">25:00</span>
+                    </div>
+                    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="exercise-content">
+                <!-- Exercise Title -->
+                <div class="exercise-header">
+                    <h1 id="exercise-title" class="exercise-title">Get Ready...</h1>
+                    <div id="exercise-timer" class="exercise-timer" aria-live="polite">5</div>
+                </div>
+
+                <!-- Media Area -->
+                <div id="media-container" class="media-container">
+                    <video id="exercise-video" class="exercise-video" muted playsinline hidden>
+                        <p>Your browser doesn't support video.</p>
+                    </video>
+                    <img id="exercise-image" class="exercise-image" alt="" hidden>
+                    <div id="media-placeholder" class="media-placeholder" hidden>
+                        <span class="placeholder-icon">🧘</span>
+                        <span class="placeholder-text">Follow the instructions</span>
+                    </div>
+                </div>
+
+                <!-- Exercise Instructions -->
+                <div class="exercise-instructions">
+                    <ul id="exercise-cues" class="cue-list" aria-live="polite">
+                        <!-- Cues will be populated by JavaScript -->
+                    </ul>
+                </div>
+
+                <!-- Rep Counter (for rep-based exercises) -->
+                <div id="rep-counter" class="rep-counter" hidden>
+                    <button id="rep-button" class="rep-button" aria-label="Count repetition">
+                        <span class="rep-count" id="rep-count">0</span>
+                        <span class="rep-target"> / <span id="rep-target">10</span></span>
+                        <span class="rep-label">Tap to count</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <button id="prev-button" class="control-button" aria-label="Previous exercise" disabled>
+                    <span class="button-icon">⏮️</span>
+                    <span class="button-text">Previous</span>
+                </button>
+
+                <button id="play-pause-button" class="control-button primary" aria-label="Play">
+                    <span id="play-icon" class="button-icon">▶️</span>
+                    <span id="pause-icon" class="button-icon" hidden>⏸️</span>
+                    <span id="play-pause-text" class="button-text">Play</span>
+                </button>
+
+                <button id="next-button" class="control-button" aria-label="Next exercise">
+                    <span class="button-icon">⏭️</span>
+                    <span class="button-text">Next</span>
+                </button>
+            </div>
+
+            <!-- Pause Overlay -->
+            <div id="pause-overlay" class="pause-overlay" hidden>
+                <div class="pause-content">
+                    <h2 class="pause-title">Paused</h2>
+                    <p class="pause-message">Take a moment to rest. Press play when ready to continue.</p>
+                    <button id="resume-button" class="resume-button">
+                        <span class="button-icon">▶️</span>
+                        <span class="button-text">Resume</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Summary View -->
+        <main id="summary-view" class="view summary-view" role="main" hidden>
+            <header class="summary-header">
+                <h1 class="summary-title">Well Done! 🎉</h1>
+                <p class="summary-subtitle">You completed all 11 exercises</p>
+            </header>
+
+            <section class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value" id="session-duration">25:00</div>
+                    <div class="stat-label">Total Time</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-value">11</div>
+                    <div class="stat-label">Exercises</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🌟</div>
+                    <div class="stat-value">Complete</div>
+                    <div class="stat-label">Session</div>
+                </div>
+            </section>
+
+            <section class="summary-actions">
+                <button id="restart-button" class="action-button primary">
+                    <span class="button-icon">🔄</span>
+                    <span class="button-text">Do Again</span>
+                </button>
+
+                <button id="home-button" class="action-button">
+                    <span class="button-icon">🏠</span>
+                    <span class="button-text">Home</span>
+                </button>
+            </section>
+
+            <section class="encouragement">
+                <p class="encouragement-text">Practice daily, gently, and with joy. These movements support strength, balance, and clarity of mind.</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Status announcements for screen readers -->
+    <div id="announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Scripts -->
+    <script src="src/app/main.js" defer></script>
+</body>
+</html>
