@@ -49,6 +49,53 @@ export default function UnifiedTimerDisplay() {
     return Math.min((elapsedSeconds / totalSeconds) * 100, 100);
   };
 
+  const getPhaseProgressPercentage = (): number => {
+    if (!timerState || !activeProfile) return 0;
+
+    // For series, calculate progress within current phase
+    if (activeProfile.type === 'series' && timerState.seriesState) {
+      const currentStep = timerState.seriesState.currentStep;
+      if (!currentStep) return 0;
+
+      const isRest = timerState.seriesState.currentPhase === 'rest';
+      const phaseDuration = isRest
+        ? (currentStep.restMinutes * 60 + currentStep.restSeconds)
+        : (currentStep.durationMinutes * 60 + currentStep.durationSeconds);
+
+      if (phaseDuration === 0) return 0;
+      const elapsed = phaseDuration - timerState.remainingSeconds;
+      return Math.min((elapsed / phaseDuration) * 100, 100);
+    }
+
+    // For simple timers, calculate work/break phase progress
+    if (activeProfile.type === 'simple' && timerState.simpleState) {
+      const isWork = timerState.simpleState.isWorkPhase;
+      const phaseDuration = isWork
+        ? ((activeProfile.simpleDuration?.workMinutes || 0) * 60 + (activeProfile.simpleDuration?.workSeconds || 0))
+        : ((activeProfile.simpleDuration?.breakMinutes || 0) * 60 + (activeProfile.simpleDuration?.breakSeconds || 0));
+
+      if (phaseDuration === 0) return 0;
+      const elapsed = phaseDuration - timerState.remainingSeconds;
+      return Math.min((elapsed / phaseDuration) * 100, 100);
+    }
+
+    return 0;
+  };
+
+  const isRestPhase = (): boolean => {
+    if (!timerState) return false;
+
+    if (activeProfile?.type === 'series' && timerState.seriesState) {
+      return timerState.seriesState.currentPhase === 'rest';
+    }
+
+    if (activeProfile?.type === 'simple' && timerState.simpleState) {
+      return !timerState.simpleState.isWorkPhase;
+    }
+
+    return false;
+  };
+
   const getPhaseDescription = (): string => {
     if (!timerState || !activeProfile) return '';
 
@@ -139,26 +186,50 @@ export default function UnifiedTimerDisplay() {
             {/* Timer Display */}
             <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
               <div className="relative w-64 h-64 mx-auto mb-6">
-                {/* Progress Circle */}
-                <svg className="transform -rotate-90 w-64 h-64">
+                {/* Dual Progress Circles */}
+                <svg className="transform -rotate-90 w-64 h-64 absolute">
+                  {/* Outer Circle - Overall Progress */}
                   <circle
                     cx="128"
                     cy="128"
                     r="120"
                     stroke="#e5e7eb"
-                    strokeWidth="12"
+                    strokeWidth="8"
                     fill="none"
                   />
                   <circle
                     cx="128"
                     cy="128"
                     r="120"
-                    stroke={activeProfile?.color || '#3b82f6'}
-                    strokeWidth="12"
+                    stroke="#6b7280"
+                    strokeWidth="8"
                     fill="none"
                     strokeDasharray={`${2 * Math.PI * 120}`}
                     strokeDashoffset={`${
                       2 * Math.PI * 120 * (1 - getProgressPercentage() / 100)
+                    }`}
+                    className="transition-all duration-1000 opacity-50"
+                  />
+
+                  {/* Inner Circle - Phase Progress (Work/Exercise or Rest/Break) */}
+                  <circle
+                    cx="128"
+                    cy="128"
+                    r="100"
+                    stroke="#f3f4f6"
+                    strokeWidth="16"
+                    fill="none"
+                  />
+                  <circle
+                    cx="128"
+                    cy="128"
+                    r="100"
+                    stroke={isRestPhase() ? '#ca8a04' : '#22c55e'}
+                    strokeWidth="16"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 100}`}
+                    strokeDashoffset={`${
+                      2 * Math.PI * 100 * (1 - getPhaseProgressPercentage() / 100)
                     }`}
                     className="transition-all duration-1000"
                   />
@@ -166,6 +237,14 @@ export default function UnifiedTimerDisplay() {
 
                 {/* Timer Text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-3 h-3 rounded-full ${
+                      isRestPhase() ? 'bg-yellow-600' : 'bg-green-500'
+                    } animate-pulse`} />
+                    <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      {isRestPhase() ? 'Rest' : 'Active'}
+                    </span>
+                  </div>
                   <div
                     data-testid="time-display"
                     className="text-5xl font-bold text-gray-800"
@@ -175,6 +254,22 @@ export default function UnifiedTimerDisplay() {
                   <div className="text-sm text-gray-500 mt-2">
                     {getPhaseDescription()}
                   </div>
+                </div>
+              </div>
+
+              {/* Legend for circles */}
+              <div className="flex justify-center gap-6 mb-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full" />
+                  <span className="text-gray-600">Active Phase</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-600 rounded-full" />
+                  <span className="text-gray-600">Rest Phase</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-500 rounded-full" />
+                  <span className="text-gray-600">Total Progress</span>
                 </div>
               </div>
 

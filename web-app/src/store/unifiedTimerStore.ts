@@ -24,6 +24,7 @@ interface UnifiedTimerStore {
   initializeProfiles: () => void;
   selectProfile: (profileId: string) => void;
   createCustomProfile: (profile: UnifiedProfile) => void;
+  updateProfile: (profileId: string, updates: Partial<UnifiedProfile>) => void;
   deleteCustomProfile: (profileId: string) => void;
 
   // Timer controls
@@ -121,6 +122,31 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     profile.isCustom = true;
     profile.isDefault = false;
     set({ customProfiles: [...customProfiles, profile] });
+  },
+
+  updateProfile: (profileId: string, updates: Partial<UnifiedProfile>) => {
+    const { profiles, customProfiles, activeProfile } = get();
+
+    // Update in profiles array
+    const updatedProfiles = profiles.map(p =>
+      p.id === profileId ? { ...p, ...updates, id: p.id, type: p.type } : p
+    );
+
+    // Update in custom profiles array
+    const updatedCustomProfiles = customProfiles.map(p =>
+      p.id === profileId ? { ...p, ...updates, id: p.id, type: p.type } : p
+    );
+
+    // Update active profile if it's the one being edited
+    const updatedActiveProfile = activeProfile?.id === profileId
+      ? { ...activeProfile, ...updates, id: activeProfile.id, type: activeProfile.type }
+      : activeProfile;
+
+    set({
+      profiles: updatedProfiles,
+      customProfiles: updatedCustomProfiles,
+      activeProfile: updatedActiveProfile
+    });
   },
 
   deleteCustomProfile: (profileId: string) => {

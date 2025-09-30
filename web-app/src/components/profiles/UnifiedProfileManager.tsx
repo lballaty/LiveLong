@@ -13,10 +13,11 @@ interface ProfileCardProps {
   profile: UnifiedProfile;
   isActive: boolean;
   onSelect: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isActive, onSelect, onDelete }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isActive, onSelect, onEdit, onDelete }) => {
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -73,18 +74,32 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isActive, onSelect, 
             )}
           </div>
         </div>
-        {profile.isCustom && onDelete && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded"
-            aria-label="Delete profile"
-          >
-            🗑️
-          </button>
-        )}
+        <div className="flex gap-1">
+          {onEdit && profile.type === 'simple' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="p-1 text-blue-500 hover:bg-blue-50 rounded"
+              aria-label="Edit profile"
+            >
+              ✏️
+            </button>
+          )}
+          {profile.isCustom && onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="p-1 text-red-500 hover:bg-red-50 rounded"
+              aria-label="Delete profile"
+            >
+              🗑️
+            </button>
+          )}
+        </div>
       </div>
       {profile.type === 'series' && profile.seriesConfig && (
         <div className="mt-3 pt-3 border-t border-gray-100">
@@ -261,10 +276,12 @@ export default function UnifiedProfileManager() {
     initializeProfiles,
     selectProfile,
     createCustomProfile,
+    updateProfile,
     deleteCustomProfile
   } = useUnifiedTimerStore();
 
   const [showForm, setShowForm] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<UnifiedProfile | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'simple' | 'series' | 'breathing'>('all');
 
   useEffect(() => {
@@ -321,6 +338,7 @@ export default function UnifiedProfileManager() {
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
                 onSelect={() => selectProfile(profile.id)}
+                onEdit={() => setEditingProfile(profile)}
                 onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
               />
             ))}
@@ -367,6 +385,122 @@ export default function UnifiedProfileManager() {
           onClose={() => setShowForm(false)}
           onSave={createCustomProfile}
         />
+      )}
+
+      {editingProfile && editingProfile.type === 'simple' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Timer: {editingProfile.name}</h2>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const updates: Partial<UnifiedProfile> = {
+                name: formData.get('name') as string,
+                description: formData.get('description') as string,
+                simpleDuration: {
+                  workMinutes: parseInt(formData.get('workMinutes') as string) || 0,
+                  workSeconds: parseInt(formData.get('workSeconds') as string) || 0,
+                  breakMinutes: parseInt(formData.get('breakMinutes') as string) || 0,
+                  breakSeconds: parseInt(formData.get('breakSeconds') as string) || 0,
+                },
+                totalDurationSeconds:
+                  (parseInt(formData.get('workMinutes') as string) || 0) * 60 +
+                  (parseInt(formData.get('workSeconds') as string) || 0) +
+                  (parseInt(formData.get('breakMinutes') as string) || 0) * 60 +
+                  (parseInt(formData.get('breakSeconds') as string) || 0)
+              };
+              updateProfile(editingProfile.id, updates);
+              setEditingProfile(null);
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editingProfile.name}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    name="description"
+                    defaultValue={editingProfile.description}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Work Duration</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      name="workMinutes"
+                      defaultValue={editingProfile.simpleDuration?.workMinutes || 0}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md"
+                      min="0"
+                      max="999"
+                    />
+                    <span className="py-2">min</span>
+                    <input
+                      type="number"
+                      name="workSeconds"
+                      defaultValue={editingProfile.simpleDuration?.workSeconds || 0}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md"
+                      min="0"
+                      max="59"
+                    />
+                    <span className="py-2">sec</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Break Duration</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      name="breakMinutes"
+                      defaultValue={editingProfile.simpleDuration?.breakMinutes || 0}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md"
+                      min="0"
+                      max="999"
+                    />
+                    <span className="py-2">min</span>
+                    <input
+                      type="number"
+                      name="breakSeconds"
+                      defaultValue={editingProfile.simpleDuration?.breakSeconds || 0}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md"
+                      min="0"
+                      max="59"
+                    />
+                    <span className="py-2">sec</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingProfile(null)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
