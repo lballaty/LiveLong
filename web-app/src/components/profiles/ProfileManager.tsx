@@ -10,6 +10,8 @@ import { useFocusTimerStore } from '@/store/focusTimerStore';
 import { JAPANESE_EXERCISE_SERIES, getAllJapaneseExerciseSeries } from '@/data/japanese-exercise-series';
 import { getAllBreathingProfiles } from '@/data/breathing-profiles';
 
+// Debug imports
+
 // Simplified UI Profile interface for ProfileManager component
 interface UIProfile {
   id: string;
@@ -263,21 +265,31 @@ export default function ProfileManager() {
   const { setActiveTimerProfile, initializeTimerWithSeconds } = useFocusTimerStore();
 
   useEffect(() => {
+
     // Load profiles from localStorage
     const savedProfiles = localStorage.getItem('timerProfiles');
+
     let loadedProfiles = DEFAULT_PROFILES;
     if (savedProfiles) {
-      loadedProfiles = JSON.parse(savedProfiles);
+      try {
+        loadedProfiles = JSON.parse(savedProfiles);
+      } catch (error) {
+        console.error('❌ Error parsing savedProfiles:', error);
+        loadedProfiles = DEFAULT_PROFILES;
+      }
       setProfiles(loadedProfiles);
     }
 
+
     // Set selected profile based on what's currently saved (for UI display only)
     const lastProfileId = localStorage.getItem('lastSelectedProfile');
+
     if (lastProfileId) {
       const profile = loadedProfiles.find(p => p.id === lastProfileId);
       if (profile) {
         setSelectedProfile(profile);
         setActiveTimerProfile(profile); // Update store for UI consistency
+      } else {
       }
     }
   }, []);
@@ -394,6 +406,8 @@ export default function ProfileManager() {
       exerciseSteps: []
     });
   };
+
+  // Add render-time logging
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 max-w-4xl mx-auto">

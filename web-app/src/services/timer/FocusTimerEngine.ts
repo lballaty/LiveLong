@@ -46,7 +46,7 @@ export class FocusTimerEngine implements ITimerController {
       this.backgroundTimerService = getBackgroundTimerService();
 
       // Check if we're on iOS and should use worker
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
       const isPWA = window.matchMedia('(display-mode: standalone)').matches;
 
       this.useWebWorker = (isIOS || isPWA) && this.backgroundTimerService.isWorkerSupported();
@@ -61,7 +61,7 @@ export class FocusTimerEngine implements ITimerController {
         });
 
         this.workerCompletionUnsubscribe = this.backgroundTimerService.subscribeToCompletion(() => {
-          this.handleTimerCompletion();
+          this.completeTimerSession();
         });
       }
     } catch (error) {
@@ -228,9 +228,13 @@ export class FocusTimerEngine implements ITimerController {
       state: this.currentTimerState,
       totalSeconds: this.plannedDurationSeconds,
       remainingSeconds: this.remainingDurationSeconds,
+      elapsedSeconds: this.plannedDurationSeconds - this.remainingDurationSeconds,
       progress: this.plannedDurationSeconds > 0
         ? (this.plannedDurationSeconds - this.remainingDurationSeconds) / this.plannedDurationSeconds
-        : 0
+        : 0,
+      startedAt: this.timerStartTimestamp ? new Date(this.timerStartTimestamp) : null,
+      pausedAt: this.pausedAtTimestamp ? new Date(this.pausedAtTimestamp) : null,
+      completedAt: this.currentTimerState === TimerState.COMPLETED ? new Date() : null
     };
   }
 
