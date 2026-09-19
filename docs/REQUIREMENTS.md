@@ -3,37 +3,30 @@
 ## 1. Functional Requirements
 
 ### Core Features
-- [ ] Feature 1: [Description]
-- [ ] Feature 2: [Description]
-- [ ] Feature 3: [Description]
+- [ ] **Focus Timers**: Support Pomodoro (25 min), Deep Work (90 min), and custom duration setups.
+- [ ] **Breathing Exercises**: Implement visual guides for Box Breathing (4-4-4-4), 4-7-8 Relaxation, and basic deep breathing.
+- [ ] **Longevity Practices**: Provide guides/prompts for Rajio Taiso, Tai Chi Morning, Shinrin-yoku, Ikigai Reflection, and Zazen Sitting.
 
 ### User Stories
-- [ ] As a [user type], I want [goal] so that [benefit]
-- [ ] As a [user type], I want [goal] so that [benefit]
+- [ ] As a user, I want to start a Pomodoro timer so that I can focus on my tasks for 25 minutes uninterrupted.
+- [ ] As a user, I want to follow a breathing visualizer so that I can destress using the 4-7-8 technique.
+- [ ] As a user, I want to be able to install this app on my phone as a PWA so that I can use it offline and access it quickly.
 
 ## 2. Non-Functional Requirements
 
 ### Performance
-- [ ] Response time < 200ms for API calls
-- [ ] Support 1000 concurrent users
-- [ ] 99.9% uptime
+- [ ] The app should load quickly and smoothly handle timer intervals without drift.
+- [ ] UI animations (especially for breathing exercises) must run at a smooth 60fps.
 
-### Security
-- [ ] Authentication and authorization
-- [ ] Data encryption at rest and in transit
-- [ ] GDPR compliance
-
-### Scalability
-- [ ] Horizontal scaling capability
-- [ ] Database sharding support
-- [ ] Caching strategy
+### Reliability & Accessibility
+- [ ] The application must work offline once installed (PWA).
+- [ ] Colors and contrast must support accessibility standards.
 
 ### Maintainability
-- [ ] Code coverage > 80%
-- [ ] Comprehensive documentation
-- [ ] Automated testing
+- [ ] Code coverage > 80%.
+- [ ] TDD (Test-Driven Development) approach must be maintained.
 
 ---
 
-**Status**: Draft
-**Last Updated**: $(date +%Y-%m-%d)
+**Status**: Defined
+**Last Updated**: 2026-09-17

@@ -2,59 +2,45 @@
 
 ## 1. System Overview
 
-[Add high-level system description]
+LiveLong ⊹ is a standalone web application requiring no backend API for its core functionality. It is designed to be hosted on static hosting services (e.g., GitHub Pages, Vercel, Netlify).
 
-## 2. Architecture
-
-### System Components
-- **Component 1**: [Description]
-- **Component 2**: [Description]
-- **Component 3**: [Description]
-
-### Technology Stack
-- **Backend**: [Technology]
-- **Frontend**: [Technology]
-- **Database**: [Technology]
-- **Infrastructure**: [Technology]
+## 2. Technology Stack
+- **Frontend**: HTML5, CSS3, JavaScript (framework TBD).
+- **Tooling**: Node.js, npm, Playwright (for testing).
 
 ## 3. Data Models
 
-### Entity 1
-```
-{
-  "id": "string",
-  "name": "string",
-  "created_at": "timestamp"
+### Timer Configuration
+```typescript
+interface TimerConfig {
+  id: string;
+  name: string; // e.g., "Pomodoro", "Deep Work"
+  durationSeconds: number;
 }
 ```
 
-## 4. API Endpoints
+### Exercise Configuration
+```typescript
+interface BreathingPhase {
+  name: "inhale" | "hold" | "exhale" | "rest";
+  durationSeconds: number;
+}
 
-### GET /api/resource
-- **Description**: [Purpose]
-- **Parameters**: [List]
-- **Response**: [Format]
-- **Status Codes**: 200, 400, 404, 500
+interface BreathingExercise {
+  id: string;
+  name: string;
+  phases: BreathingPhase[];
+}
+```
 
-### POST /api/resource
-- **Description**: [Purpose]
-- **Body**: [Format]
-- **Response**: [Format]
-- **Status Codes**: 201, 400, 500
+## 4. Business Logic
 
-## 5. Business Logic
-
-### Process Flow 1
-1. Step 1
-2. Step 2
-3. Step 3
-
-## 6. Integration Points
-
-- **External Service 1**: [Purpose and usage]
-- **External Service 2**: [Purpose and usage]
+### Timer Execution Flow
+1. User selects a timer preset.
+2. Timer counts down. If page is backgrounded, calculate elapsed time based on timestamps to adjust for browser throttling.
+3. Upon completion, play an audio chime and update user statistics.
 
 ---
 
-**Status**: Draft
-**Last Updated**: $(date +%Y-%m-%d)
+**Status**: Defined
+**Last Updated**: 2026-09-17
