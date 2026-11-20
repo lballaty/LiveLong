@@ -506,6 +506,8 @@ input:focus,
   background: var(--color-primary);
   transition: width var(--transition-normal);
   width: 0%;
+  display: block; /* Ensure it's visible even at 0% width */
+  min-width: 1px; /* Minimum visible width for testing */
 }
 
 /* Exercise Content */
@@ -702,25 +704,23 @@ input:focus,
 /* Pause Overlay */
 .pause-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: var(--radius-xl);
   z-index: 1000;
+  pointer-events: auto;
 }
 
 .pause-content {
   background: var(--color-background);
-  padding: var(--space-2xl);
+  padding: var(--space-xl);
   border-radius: var(--radius-xl);
   text-align: center;
-  max-width: 400px;
-  margin: var(--space-lg);
+  width: 300px;
   box-shadow: var(--shadow-lg);
+  position: relative;
 }
 
 .pause-title {

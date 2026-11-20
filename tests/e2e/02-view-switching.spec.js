@@ -198,15 +198,15 @@ test.describe('LiveLong App - View Switching', () => {
     });
 
     test('should return to home view when back button clicked', async ({ page }) => {
-      // Click back button
-      const backButton = page.locator('#back-button');
-      await backButton.click();
-
-      // Should show confirmation dialog
+      // Set up dialog handler before clicking
       page.on('dialog', dialog => {
         expect(dialog.message()).toContain('end the session');
         dialog.accept();
       });
+
+      // Click back button
+      const backButton = page.locator('#back-button');
+      await backButton.click();
 
       // Should return to home view
       await expect(page.locator('#home-view')).toBeVisible();

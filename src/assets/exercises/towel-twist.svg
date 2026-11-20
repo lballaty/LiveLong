@@ -1,0 +1,127 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" class="exercise-svg">
+  <defs>
+    <!-- Gradient for figure -->
+    <linearGradient id="figureGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD"/>
+      <stop offset="100%" style="stop-color:#BBDEFB"/>
+    </linearGradient>
+
+    <!-- Towel gradient -->
+    <linearGradient id="towelGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFF3E0"/>
+      <stop offset="50%" style="stop-color:#FFE0B2"/>
+      <stop offset="100%" style="stop-color:#FFF3E0"/>
+    </linearGradient>
+
+    <!-- Movement arrow -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7"
+            refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FF6B35" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="#FAFAFA" rx="8"/>
+
+  <!-- Exercise title -->
+  <text x="200" y="30" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="20" font-weight="bold" fill="#333">
+    Towel Twist — Tenugui Hibiki
+  </text>
+
+  <!-- Timer circle (top right) -->
+  <g id="timerDisplay" transform="translate(350, 50)">
+    <circle cx="0" cy="0" r="25" fill="#FFF" stroke="#E0E0E0" stroke-width="2"/>
+    <text x="0" y="6" text-anchor="middle" font-size="16" font-weight="bold" fill="#333" id="timer">90</text>
+    <text x="0" y="-15" text-anchor="middle" font-size="10" fill="#666">Seconds</text>
+  </g>
+
+  <!-- Rep counter (top left) -->
+  <g id="repCounter" transform="translate(50, 50)">
+    <circle cx="0" cy="0" r="25" fill="#FFF" stroke="#E0E0E0" stroke-width="2"/>
+    <text x="0" y="6" text-anchor="middle" font-size="16" font-weight="bold" fill="#333" id="repCount">0</text>
+    <text x="0" y="-15" text-anchor="middle" font-size="10" fill="#666">Twists</text>
+  </g>
+
+  <!-- Main figure -->
+  <g id="mainFigure" transform="translate(200, 180)">
+    <!-- Body (torso) -->
+    <ellipse cx="0" cy="0" rx="25" ry="40"
+             fill="url(#figureGradient)"
+             stroke="#1976D2"
+             stroke-width="2"
+             id="torso"/>
+
+    <!-- Head -->
+    <circle cx="0" cy="-55" r="18"
+            fill="url(#figureGradient)"
+            stroke="#1976D2"
+            stroke-width="2"/>
+
+    <!-- Arms with towel -->
+    <g id="armsWithTowel">
+      <!-- Left arm -->
+      <line x1="-15" y1="-20" x2="-50" y2="-35"
+            stroke="#1976D2" stroke-width="4" stroke-linecap="round" id="leftArm"/>
+
+      <!-- Right arm -->
+      <line x1="15" y1="-20" x2="50" y2="-35"
+            stroke="#1976D2" stroke-width="4" stroke-linecap="round" id="rightArm"/>
+
+      <!-- Towel -->
+      <path d="M -50,-35 Q 0,-25 50,-35"
+            fill="none"
+            stroke="url(#towelGradient)"
+            stroke-width="8"
+            stroke-linecap="round"
+            id="towel"/>
+
+      <!-- Hands -->
+      <circle cx="-50" cy="-35" r="6" fill="#FFCC80" stroke="#F57C00" stroke-width="2"/>
+      <circle cx="50" cy="-35" r="6" fill="#FFCC80" stroke="#F57C00" stroke-width="2"/>
+    </g>
+
+    <!-- Legs -->
+    <line x1="-8" y1="35" x2="-8" y2="80"
+          stroke="#1976D2" stroke-width="6" stroke-linecap="round"/>
+    <line x1="8" y1="35" x2="8" y2="80"
+          stroke="#1976D2" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Feet -->
+    <ellipse cx="-8" cy="85" rx="12" ry="5" fill="#333"/>
+    <ellipse cx="8" cy="85" rx="12" ry="5" fill="#333"/>
+  </g>
+
+  <!-- Movement indicator arrows -->
+  <g id="movementArrows">
+    <!-- Left twist arrow -->
+    <path d="M 120 120 Q 90 90 120 60"
+          fill="none"
+          stroke="#FF6B35"
+          stroke-width="3"
+          marker-end="url(#arrowhead)"
+          id="leftArrow"
+          opacity="0"/>
+
+    <!-- Right twist arrow -->
+    <path d="M 280 120 Q 310 90 280 60"
+          fill="none"
+          stroke="#FF6B35"
+          stroke-width="3"
+          marker-end="url(#arrowhead)"
+          id="rightArrow"
+          opacity="0"/>
+  </g>
+
+  <!-- Instructions -->
+  <text x="200" y="270" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="16" fill="#666" id="instruction">
+    Hold towel shoulder-width, twist gently left and right
+  </text>
+
+  <!-- Direction indicator -->
+  <text x="200" y="290" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="14" font-weight="bold" fill="#FF6B35" id="direction">
+    Get Ready
+  </text>
+</svg>
