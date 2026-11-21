@@ -46,11 +46,15 @@ test.describe('LiveLong Practice & Timer Functionality', () => {
     expect(await page.textContent('[data-testid="time-display"]')).toBe('00:30');
   });
 
-  test('should switch standing/chair and front/side/both animation views', async ({ page }) => {
-    await page.click('button:has-text("Chair")');
-    await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('Chair');
+  test('should switch standing/chair and front/side/both animation views in Settings', async ({ page }) => {
+    await page.click('nav button:has-text("Settings")');
+    await expect(page.locator('[data-testid="settings-view"]')).toBeVisible();
 
-    await page.click('button:has-text("Both")');
+    await page.click('button:has-text("Chair-Based")');
+    await page.click('button:has-text("Front + Side")');
+
+    await page.click('nav button:has-text("Practice")');
+    await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('Chair');
     await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('front view');
     await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('side view');
   });

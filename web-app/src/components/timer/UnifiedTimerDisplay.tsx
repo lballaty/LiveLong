@@ -1,5 +1,5 @@
 // File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/web-app/src/components/timer/UnifiedTimerDisplay.tsx
-// Description: Unified 4-view LiveLong PWA shell (Practice, Practices, Progress, Settings)
+// Description: Studio-HUD 4-view LiveLong PWA shell (Practice, Practices, Progress, Settings)
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2025-10-01
 
@@ -21,7 +21,6 @@ export default function UnifiedTimerDisplay() {
     activeProfile,
     timerState,
     preferences,
-    updatePreferences,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -74,20 +73,6 @@ export default function UnifiedTimerDisplay() {
 
   const getPhaseProgressPercentage = (): number => {
     if (!timerState || !activeProfile) return 0;
-
-    if (activeProfile.type === 'series' && timerState.seriesState) {
-      const currentStep = timerState.seriesState.currentStep;
-      if (!currentStep) return 0;
-
-      const isRest = timerState.seriesState.currentPhase === 'rest';
-      const phaseDuration = isRest
-        ? currentStep.restMinutes * 60 + currentStep.restSeconds
-        : currentStep.durationMinutes * 60 + currentStep.durationSeconds;
-
-      if (phaseDuration === 0) return 0;
-      const elapsed = phaseDuration - timerState.remainingSeconds;
-      return Math.min((elapsed / phaseDuration) * 100, 100);
-    }
 
     if (activeProfile.type === 'simple' && timerState.simpleState) {
       const isWork = timerState.simpleState.isWorkPhase;
@@ -170,15 +155,87 @@ export default function UnifiedTimerDisplay() {
   const currentStepIndex = timerState?.seriesState?.currentStepIndex ?? 0;
   const currentStep = timerState?.seriesState?.currentStep;
   const nextStep = currentStepIndex + 1 < steps.length ? steps[currentStepIndex + 1] : null;
+  const seriesPhase = timerState?.seriesState?.currentPhase || 'exercise';
+
+  const currentStepExTotal = currentStep
+    ? currentStep.durationMinutes * 60 + currentStep.durationSeconds
+    : 0;
+  const currentStepRestTotal = currentStep
+    ? currentStep.restMinutes * 60 + currentStep.restSeconds
+    : 0;
+
+  const exerciseProgressPct = (() => {
+    if (!timerState || currentStepExTotal === 0) return 0;
+    if (seriesPhase === 'rest' || seriesPhase === 'cooldown') return 100;
+    if (seriesPhase === 'warmup') return 0;
+    return Math.min(((currentStepExTotal - timerState.remainingSeconds) / currentStepExTotal) * 100, 100);
+  })();
+
+  const restProgressPct = (() => {
+    if (!timerState || currentStepRestTotal === 0 || seriesPhase !== 'rest') return 0;
+    return Math.min(((currentStepRestTotal - timerState.remainingSeconds) / currentStepRestTotal) * 100, 100);
+  })();
+
+  const renderControlButtons = () => (
+    <div className="flex gap-2">
+      {timerState?.status === 'idle' && (
+        <button
+          data-testid="start-focus-button"
+          onClick={startTimer}
+          className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold text-sm"
+        >
+          Start
+        </button>
+      )}
+
+      {timerState?.status === 'running' && (
+        <>
+          <button
+            data-testid="pause-button"
+            onClick={pauseTimer}
+            className="flex-1 px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold text-sm"
+          >
+            Pause
+          </button>
+          <button
+            data-testid="stop-button"
+            onClick={stopTimer}
+            className="flex-1 px-5 py-3 bg-slate-200 text-slate-800 rounded-xl hover:bg-slate-300 transition-colors font-semibold text-sm"
+          >
+            Stop
+          </button>
+        </>
+      )}
+
+      {timerState?.status === 'paused' && (
+        <>
+          <button
+            data-testid="resume-button"
+            onClick={resumeTimer}
+            className="flex-1 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold text-sm"
+          >
+            Resume
+          </button>
+          <button
+            data-testid="stop-button"
+            onClick={stopTimer}
+            className="flex-1 px-5 py-3 bg-slate-200 text-slate-800 rounded-xl hover:bg-slate-300 transition-colors font-semibold text-sm"
+          >
+            Stop
+          </button>
+        </>
+      )}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50" style={getBackgroundStyle()}>
-      {/* Header & 4-View Navigation */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-between items-center gap-2 py-3">
-            <h1 className="text-xl font-semibold text-gray-900">LiveLong ⊹</h1>
-            <nav className="flex items-center gap-1 sm:gap-2" aria-label="Primary">
+    <div className="min-h-screen flex flex-col bg-slate-100" style={getBackgroundStyle()}>
+      {/* Compact Header & 4-View Navigation */}
+      <header className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-wrap justify-between items-center gap-2 py-2.5">
+            <h1 className="text-lg font-bold text-slate-900">LiveLong ⊹</h1>
+            <nav className="flex items-center gap-1" aria-label="Primary">
               {([
                 { id: 'practice', label: 'Practice' },
                 { id: 'practices', label: 'Practices' },
@@ -188,10 +245,10 @@ export default function UnifiedTimerDisplay() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
                     activeTab === tab.id
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
                   {tab.label}
@@ -200,274 +257,324 @@ export default function UnifiedTimerDisplay() {
             </nav>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
+      <main className="flex-1 flex flex-col">
         {activeTab === 'practices' && (
-          <UnifiedProfileManager onProfileSelect={() => setActiveTab('practice')} />
+          <div className="py-4">
+            <UnifiedProfileManager onProfileSelect={() => setActiveTab('practice')} />
+          </div>
         )}
 
-        {activeTab === 'progress' && <ProgressView />}
+        {activeTab === 'progress' && (
+          <div className="py-4">
+            <ProgressView />
+          </div>
+        )}
 
-        {activeTab === 'settings' && <SettingsView />}
+        {activeTab === 'settings' && (
+          <div className="py-4">
+            <SettingsView />
+          </div>
+        )}
 
-        {activeTab === 'practice' && (
-          <div className="w-full max-w-lg">
-            {activeProfile && (
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-2">{activeProfile.icon}</div>
-                <h2 className="text-2xl font-bold text-gray-800">{activeProfile.name}</h2>
-                <p className="text-gray-600 text-sm">{activeProfile.description}</p>
+        {/* PRACTICE: Studio Workout HUD for Series */}
+        {activeTab === 'practice' && activeProfile?.type === 'series' && (
+          <div className="flex-1 max-w-6xl w-full mx-auto sm:my-4 bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden flex flex-col">
+            {/* Slim Segmented Routine Strip */}
+            <div className="px-4 sm:px-6 py-2.5 bg-slate-50 border-b border-slate-200">
+              <div className="flex justify-between items-center text-xs text-slate-500 mb-1.5">
+                <span>
+                  <strong className="text-slate-800">
+                    {activeProfile.icon} {activeProfile.name}
+                  </strong>{' '}
+                  · Step {currentStepIndex + 1} of {steps.length}
+                </span>
+                <span>{Math.round(getProgressPercentage())}% complete</span>
               </div>
-            )}
-
-            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-6">
-              {/* Exercise Animation Slot + Quick Variant/View Controls for Series */}
-              {activeProfile?.type === 'series' && currentStep && (
-                <div>
-                  <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
-                    <div className="flex gap-1">
-                      {(['standing', 'chair'] as const).map((v) => (
-                        <button
-                          key={v}
-                          type="button"
-                          onClick={() => updatePreferences({ variant: v })}
-                          className={`px-2.5 py-1 text-xs rounded border ${
-                            preferences.variant === v
-                              ? 'bg-gray-800 text-white border-gray-800'
-                              : 'bg-white text-gray-600 border-gray-200'
-                          }`}
-                        >
-                          {v === 'standing' ? 'Standing' : 'Chair'}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex gap-1">
-                      {(['front', 'side', 'both'] as const).map((vw) => (
-                        <button
-                          key={vw}
-                          type="button"
-                          onClick={() => updatePreferences({ views: vw })}
-                          className={`px-2.5 py-1 text-xs rounded border capitalize ${
-                            preferences.views === vw
-                              ? 'bg-blue-500 text-white border-blue-500'
-                              : 'bg-white text-gray-600 border-gray-200'
-                          }`}
-                        >
-                          {vw}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <ExerciseAnimationPlayer
-                    stepId={currentStep.id}
-                    stepName={currentStep.name}
-                    instructions={currentStep.instructions}
-                    animation={currentStep.animation}
-                    characterId={preferences.characterId}
-                    variant={preferences.variant}
-                    views={preferences.views}
-                    isPlaying={timerState?.status === 'running'}
-                    phase={timerState?.seriesState?.currentPhase || 'exercise'}
-                  />
-                </div>
-              )}
-
-              {/* Breathing Visualizer for Breathing Practices */}
-              {activeProfile?.type === 'breathing' && breathingPatternForVisualizer ? (
-                <BreathingVisualizer
-                  pattern={breathingPatternForVisualizer}
-                  isActive={timerState?.status === 'running'}
-                  embedded
-                  externalState={{
-                    phase: timerState?.breathingState?.currentPhase.type || 'inhale',
-                    remainingSeconds: timerState?.remainingSeconds || 0,
-                    currentCycle: timerState?.breathingState?.currentCycle || 1,
-                    totalCycles: activeProfile.breathingConfig?.cycleCount || 1,
-                  }}
-                />
-              ) : (
-                /* Dual Progress Circles for Series & Simple Timers */
-                <>
-                  <div className="relative w-56 h-56 mx-auto mb-5">
-                    <svg className="transform -rotate-90 w-56 h-56 absolute" viewBox="0 0 256 256">
-                      <circle cx="128" cy="128" r="120" stroke="#e5e7eb" strokeWidth="8" fill="none" />
-                      <circle
-                        cx="128"
-                        cy="128"
-                        r="120"
-                        stroke="#6b7280"
-                        strokeWidth="8"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 120}`}
-                        strokeDashoffset={`${2 * Math.PI * 120 * (1 - getProgressPercentage() / 100)}`}
-                        className="transition-all duration-1000 opacity-50"
-                      />
-                      <circle cx="128" cy="128" r="100" stroke="#f3f4f6" strokeWidth="16" fill="none" />
-                      <circle
-                        cx="128"
-                        cy="128"
-                        r="100"
-                        stroke={isRestPhase() ? '#ca8a04' : '#22c55e'}
-                        strokeWidth="16"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 100}`}
-                        strokeDashoffset={`${2 * Math.PI * 100 * (1 - getPhaseProgressPercentage() / 100)}`}
-                        className="transition-all duration-1000"
-                      />
-                    </svg>
-
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div
-                          className={`w-2.5 h-2.5 rounded-full ${
-                            isRestPhase() ? 'bg-yellow-600' : 'bg-green-500'
-                          } animate-pulse`}
-                        />
-                        <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                          {isRestPhase() ? 'Rest' : 'Active'}
-                        </span>
-                      </div>
-                      <div data-testid="time-display" className="text-4xl font-bold text-gray-800">
-                        {formatTime(timerState?.remainingSeconds || 0)}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1 text-center px-4">
-                        {getPhaseDescription()}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-center gap-5 mb-4 text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />
-                      <span className="text-gray-600">Active Phase</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 bg-yellow-600 rounded-full" />
-                      <span className="text-gray-600">Rest Phase</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />
-                      <span className="text-gray-600">Total Progress</span>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Guided Step Progress & Up-Next List for Series */}
-              {activeProfile?.type === 'series' && timerState?.seriesState && (
-                <div className="mb-5 pt-4 border-t border-gray-100">
-                  <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
-                    <span>
-                      Step {currentStepIndex + 1} of {steps.length}
-                    </span>
-                    {nextStep && <span>Up next: {nextStep.name}</span>}
-                  </div>
-                  <div className="flex gap-1 mb-3">
-                    {steps.map((step, index) => (
+              <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(steps.length, 1)}, minmax(0, 1fr))` }}>
+                {steps.map((step, index) => {
+                  const done = timerState?.seriesState?.completedSteps.includes(step.id);
+                  const active = index === currentStepIndex;
+                  if (active) {
+                    const hasRest = step.restMinutes * 60 + step.restSeconds > 0;
+                    return (
                       <div
                         key={step.id}
-                        className={`flex-1 h-2 rounded ${
-                          timerState.seriesState?.completedSteps.includes(step.id)
-                            ? 'bg-green-500'
-                            : index === currentStepIndex
-                            ? 'bg-blue-500'
-                            : 'bg-gray-200'
+                        className="h-1.5 grid gap-0.5"
+                        style={{ gridTemplateColumns: hasRest ? '4fr 1fr' : '1fr' }}
+                      >
+                        <div className="bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-600 transition-all duration-500"
+                            style={{ width: `${exerciseProgressPct}%` }}
+                          />
+                        </div>
+                        {hasRest && (
+                          <div className="bg-slate-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-amber-500 transition-all duration-500"
+                              style={{ width: `${restProgressPct}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={step.id}
+                      className={`h-1.5 rounded-full ${done ? 'bg-green-600' : 'bg-slate-200'}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Hero Stage + Docked HUD */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-[1.4fr_1fr]">
+              {currentStep && (
+                <ExerciseAnimationPlayer
+                  stepId={currentStep.id}
+                  stepName={currentStep.name}
+                  animation={currentStep.animation}
+                  characterId={preferences.characterId}
+                  variant={preferences.variant}
+                  views={preferences.views}
+                  isPlaying={timerState?.status === 'running'}
+                  phase={seriesPhase}
+                />
+              )}
+
+              <div className="border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-center gap-3">
+                    <div>
+                      <span
+                        className={`inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1 ${
+                          seriesPhase === 'rest' || seriesPhase === 'cooldown'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-green-100 text-green-700'
                         }`}
-                      />
-                    ))}
+                      >
+                        {seriesPhase === 'warmup'
+                          ? 'Warm Up'
+                          : seriesPhase === 'rest'
+                          ? 'Rest'
+                          : seriesPhase === 'cooldown'
+                          ? 'Cool Down'
+                          : 'Exercise'}
+                      </span>
+                      <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                        {currentStepIndex + 1}. {currentStep?.name || activeProfile.name}
+                      </h2>
+                    </div>
+                    <div
+                      data-testid="time-display"
+                      className="text-3xl sm:text-4xl font-extrabold tabular-nums text-slate-900"
+                    >
+                      {formatTime(timerState?.remainingSeconds || 0)}
+                    </div>
                   </div>
-                  <ol className="space-y-1 max-h-36 overflow-y-auto text-xs">
+
+                  {/* Dual Exercise / Rest Bar for Current Step */}
+                  <div className="my-3">
+                    <div className="flex justify-between text-[11px] font-semibold mb-1">
+                      <span className="text-green-700">
+                        Exercise ({formatTime(currentStepExTotal)})
+                      </span>
+                      <span className="text-amber-700">
+                        {currentStepRestTotal > 0
+                          ? `Rest (${formatTime(currentStepRestTotal)})`
+                          : 'Final Step'}
+                      </span>
+                    </div>
+                    <div
+                      className="grid gap-1 h-2"
+                      style={{
+                        gridTemplateColumns: currentStepRestTotal > 0 ? '4fr 1fr' : '1fr',
+                      }}
+                    >
+                      <div className="bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green-600 transition-all duration-500"
+                          style={{ width: `${exerciseProgressPct}%` }}
+                        />
+                      </div>
+                      {currentStepRestTotal > 0 && (
+                        <div className="bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-500 transition-all duration-500"
+                            style={{ width: `${restProgressPct}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-slate-600 mb-3">
+                    {seriesPhase === 'rest'
+                      ? `Relax and breathe.${nextStep ? ` Up next: ${nextStep.name}.` : ''}`
+                      : currentStep?.instructions || activeProfile.description}
+                  </p>
+
+                  {/* Desktop Step List (hidden on compact mobile to stay zero-scroll) */}
+                  <ol className="hidden md:grid gap-1 text-xs mb-4">
                     {steps.map((step, index) => {
-                      const done = timerState.seriesState?.completedSteps.includes(step.id);
+                      const done = timerState?.seriesState?.completedSteps.includes(step.id);
                       const active = index === currentStepIndex;
                       return (
                         <li
                           key={step.id}
-                          className={`flex justify-between px-2 py-1 rounded ${
+                          className={`flex justify-between px-2.5 py-1.5 rounded-lg ${
                             active
                               ? 'bg-blue-50 text-blue-700 font-semibold'
                               : done
                               ? 'text-green-700 line-through'
-                              : 'text-gray-500'
+                              : 'text-slate-500'
                           }`}
                         >
                           <span>
                             {index + 1}. {step.name}
                           </span>
-                          <span>{step.durationMinutes}m</span>
+                          <span>
+                            {step.durationMinutes}m
+                            {step.restSeconds > 0 ? ` + ${step.restSeconds}s` : ''}
+                          </span>
                         </li>
                       );
                     })}
                   </ol>
                 </div>
-              )}
 
-              {/* Control Buttons */}
-              <div className="flex justify-center gap-4 mt-4">
-                {timerState?.status === 'idle' && (
-                  <button
-                    data-testid="start-focus-button"
-                    onClick={startTimer}
-                    className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-                  >
-                    Start
-                  </button>
-                )}
-
-                {timerState?.status === 'running' && (
-                  <>
-                    <button
-                      data-testid="pause-button"
-                      onClick={pauseTimer}
-                      className="px-8 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
-                    >
-                      Pause
-                    </button>
-                    <button
-                      data-testid="stop-button"
-                      onClick={stopTimer}
-                      className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-                    >
-                      Stop
-                    </button>
-                  </>
-                )}
-
-                {timerState?.status === 'paused' && (
-                  <>
-                    <button
-                      data-testid="resume-button"
-                      onClick={resumeTimer}
-                      className="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
-                    >
-                      Resume
-                    </button>
-                    <button
-                      data-testid="stop-button"
-                      onClick={stopTimer}
-                      className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-                    >
-                      Stop
-                    </button>
-                  </>
-                )}
+                <div>
+                  {renderControlButtons()}
+                  <div className="mt-3 pt-2.5 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
+                    <span>
+                      {nextStep ? (
+                        <>
+                          Up next: <strong className="text-slate-700">{nextStep.name}</strong>
+                        </>
+                      ) : (
+                        'Last step in routine'
+                      )}
+                    </span>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('settings')}
+                        className="text-blue-600 hover:underline font-medium"
+                      >
+                        ⚙️ Figure
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('practices')}
+                        className="text-blue-600 hover:underline font-medium"
+                      >
+                        Switch
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => setActiveTab('practices')}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Choose Another Practice →
-              </button>
             </div>
           </div>
         )}
-      </div>
+
+        {/* PRACTICE: Breathing & Focus Timers */}
+        {activeTab === 'practice' && activeProfile?.type !== 'series' && (
+          <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
+            <div className="w-full max-w-md">
+              {activeProfile && (
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-2">{activeProfile.icon}</div>
+                  <h2 className="text-2xl font-bold text-slate-800">{activeProfile.name}</h2>
+                  <p className="text-slate-600 text-sm">{activeProfile.description}</p>
+                </div>
+              )}
+
+              <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-6">
+                {activeProfile?.type === 'breathing' && breathingPatternForVisualizer ? (
+                  <BreathingVisualizer
+                    pattern={breathingPatternForVisualizer}
+                    isActive={timerState?.status === 'running'}
+                    embedded
+                    externalState={{
+                      phase: timerState?.breathingState?.currentPhase.type || 'inhale',
+                      remainingSeconds: timerState?.remainingSeconds || 0,
+                      currentCycle: timerState?.breathingState?.currentCycle || 1,
+                      totalCycles: activeProfile.breathingConfig?.cycleCount || 1,
+                    }}
+                  />
+                ) : (
+                  <>
+                    <div className="relative w-56 h-56 mx-auto mb-5">
+                      <svg className="transform -rotate-90 w-56 h-56 absolute" viewBox="0 0 256 256">
+                        <circle cx="128" cy="128" r="120" stroke="#e5e7eb" strokeWidth="8" fill="none" />
+                        <circle
+                          cx="128"
+                          cy="128"
+                          r="120"
+                          stroke="#6b7280"
+                          strokeWidth="8"
+                          fill="none"
+                          strokeDasharray={`${2 * Math.PI * 120}`}
+                          strokeDashoffset={`${2 * Math.PI * 120 * (1 - getProgressPercentage() / 100)}`}
+                          className="transition-all duration-1000 opacity-50"
+                        />
+                        <circle cx="128" cy="128" r="100" stroke="#f3f4f6" strokeWidth="16" fill="none" />
+                        <circle
+                          cx="128"
+                          cy="128"
+                          r="100"
+                          stroke={isRestPhase() ? '#ca8a04' : '#22c55e'}
+                          strokeWidth="16"
+                          fill="none"
+                          strokeDasharray={`${2 * Math.PI * 100}`}
+                          strokeDashoffset={`${2 * Math.PI * 100 * (1 - getPhaseProgressPercentage() / 100)}`}
+                          className="transition-all duration-1000"
+                        />
+                      </svg>
+
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${
+                              isRestPhase() ? 'bg-yellow-600' : 'bg-green-500'
+                            } animate-pulse`}
+                          />
+                          <span className="text-xs font-medium text-slate-600 uppercase tracking-wider">
+                            {isRestPhase() ? 'Rest' : 'Active'}
+                          </span>
+                        </div>
+                        <div data-testid="time-display" className="text-4xl font-bold text-slate-800">
+                          {formatTime(timerState?.remainingSeconds || 0)}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1 text-center px-4">
+                          {getPhaseDescription()}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="mt-4">{renderControlButtons()}</div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  onClick={() => setActiveTab('practices')}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Choose Another Practice →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/exercises/ExerciseAnimationPlayer.tsx
-// Description: Thin React wrapper slot for the animation fleet's live SVG exercise-figures-runtime
+// Description: Full-stage React wrapper slot for the animation fleet's live SVG exercise-figures-runtime
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2026-11-21
 
@@ -25,7 +25,6 @@ export const CAST_LABELS: Record<CastCharacterId, string> = {
 interface ExerciseAnimationPlayerProps {
   stepId: string;
   stepName: string;
-  instructions?: string;
   animation?: StepAnimationRef;
   characterId: CastCharacterId;
   variant: ExerciseVariant;
@@ -35,14 +34,12 @@ interface ExerciseAnimationPlayerProps {
 }
 
 /**
- * Host slot for `exercise-figures-runtime.js` + JSON exercise/character packs
+ * Full-stage host slot for `exercise-figures-runtime.js` + JSON packs
  * delivered by the `animation` fleet into `public/animations/`.
- * Until a bundle is imported, renders a clean posture/cue preview aligned with the contract.
  */
 export default function ExerciseAnimationPlayer({
   stepId,
   stepName,
-  instructions,
   animation,
   characterId,
   variant,
@@ -64,31 +61,26 @@ export default function ExerciseAnimationPlayer({
   const viewList: Array<'front' | 'side'> =
     views === 'both' ? ['front', 'side'] : [views];
   const packLabel = animation?.pack || `rajio-taiso.${stepId}`;
+  const isRestOrStatic = phase === 'rest' || phase === 'cooldown' || !isPlaying || reducedMotion;
 
   return (
     <div
       data-testid="exercise-animation-player"
-      className="w-full rounded-xl border border-gray-200 bg-gray-50 p-4 mb-4"
+      className={`relative flex flex-col items-center justify-center p-4 sm:p-6 min-h-[220px] sm:min-h-[340px] transition-colors ${
+        phase === 'rest' || phase === 'cooldown' ? 'bg-amber-50/70' : 'bg-white'
+      }`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs text-gray-500">
-        <span className="font-medium text-gray-700">
-          {CAST_LABELS[characterId]} · {variant === 'chair' ? 'Chair' : 'Standing'}
-        </span>
-        <span className="px-2 py-0.5 rounded bg-white border border-gray-200 font-mono">
-          {packLabel}
-        </span>
-      </div>
-
-      <div className={`grid gap-3 ${viewList.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <div
+        className={`w-full grid place-items-center gap-4 ${
+          viewList.length === 2 ? 'grid-cols-2' : 'grid-cols-1'
+        }`}
+      >
         {viewList.map((view) => (
-          <div
-            key={view}
-            className="flex flex-col items-center justify-center rounded-lg bg-white border border-gray-200 p-4 min-h-[140px]"
-          >
+          <div key={view} className="flex flex-col items-center justify-center">
             <svg
-              viewBox="0 0 120 120"
-              className={`w-24 h-24 stroke-gray-800 ${
-                isPlaying && !reducedMotion && phase === 'exercise' ? 'animate-pulse' : ''
+              viewBox="0 0 140 160"
+              className={`w-36 h-40 sm:w-48 sm:h-52 stroke-slate-900 ${
+                !isRestOrStatic ? 'animate-pulse' : ''
               }`}
               fill="none"
               strokeWidth="2.5"
@@ -96,52 +88,55 @@ export default function ExerciseAnimationPlayer({
               strokeLinejoin="round"
               aria-label={`${stepName} (${view} view, ${variant})`}
             >
-              {/* Minimal line-art figure placeholder matching animation fleet outline style */}
-              <circle cx="60" cy="24" r="10" />
-              <line x1="60" y1="34" x2="60" y2={variant === 'chair' ? '66' : '70'} />
+              <circle cx="70" cy="28" r="12" />
               {view === 'front' ? (
                 <>
-                  <path d="M36 46 Q60 40 84 46" />
+                  <path d="M52 54 Q70 46 88 54 L84 94 L56 94 Z" />
+                  <path
+                    d={
+                      isRestOrStatic
+                        ? 'M52 54 L40 90 M88 54 L100 90'
+                        : 'M52 54 Q30 34 38 18 M88 54 Q110 34 102 18'
+                    }
+                  />
                   {variant === 'chair' ? (
                     <>
-                      <path d="M60 66 L48 80 L48 102" />
-                      <path d="M60 66 L72 80 L72 102" />
-                      <path d="M38 76 H82 M42 76 V104 M78 76 V104" className="stroke-gray-400" />
+                      <path d="M60 94 L48 112 L48 144 M80 94 L92 112 L92 144" />
+                      <path d="M42 108 H98" className="stroke-slate-400" />
                     </>
                   ) : (
-                    <>
-                      <line x1="60" y1="70" x2="48" y2="104" />
-                      <line x1="60" y1="70" x2="72" y2="104" />
-                    </>
+                    <path d="M60 94 L54 146 M80 94 L86 146" />
                   )}
                 </>
               ) : (
                 <>
-                  <path d="M60 44 L80 54" />
+                  <path d="M62 50 L78 52 L76 94 L60 94 Z" />
+                  <path d={isRestOrStatic ? 'M70 54 L68 92' : 'M74 54 Q96 36 86 18'} />
                   {variant === 'chair' ? (
                     <>
-                      <path d="M60 66 L78 74 L78 102" />
-                      <path d="M44 74 H76 M48 74 V104 M72 74 V104" className="stroke-gray-400" />
+                      <path d="M68 94 L96 104 L96 144" />
+                      <path d="M54 104 H86 M58 104 V144" className="stroke-slate-400" />
                     </>
                   ) : (
-                    <>
-                      <line x1="60" y1="70" x2="54" y2="104" />
-                      <line x1="60" y1="70" x2="68" y2="104" />
-                    </>
+                    <path d="M66 94 L62 146 M74 94 L80 146" />
                   )}
                 </>
               )}
             </svg>
-            <span className="mt-1 text-[11px] uppercase tracking-wider text-gray-400">
-              {view} view{reducedMotion ? ' · static' : ''}
+            <span className="mt-1 text-[11px] uppercase tracking-wider text-slate-400">
+              {view} view{isRestOrStatic ? ' · static' : ''}
             </span>
           </div>
         ))}
       </div>
 
-      {instructions && (
-        <p className="mt-3 text-sm text-center text-gray-700">{instructions}</p>
-      )}
+      <div className="w-full flex flex-wrap justify-between items-center gap-2 mt-4 text-[11px] text-slate-400">
+        <span>
+          {CAST_LABELS[characterId]} · {variant === 'chair' ? 'Chair' : 'Standing'} ·{' '}
+          {views === 'both' ? 'Front + Side' : views === 'side' ? 'Side' : 'Front'}
+        </span>
+        <span className="font-mono">{packLabel}</span>
+      </div>
     </div>
   );
 }

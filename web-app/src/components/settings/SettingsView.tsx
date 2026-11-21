@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
-import { CAST_LABELS } from '@/components/exercises/ExerciseAnimationPlayer';
+import ExerciseAnimationPlayer, { CAST_LABELS } from '@/components/exercises/ExerciseAnimationPlayer';
 import {
   CastCharacterId,
   ExerciseVariant,
@@ -148,6 +148,23 @@ export default function SettingsView() {
             >
               Test Audio Cue
             </button>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-gray-100">
+          <span className="block text-sm font-semibold text-gray-800 mb-2">
+            Live Figure Preview (staticPose)
+          </span>
+          <div className="rounded-xl border border-gray-200 overflow-hidden">
+            <ExerciseAnimationPlayer
+              stepId="side-bends"
+              stepName="Side Bends Preview"
+              characterId={preferences.characterId}
+              variant={preferences.variant}
+              views={preferences.views}
+              isPlaying={false}
+              phase="rest"
+            />
           </div>
         </div>
       </div>

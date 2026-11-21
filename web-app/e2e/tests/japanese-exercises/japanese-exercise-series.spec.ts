@@ -60,7 +60,7 @@ test.describe('Japanese Exercise Series', () => {
     test('should start Rajio Taiso series with animation player and step list', async ({ page }) => {
       await page.click('[data-testid="profile-rajio-taiso-series"]');
 
-      await expect(page.locator('h2:has-text("Rajio Taiso Complete Series")')).toBeVisible();
+      await expect(page.locator('strong:has-text("Rajio Taiso Complete Series")')).toBeVisible();
       await expect(page.locator('[data-testid="exercise-animation-player"]')).toBeVisible();
       await expect(page.locator('text=Step 1 of 6')).toBeVisible();
       await expect(page.locator('text=Up next: Arm Swings')).toBeVisible();
@@ -89,13 +89,13 @@ test.describe('Japanese Exercise Series', () => {
     });
 
     test('should switch posture variant and camera views in animation player', async ({ page }) => {
-      await page.click('[data-testid="profile-rajio-taiso-series"]');
+      await page.click('nav button:has-text("Settings")');
+      await page.click('button:has-text("Chair-Based")');
+      await page.click('button:has-text("Front + Side")');
+
+      await page.click('nav button:has-text("Practice")');
       const player = page.locator('[data-testid="exercise-animation-player"]');
-
-      await page.click('button:has-text("Chair")');
       await expect(player).toContainText('Chair');
-
-      await page.click('button:has-text("both")');
       await expect(player).toContainText('front view');
       await expect(player).toContainText('side view');
     });
@@ -108,7 +108,7 @@ test.describe('Japanese Exercise Series', () => {
       await page.click('[data-testid="profile-shinrin-yoku-series"]');
 
       expect(await page.textContent('[data-testid="time-display"]')).toBe('02:00');
-      await expect(page.locator('h2:has-text("Shinrin-yoku Practice")')).toBeVisible();
+      await expect(page.locator('strong:has-text("Shinrin-yoku Practice")')).toBeVisible();
     });
   });
 
