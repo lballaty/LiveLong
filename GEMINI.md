@@ -39,8 +39,9 @@ Continue iterating until all TODO items are complete or you need clarification.
 
 ## 📋 Project Context
 
-- **Project**: TestRepo
-- **Template**: node
+- **Project**: LiveLong ⊹ (longevity practice timer: focus, breathing, and exercise series)
+- **Active app**: `web-app/`, an offline-first Next.js 14 / React 18 / TypeScript PWA (see `docs/DESIGN.md`)
+- **Superseded**: the original `TestRepo` scaffold (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) and the Flutter prototype (`focus_productivity_timer/`)
 - **Created**: 2025-09-30
 
 ---

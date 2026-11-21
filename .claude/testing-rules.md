@@ -1,4 +1,4 @@
-# File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/.claude/testing-rules.md
+# File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/.claude/testing-rules.md
 # Description: Mandatory testing rules for AI assistants working on this project
 # Author: Libor Ballaty <libor@arionetworks.com>
 # Created: 2025-09-30

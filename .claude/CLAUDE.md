@@ -1,342 +1,88 @@
-# Focus & Productivity Timer App - Project Development Standards
+# LiveLong ⊹ - Project Development Standards
 
 ## Project Overview
-Flutter-based Focus & Productivity Timer App: Offline-first mobile application for time management, habit building, and productivity coaching. Supports iOS/Android with optional Supabase cloud features for profile sharing and community.
+LiveLong is an offline-first Progressive Web App for longevity practice: focus timers, guided breathing, and exercise series (Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen). The app lives in `web-app/` and runs entirely in the browser with no backend.
 
-## Tech Stack Requirements (ENFORCED)
+The earlier Flutter prototype (`focus_productivity_timer/`) and the `TestRepo` Node/Supabase scaffold are **superseded**. Do not follow Flutter, SQLite, or Supabase patterns from them. `docs/DESIGN.md` is the canonical architecture record.
 
-**Frontend:** Flutter 3.16+, Dart 3.2+
-**Local Storage:** SQLite via sqflite package
-**Backend:** Supabase (optional online features only)
-**State Management:** Provider or Riverpod (to be decided)
-**Local AI:** TensorFlow Lite or ONNX Runtime
-**Platforms:** iOS 13.0+, Android 8.0 (API level 26)+
+## Tech Stack (ENFORCED)
 
-## Flutter Architecture Standards (ENFORCED)
+- **Framework:** Next.js 14 (App Router), React 18, TypeScript 5
+- **Styling:** Tailwind CSS 3.4
+- **State:** Zustand
+- **Persistence:** IndexedDB via `idb`, plus `localStorage` for small settings
+- **Offline:** `next-pwa` service worker; `web-app/public/timer-worker.js` for background timing
+- **Audio:** Web Audio API chimes and optional Web Speech API voice cues (`AudioCueService`)
+- **Tests:** Jest + React Testing Library + `fake-indexeddb` (unit/integration), Playwright (E2E, desktop and mobile)
 
-**Directory Structure (MANDATORY):**
+Do not add a backend, a server database, or a new state library without a design decision recorded in `docs/DESIGN.md`.
+
+## Directory Structure
+
 ```
-lib/
-├── core/                    # Core utilities and constants
-│   ├── constants/          # App constants, strings, colors
-│   ├── utils/             # Helper functions, extensions
-│   └── errors/            # Error handling classes
-├── features/              # Feature-based organization
-│   ├── timer/            # Timer functionality
-│   │   ├── data/         # Data sources, repositories
-│   │   ├── domain/       # Business logic, entities
-│   │   └── presentation/ # Widgets, screens, providers
-│   ├── profiles/         # Profile management
-│   ├── analytics/        # Progress tracking
-│   └── settings/         # App configuration
-├── shared/               # Shared components
-│   ├── widgets/         # Reusable widgets
-│   ├── services/        # App services
-│   └── models/          # Data models
-└── main.dart           # App entry point
+web-app/
+├── src/
+│   ├── app/          # Next.js App Router entry (page.tsx renders UnifiedTimerDisplay)
+│   ├── components/   # Feature UI: breathing, exercises, profiles, progress, pwa, settings, timer
+│   ├── data/         # Static practice data (breathing patterns/profiles, exercise series)
+│   ├── hooks/        # React hooks
+│   ├── services/     # audio, database, pwa, repositories, storage, timer
+│   ├── store/        # Zustand stores
+│   ├── types/        # Shared TypeScript types
+│   └── utils/        # Helpers
+├── e2e/              # Playwright: tests/, fixtures/, helpers/
+└── public/           # PWA manifest, icons, timer worker
 ```
 
-## Widget Architecture Standards (ENFORCED)
+Unit tests sit next to the code in `__tests__/` folders.
 
-**Screen Widget Pattern:**
-```dart
-// File: /lib/features/timer/presentation/screens/timer_session_screen.dart
-// Description: Main screen for running focus timer sessions
+## Active Implementation (build on these)
 
-class TimerSessionScreen extends StatefulWidget {
-  const TimerSessionScreen({
-    Key? key,
-    required this.selectedProfile,
-  }) : super(key: key);
-  
-  final TimerProfile selectedProfile;
-  
-  @override
-  State<TimerSessionScreen> createState() => _TimerSessionScreenState();
-}
-```
+The 4-view shell (Practice, Practices, Progress, Settings) runs on the `Unified*` path:
+- `services/timer/UnifiedTimerEngine.ts`
+- `store/unifiedTimerStore.ts`
+- `components/timer/UnifiedTimerDisplay.tsx`
+- `components/profiles/UnifiedProfileManager.tsx`
+- `types/unified-profile.types.ts`
 
-**Service Pattern:**
-```dart
-// File: /lib/features/timer/data/services/local_timer_service.dart
-// Description: Local timer data persistence and retrieval service
+Older parallel engines, stores, displays, and profile managers still exist. `docs/DESIGN.md` → *Known Architectural Consolidation Gap* lists them. Do not extend the legacy paths; extend the `Unified*` path, and remove legacy code only as an explicit, tested consolidation task.
 
-class LocalTimerDataService {
-  /// Save completed focus session to SQLite database.
-  /// 
-  /// Business Purpose: Tracks user productivity patterns for
-  /// analytics and AI coaching suggestions locally.
-  Future<bool> saveCompletedFocusSession(FocusSessionData sessionData) async {
-    // Implementation
-  }
-}
-```
+## Coding Standards
 
-## State Management Standards (ENFORCED)
-
-**Provider Pattern (if using Provider):**
-```dart
-// File: /lib/features/timer/presentation/providers/timer_session_provider.dart
-// Description: State management for active timer sessions
-
-class TimerSessionProvider with ChangeNotifier {
-  Duration _remainingDuration = Duration.zero;
-  TimerStatus _currentStatus = TimerStatus.stopped;
-  
-  /// Get current remaining time in timer session.
-  /// Updates UI components that display countdown.
-  Duration get remainingDuration => _remainingDuration;
-  
-  /// Start focus timer with specified duration.
-  /// 
-  /// Business Purpose: Begins user productivity session with
-  /// visual feedback and progress tracking.
-  void startFocusTimer(Duration initialDuration) {
-    // Implementation
-  }
-}
-```
-
-## Database Schema Standards (ENFORCED)
-
-**SQLite Local Schema:**
-```sql
--- File: /lib/core/database/schema/focus_sessions_table.sql
--- Description: Local storage for completed focus sessions
-
-CREATE TABLE focus_sessions (
-  session_identifier TEXT PRIMARY KEY,     -- NOT session_id
-  user_profile_name TEXT NOT NULL,         -- NOT profile
-  session_start_timestamp INTEGER NOT NULL, -- NOT start_time
-  planned_duration_minutes INTEGER NOT NULL, -- NOT duration
-  actual_completion_minutes INTEGER,        -- NOT actual
-  completion_status TEXT NOT NULL,         -- completed/paused/cancelled
-  interruption_count INTEGER DEFAULT 0,    -- NOT interruptions
-  productivity_rating INTEGER,             -- 1-5 user rating
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-
-CREATE TABLE timer_profiles (
-  profile_identifier TEXT PRIMARY KEY,     -- NOT profile_id
-  profile_display_name TEXT NOT NULL,      -- NOT name
-  profile_description TEXT,
-  timer_duration_minutes INTEGER NOT NULL, -- NOT duration
-  break_duration_minutes INTEGER,          -- NOT break_time
-  notification_sound_path TEXT,
-  visual_theme_name TEXT,
-  focus_mode_enabled BOOLEAN DEFAULT 0,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-```
-
-**Supabase Cloud Schema (Optional Features):**
-```sql
--- File: /supabase/migrations/001_shared_profiles.sql
--- Description: Cloud storage for shared timer profiles
-
-CREATE TABLE shared_timer_profiles (
-  profile_uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  creator_user_id UUID REFERENCES auth.users(id),
-  profile_name TEXT NOT NULL,
-  profile_description TEXT,
-  timer_settings JSONB NOT NULL,
-  download_count INTEGER DEFAULT 0,
-  rating_average DECIMAL(3,2) DEFAULT 0.00,
-  rating_count INTEGER DEFAULT 0,
-  is_featured BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-## Flutter-Specific Patterns (ENFORCED)
-
-**Timer Widget Implementation:**
-```dart
-// File: /lib/features/timer/presentation/widgets/circular_timer_display.dart
-// Description: Circular progress timer display with countdown
-
-class CircularTimerDisplayWidget extends StatefulWidget {
-  /// Circular timer display showing countdown progress.
-  /// 
-  /// Business Purpose: Provides users with intuitive visual
-  /// representation of focus session progress to maintain
-  /// concentration and motivation.
-  const CircularTimerDisplayWidget({
-    Key? key,
-    required this.remainingDuration,
-    required this.totalDuration,
-    this.onTimerComplete,
-  }) : super(key: key);
-}
-```
-
-**Offline-First Data Flow:**
-```dart
-// File: /lib/features/analytics/data/repositories/analytics_repository.dart
-// Description: Analytics data with offline-first synchronization
-
-class ProductivityAnalyticsRepository {
-  final LocalTimerDataService _localService;
-  final SupabaseAnalyticsService? _cloudService; // Optional
-  
-  /// Get user productivity statistics with offline-first approach.
-  /// 
-  /// Business Purpose: Provides users with insights about their
-  /// productivity patterns for habit improvement, working offline
-  /// first and syncing when connectivity available.
-  Future<ProductivityAnalytics> getUserProductivityStats({
-    required DateRange dateRange,
-    bool forceCloudSync = false,
-  }) async {
-    // Always try local first
-    final localStats = await _localService.getProductivityStats(dateRange);
-    
-    // Optionally sync with cloud if available
-    if (_cloudService != null && forceCloudSync) {
-      try {
-        await _cloudService.syncAnalyticsData(localStats);
-      } catch (e) {
-        // Fail gracefully - offline data is primary
-      }
-    }
-    
-    return localStats;
-  }
-}
-```
-
-## Mobile-Specific Requirements (ENFORCED)
-
-**Background Timer Handling:**
-```dart
-// File: /lib/core/services/background_timer_service.dart
-// Description: Background timer service for continued operation
-
-class BackgroundTimerService {
-  /// Ensure timer continues running when app backgrounded.
-  /// 
-  /// Business Purpose: Users expect focus sessions to continue
-  /// even when they switch apps or lock device screen.
-  Future<void> setupBackgroundTimerExecution() async {
-    // Use workmanager or similar for background tasks
-  }
-}
-```
-
-**Battery Optimization:**
-```dart
-// File: /lib/core/services/battery_optimization_service.dart
-// Description: Battery-conscious timer operations
-
-class BatteryOptimizationService {
-  /// Optimize timer display for battery conservation.
-  /// 
-  /// Business Purpose: Long focus sessions shouldn't drain
-  /// user's battery excessively.
-  void optimizeForBatteryLife({
-    required bool isTimerRunning,
-    required bool isScreenVisible,
-  }) {
-    // Reduce animation frequency when screen off
-    // Lower screen brightness during long sessions
-    // Pause unnecessary background processes
-  }
-}
-```
-
-## AI Integration Standards (ENFORCED)
-
-**Local AI for Coaching:**
-```dart
-// File: /lib/features/ai_coaching/data/services/local_ai_service.dart
-// Description: Local AI processing for productivity insights
-
-class LocalProductivityAIService {
-  /// Generate personalized productivity suggestions using local AI.
-  /// 
-  /// Business Purpose: Provides users with intelligent coaching
-  /// based on their usage patterns without sending data to cloud.
-  /// 
-  /// Privacy Note: All processing happens on device.
-  Future<List<ProductivitySuggestion>> generateCoachingSuggestions(
-    ProductivityAnalytics userStats,
-  ) async {
-    // Use TensorFlow Lite model for local inference
-    // Analyze patterns in completion rates, best focus times
-    // Generate actionable suggestions
-  }
-}
-```
+- Descriptive, intention-revealing names (`remainingDurationSeconds`, not `rem`).
+- Every new file starts with a header comment: File, Description, Author, Created.
+- Function components with typed props; no `any` in new code.
+- Keep timer accuracy independent of render frequency: derive remaining time from timestamps, not tick counts.
+- Persist through the repository/service layer (`services/repositories`, `services/storage`), not directly from components.
+- Errors must be surfaced to the user with a clear message and recorded through the app's logging path; never swallow them silently.
 
 ## Testing Requirements (ENFORCED)
 
-**Flutter Widget Tests:**
+Follow `.claude/testing-rules.md` and `web-app/TESTING_REQUIREMENTS.md`. Minimum before any commit:
+
 ```bash
-# Run before any UI changes
-flutter test test/widgets/
-flutter test test/features/timer/presentation/
+npm --prefix web-app run type-check
+npm --prefix web-app run lint
+npm --prefix web-app run test:ci
+npm --prefix web-app run test:e2e
 ```
 
-**Integration Tests:**
-```bash
-# Test complete user flows
-flutter test integration_test/timer_session_flow_test.dart
-flutter test integration_test/profile_creation_flow_test.dart
-```
+Required coverage areas:
+- **Timer accuracy:** countdown stays correct across pause/resume and backgrounding.
+- **Offline:** all core features work with no network.
+- **Persistence:** sessions and profiles survive reloads (IndexedDB).
+- **Mobile:** Playwright mobile projects pass (`test:e2e:mobile`).
 
-**Mobile-Specific Tests:**
-- Background/foreground state transitions
-- Device orientation changes  
-- Platform-specific behavior (iOS vs Android)
-- Battery optimization effectiveness
-- Offline functionality completeness
+## Performance Standards
 
-**Required Test Categories:**
-
-**Timer Accuracy Tests:**
-```dart
-testWidgets('Timer countdown displays accurate remaining time', (tester) async {
-  // Business Purpose: Users depend on timer accuracy for
-  // productivity sessions - inaccuracy breaks trust
-});
-```
-
-**Offline Functionality Tests:**
-```dart
-testWidgets('All core features work without internet', (tester) async {
-  // Business Purpose: App must be fully functional offline
-  // as promised to users
-});
-```
-
-**Data Persistence Tests:**
-```dart
-test('Session data survives app restart', () async {
-  // Business Purpose: Users' productivity history must not
-  // be lost due to app crashes or device restarts
-});
-```
-
-## Performance Standards (ENFORCED)
-
-**Flutter Performance Requirements:**
-- App launch under 2 seconds on mid-range devices
-- Smooth 60 FPS animations throughout
-- Widget rebuilds optimized (use const constructors)
-- Memory usage under 100MB during normal operation
-- Fast SQLite queries (<100ms for typical operations)
+- First load fast on a mid-range phone; no layout shift in the timer view.
+- Smooth animations (target 60 FPS); pause non-essential animation when the tab is hidden.
+- IndexedDB reads/writes for typical operations under 100 ms.
 
 ## Quality Gates (ENFORCED)
 
-**Before any commit:**
-1. Flutter widget tests pass
-2. Integration tests pass  
-3. Performance benchmarks met
-4. Offline functionality verified
-5. Battery usage acceptable
-6. Cross-platform consistency confirmed
-
-This ensures the Focus & Productivity Timer App maintains high quality, user-friendly mobile experience with reliable offline-first functionality.
+Before any commit:
+1. Type-check, lint, unit, and E2E tests pass.
+2. Behaviour verified in a real or headless browser with no console errors.
+3. Offline functionality verified.
+4. Docs updated when behaviour or architecture changes.
