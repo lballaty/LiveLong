@@ -1,3 +1,10 @@
+# Focus & Productivity Timer PWA - Historical Sprint Log (Superseded)
+
+> **⚠️ SUPERSEDED:** This file is a historical sprint log from `2025-09-30` and is **no longer the canonical tracker**.
+> See [docs/TODO.md](../docs/TODO.md) for the single canonical, verified task and gap tracker.
+
+---
+
 # Focus & Productivity Timer PWA - Development TODO
 
 **Project Status:** 🚧 Phase 2 - Data Layer (40% Complete)

@@ -1,0 +1,67 @@
+plan:
+  title: Turn LiveLong into a complete 4-view guided longevity/breathing PWA aligned with animation fleet bundles
+  goal_validation:
+    - PWA icons (/icon-192.png, /icon-512.png) exist and zero 404s appear in browser console
+    - App provides clear 4-view navigation (Practice, Practices, Progress, Settings)
+    - Breathing sessions render BreathingVisualizer synced to UnifiedTimerEngine state
+    - Exercise series display full step list, up-next preview, Web Audio chime, and ExerciseAnimationPlayer slot
+    - User preferences (cast of 6, standing vs chair variant, front/side/both views, sound/vibration) persist locally
+    - Custom profiles and completed sessions/streaks persist in IndexedDB across reloads
+    - Unused legacy parallel engines/stores/components are removed
+    - type-check, lint, next build, Jest unit tests, and Playwright chromium smoke test pass
+  steps:
+    - id: reserve-shared-files
+      description: Reserve canonical docs and shared type definitions in queuectl before editing
+      command: queuectl reserve --agent "${QUEUECTL_AGENT:-livelong-lead-eada36}" --working-on "LiveLong 4-view guided UX, animation preferences, IndexedDB wiring, and cleanup" --files /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/TODO.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/DESIGN.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/SPECIFICATIONS.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/types/profile.types.ts /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/types/unified-profile.types.ts
+      validation: queuectl show --format json | grep -q "livelong-lead-eada36"
+      depends_on: []
+      fatal_on_failure: true
+
+    - id: fix-pwa-icons-and-audio
+      description: Generate missing /icon-192.png and /icon-512.png in web-app/public and build AudioCueService (Web Audio API phase/completion chimes + optional Web Speech API voice cues + iOS AudioContext unlock on Start)
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check
+      validation: test -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/public/icon-192.png && test -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/public/icon-512.png && test -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/services/audio/AudioCueService.ts
+      depends_on: []
+      fatal_on_failure: false
+
+    - id: wire-breathing-visualizer
+      description: Connect BreathingVisualizer component into UnifiedTimerDisplay for breathing profiles
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check
+      validation: grep -q "BreathingVisualizer" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/timer/UnifiedTimerDisplay.tsx && npm --prefix /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app run type-check
+      depends_on: [reserve-shared-files]
+      fatal_on_failure: true
+
+    - id: guided-series-ux-and-animation-hook
+      description: Add animation pack reference to ExerciseStep/SeriesStep, add cast/variant/view preferences, and render guided routine list, up-next preview, and ExerciseAnimationPlayer slot
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check
+      validation: grep -q "animation\?:" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/types/unified-profile.types.ts && test -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/exercises/ExerciseAnimationPlayer.tsx && npm --prefix /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app run type-check
+      depends_on: [reserve-shared-files, wire-breathing-visualizer]
+      fatal_on_failure: true
+
+    - id: wire-indexeddb-and-4view-nav
+      description: Connect ProfileRepository and SessionRepository to useUnifiedTimerStore and add Progress and Settings views alongside Practice and Practices
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npx jest --ci --maxWorkers=2
+      validation: grep -q "SessionRepository" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/store/unifiedTimerStore.ts && cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npx jest --ci --maxWorkers=2
+      depends_on: [guided-series-ux-and-animation-hook]
+      fatal_on_failure: true
+
+    - id: consolidate-legacy-duplicates
+      description: Remove unused parallel engines, stores, and components after verifying zero active imports
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check && npm run lint
+      validation: test ! -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/services/timer/FocusTimerEngine.ts && npm --prefix /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app run type-check
+      depends_on: [wire-indexeddb-and-4view-nav]
+      fatal_on_failure: false
+
+    - id: verify-build-lint-jest-e2e
+      description: Run full type-check, lint, production next build, Jest suite, and Playwright chromium smoke test
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check && npm run lint && npm run build && npx jest --ci --maxWorkers=2 && npx playwright test e2e/tests/timer/timer-basic.spec.ts --project=chromium
+      validation: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run build && npx jest --ci --maxWorkers=2
+      depends_on: [fix-pwa-icons-and-audio, consolidate-legacy-duplicates]
+      fatal_on_failure: true
+
+    - id: reconcile-docs-and-release
+      description: Update docs/TODO.md, docs/DESIGN.md, and docs/SPECIFICATIONS.md with verified state and release queuectl locks
+      command: queuectl show --format json
+      validation: grep -q "ExerciseAnimationPlayer" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/DESIGN.md
+      depends_on: [verify-build-lint-jest-e2e]
+      fatal_on_failure: true
