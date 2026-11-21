@@ -102,9 +102,7 @@ export class SessionRepository implements ISessionRepository {
     let completedSessions = 0;
     let totalMinutes = 0;
     const hourCounts = new Map<number, number>();
-    let longestStreak = 0;
-    let currentStreak = 0;
-    let lastSessionDate: Date | null = null;
+    const sessionDates: Date[] = [];
 
     while (cursor) {
       const session = cursor.value;
@@ -118,29 +116,14 @@ export class SessionRepository implements ISessionRepository {
       // Track most productive hour
       const hour = session.startedAt.getHours();
       hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
+      sessionDates.push(session.startedAt);
 
-      // Calculate streaks
-      if (lastSessionDate) {
-        const dayDiff = Math.floor(
-          (session.startedAt.getTime() - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        if (dayDiff <= 1) {
-          currentStreak++;
-          longestStreak = Math.max(longestStreak, currentStreak);
-        } else {
-          currentStreak = 1;
-        }
-      } else {
-        currentStreak = 1;
-        longestStreak = 1;
-      }
-
-      lastSessionDate = session.startedAt;
       cursor = await cursor.continue();
     }
 
     await tx.done;
+
+    const { longestStreak, currentStreak } = this.calculateStreaks(sessionDates);
 
     // Find most productive hour
     let mostProductiveHour = 0;
@@ -207,35 +190,9 @@ export class SessionRepository implements ISessionRepository {
       }
     });
 
-    // Calculate streaks
-    const sortedSessions = [...filteredSessions].sort(
-      (a, b) => a.startedAt.getTime() - b.startedAt.getTime()
+    const { longestStreak, currentStreak } = this.calculateStreaks(
+      filteredSessions.map((s) => s.startedAt)
     );
-
-    let longestStreak = 0;
-    let currentStreak = 0;
-    let lastDate: Date | null = null;
-
-    sortedSessions.forEach((session) => {
-      if (lastDate) {
-        const dayDiff = Math.floor(
-          (session.startedAt.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        if (dayDiff <= 1) {
-          currentStreak++;
-        } else {
-          longestStreak = Math.max(longestStreak, currentStreak);
-          currentStreak = 1;
-        }
-      } else {
-        currentStreak = 1;
-      }
-
-      lastDate = session.startedAt;
-    });
-
-    longestStreak = Math.max(longestStreak, currentStreak);
 
     return {
       totalSessions,
@@ -251,6 +208,42 @@ export class SessionRepository implements ISessionRepository {
       longestStreak,
       currentStreak,
     };
+  }
+
+  /**
+   * Calculate longest and current consecutive-day streaks from session dates
+   */
+  private calculateStreaks(dates: Date[]): { longestStreak: number; currentStreak: number } {
+    if (dates.length === 0) {
+      return { longestStreak: 0, currentStreak: 0 };
+    }
+
+    const sortedDates = [...dates].sort((a, b) => a.getTime() - b.getTime());
+    let longestStreak = 0;
+    let currentStreak = 0;
+    let lastDate: Date | null = null;
+
+    sortedDates.forEach((date) => {
+      if (lastDate) {
+        const dayDiff = Math.floor(
+          (startOfDay(date).getTime() - startOfDay(lastDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        if (dayDiff === 1) {
+          currentStreak++;
+        } else if (dayDiff > 1) {
+          longestStreak = Math.max(longestStreak, currentStreak);
+          currentStreak = 1;
+        }
+      } else {
+        currentStreak = 1;
+      }
+
+      lastDate = date;
+    });
+
+    longestStreak = Math.max(longestStreak, currentStreak);
+    return { longestStreak, currentStreak };
   }
 
   /**

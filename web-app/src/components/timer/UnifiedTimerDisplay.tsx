@@ -1,30 +1,58 @@
 // File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/web-app/src/components/timer/UnifiedTimerDisplay.tsx
-// Description: Unified timer display component supporting all timer types with visual feedback
+// Description: Unified 4-view LiveLong PWA shell (Practice, Practices, Progress, Settings)
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2025-10-01
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
 import UnifiedProfileManager from '@/components/profiles/UnifiedProfileManager';
+import BreathingVisualizer from '@/components/breathing/BreathingVisualizer';
+import ExerciseAnimationPlayer from '@/components/exercises/ExerciseAnimationPlayer';
+import ProgressView from '@/components/progress/ProgressView';
+import SettingsView from '@/components/settings/SettingsView';
+import { BreathingPattern } from '@/types/profile.types';
+
+type ActiveTab = 'practice' | 'practices' | 'progress' | 'settings';
 
 export default function UnifiedTimerDisplay() {
   const {
     activeProfile,
     timerState,
+    preferences,
+    updatePreferences,
     startTimer,
     pauseTimer,
     resumeTimer,
     stopTimer,
-    initializeProfiles
+    initializeProfiles,
   } = useUnifiedTimerStore();
 
-  const [showProfiles, setShowProfiles] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('practice');
 
   useEffect(() => {
     initializeProfiles();
   }, [initializeProfiles]);
+
+  const breathingPatternForVisualizer: BreathingPattern | null = useMemo(() => {
+    if (!activeProfile || activeProfile.type !== 'breathing' || !activeProfile.breathingConfig) {
+      return null;
+    }
+    const phases = activeProfile.breathingConfig.pattern;
+    const findDur = (t: string) => phases.find((p) => p.type === t)?.durationSeconds || 0;
+    return {
+      id: activeProfile.id,
+      name: activeProfile.name,
+      description: activeProfile.description,
+      inhaleSeconds: findDur('inhale') || 4,
+      holdInSeconds: findDur('hold-in') || undefined,
+      exhaleSeconds: findDur('exhale') || 4,
+      holdOutSeconds: findDur('hold-out') || undefined,
+      cycles: activeProfile.breathingConfig.cycleCount,
+      visualStyle: activeProfile.id.includes('box') ? 'square' : 'circle',
+    };
+  }, [activeProfile]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -36,43 +64,38 @@ export default function UnifiedTimerDisplay() {
         .toString()
         .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-    return `${minutes.toString().padStart(2, '0')}:${secs
-      .toString()
-      .padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const getProgressPercentage = (): number => {
-    if (!timerState || !activeProfile) return 0;
-
-    const totalSeconds = activeProfile.totalDurationSeconds;
-    const elapsedSeconds = timerState.totalElapsedSeconds;
-    return Math.min((elapsedSeconds / totalSeconds) * 100, 100);
+    if (!timerState || !activeProfile || activeProfile.totalDurationSeconds === 0) return 0;
+    return Math.min((timerState.totalElapsedSeconds / activeProfile.totalDurationSeconds) * 100, 100);
   };
 
   const getPhaseProgressPercentage = (): number => {
     if (!timerState || !activeProfile) return 0;
 
-    // For series, calculate progress within current phase
     if (activeProfile.type === 'series' && timerState.seriesState) {
       const currentStep = timerState.seriesState.currentStep;
       if (!currentStep) return 0;
 
       const isRest = timerState.seriesState.currentPhase === 'rest';
       const phaseDuration = isRest
-        ? (currentStep.restMinutes * 60 + currentStep.restSeconds)
-        : (currentStep.durationMinutes * 60 + currentStep.durationSeconds);
+        ? currentStep.restMinutes * 60 + currentStep.restSeconds
+        : currentStep.durationMinutes * 60 + currentStep.durationSeconds;
 
       if (phaseDuration === 0) return 0;
       const elapsed = phaseDuration - timerState.remainingSeconds;
       return Math.min((elapsed / phaseDuration) * 100, 100);
     }
 
-    // For simple timers, calculate work/break phase progress
     if (activeProfile.type === 'simple' && timerState.simpleState) {
       const isWork = timerState.simpleState.isWorkPhase;
       const phaseDuration = isWork
-        ? ((activeProfile.simpleDuration?.workMinutes || 0) * 60 + (activeProfile.simpleDuration?.workSeconds || 0))
-        : ((activeProfile.simpleDuration?.breakMinutes || 0) * 60 + (activeProfile.simpleDuration?.breakSeconds || 0));
+        ? (activeProfile.simpleDuration?.workMinutes || 0) * 60 +
+          (activeProfile.simpleDuration?.workSeconds || 0)
+        : (activeProfile.simpleDuration?.breakMinutes || 0) * 60 +
+          (activeProfile.simpleDuration?.breakSeconds || 0);
 
       if (phaseDuration === 0) return 0;
       const elapsed = phaseDuration - timerState.remainingSeconds;
@@ -84,15 +107,12 @@ export default function UnifiedTimerDisplay() {
 
   const isRestPhase = (): boolean => {
     if (!timerState) return false;
-
     if (activeProfile?.type === 'series' && timerState.seriesState) {
       return timerState.seriesState.currentPhase === 'rest';
     }
-
     if (activeProfile?.type === 'simple' && timerState.simpleState) {
       return !timerState.simpleState.isWorkPhase;
     }
-
     return false;
   };
 
@@ -103,26 +123,28 @@ export default function UnifiedTimerDisplay() {
       case 'simple':
         return timerState.simpleState?.isWorkPhase ? 'Focus Time' : 'Break Time';
 
-      case 'series':
+      case 'series': {
         if (!timerState.seriesState) return '';
         const { currentPhase, currentStep } = timerState.seriesState;
         if (currentPhase === 'warmup') return 'Warming Up';
         if (currentPhase === 'cooldown') return 'Cooling Down';
         if (currentPhase === 'rest') return 'Rest';
         return currentStep?.name || 'Exercise';
+      }
 
-      case 'breathing':
+      case 'breathing': {
         if (!timerState.breathingState) return '';
         const phase = timerState.breathingState.currentPhase;
         const cycle = timerState.breathingState.currentCycle;
         const totalCycles = activeProfile.breathingConfig?.cycleCount || 0;
         const phaseNames = {
-          'inhale': 'Breathe In',
+          inhale: 'Breathe In',
           'hold-in': 'Hold',
-          'exhale': 'Breathe Out',
-          'hold-out': 'Hold'
+          exhale: 'Breathe Out',
+          'hold-out': 'Hold',
         };
         return `${phaseNames[phase.type]} (Cycle ${cycle}/${totalCycles})`;
+      }
 
       default:
         return '';
@@ -131,179 +153,260 @@ export default function UnifiedTimerDisplay() {
 
   const getBackgroundStyle = (): React.CSSProperties => {
     if (!activeProfile) return {};
-
-    // Dynamic background based on timer type and phase
     if (activeProfile.type === 'breathing' && timerState?.breathingState) {
       const phase = timerState.breathingState.currentPhase.type;
       const colors = {
-        'inhale': 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.05) 100%)',
+        inhale: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.05) 100%)',
         'hold-in': 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, rgba(99,102,241,0.05) 100%)',
-        'exhale': 'radial-gradient(circle, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)',
-        'hold-out': 'radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(168,85,247,0.05) 100%)'
+        exhale: 'radial-gradient(circle, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)',
+        'hold-out': 'radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(168,85,247,0.05) 100%)',
       };
       return { background: colors[phase] };
     }
-
     return {};
   };
 
+  const steps = activeProfile?.seriesConfig?.steps || [];
+  const currentStepIndex = timerState?.seriesState?.currentStepIndex ?? 0;
+  const currentStep = timerState?.seriesState?.currentStep;
+  const nextStep = currentStepIndex + 1 < steps.length ? steps[currentStepIndex + 1] : null;
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50" style={getBackgroundStyle()}>
-      {/* Header */}
+      {/* Header & 4-View Navigation */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-gray-900">
-              Focus & Productivity Timer
-            </h1>
-            <button
-              onClick={() => setShowProfiles(!showProfiles)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              {showProfiles ? 'Hide Profiles' : 'Show Profiles'}
-            </button>
+          <div className="flex flex-wrap justify-between items-center gap-2 py-3">
+            <h1 className="text-xl font-semibold text-gray-900">LiveLong ⊹</h1>
+            <nav className="flex items-center gap-1 sm:gap-2" aria-label="Primary">
+              {([
+                { id: 'practice', label: 'Practice' },
+                { id: 'practices', label: 'Practices' },
+                { id: 'progress', label: 'Progress' },
+                { id: 'settings', label: 'Settings' },
+              ] as { id: ActiveTab; label: string }[]).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-500 text-white'
+                      : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
-        {showProfiles ? (
-          <UnifiedProfileManager />
-        ) : (
-          <div className="w-full max-w-md">
-            {/* Profile Info */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
+        {activeTab === 'practices' && (
+          <UnifiedProfileManager onProfileSelect={() => setActiveTab('practice')} />
+        )}
+
+        {activeTab === 'progress' && <ProgressView />}
+
+        {activeTab === 'settings' && <SettingsView />}
+
+        {activeTab === 'practice' && (
+          <div className="w-full max-w-lg">
             {activeProfile && (
-              <div className="text-center mb-8">
+              <div className="text-center mb-6">
                 <div className="text-4xl mb-2">{activeProfile.icon}</div>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {activeProfile.name}
-                </h2>
-                <p className="text-gray-600">{activeProfile.description}</p>
+                <h2 className="text-2xl font-bold text-gray-800">{activeProfile.name}</h2>
+                <p className="text-gray-600 text-sm">{activeProfile.description}</p>
               </div>
             )}
 
-            {/* Timer Display */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-              <div className="relative w-64 h-64 mx-auto mb-6">
-                {/* Dual Progress Circles */}
-                <svg className="transform -rotate-90 w-64 h-64 absolute">
-                  {/* Outer Circle - Overall Progress */}
-                  <circle
-                    cx="128"
-                    cy="128"
-                    r="120"
-                    stroke="#e5e7eb"
-                    strokeWidth="8"
-                    fill="none"
-                  />
-                  <circle
-                    cx="128"
-                    cy="128"
-                    r="120"
-                    stroke="#6b7280"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 120}`}
-                    strokeDashoffset={`${
-                      2 * Math.PI * 120 * (1 - getProgressPercentage() / 100)
-                    }`}
-                    className="transition-all duration-1000 opacity-50"
-                  />
-
-                  {/* Inner Circle - Phase Progress (Work/Exercise or Rest/Break) */}
-                  <circle
-                    cx="128"
-                    cy="128"
-                    r="100"
-                    stroke="#f3f4f6"
-                    strokeWidth="16"
-                    fill="none"
-                  />
-                  <circle
-                    cx="128"
-                    cy="128"
-                    r="100"
-                    stroke={isRestPhase() ? '#ca8a04' : '#22c55e'}
-                    strokeWidth="16"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 100}`}
-                    strokeDashoffset={`${
-                      2 * Math.PI * 100 * (1 - getPhaseProgressPercentage() / 100)
-                    }`}
-                    className="transition-all duration-1000"
-                  />
-                </svg>
-
-                {/* Timer Text */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-3 h-3 rounded-full ${
-                      isRestPhase() ? 'bg-yellow-600' : 'bg-green-500'
-                    } animate-pulse`} />
-                    <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                      {isRestPhase() ? 'Rest' : 'Active'}
-                    </span>
+            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-6">
+              {/* Exercise Animation Slot + Quick Variant/View Controls for Series */}
+              {activeProfile?.type === 'series' && currentStep && (
+                <div>
+                  <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <div className="flex gap-1">
+                      {(['standing', 'chair'] as const).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => updatePreferences({ variant: v })}
+                          className={`px-2.5 py-1 text-xs rounded border ${
+                            preferences.variant === v
+                              ? 'bg-gray-800 text-white border-gray-800'
+                              : 'bg-white text-gray-600 border-gray-200'
+                          }`}
+                        >
+                          {v === 'standing' ? 'Standing' : 'Chair'}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-1">
+                      {(['front', 'side', 'both'] as const).map((vw) => (
+                        <button
+                          key={vw}
+                          type="button"
+                          onClick={() => updatePreferences({ views: vw })}
+                          className={`px-2.5 py-1 text-xs rounded border capitalize ${
+                            preferences.views === vw
+                              ? 'bg-blue-500 text-white border-blue-500'
+                              : 'bg-white text-gray-600 border-gray-200'
+                          }`}
+                        >
+                          {vw}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div
-                    data-testid="time-display"
-                    className="text-5xl font-bold text-gray-800"
-                  >
-                    {formatTime(timerState?.remainingSeconds || 0)}
-                  </div>
-                  <div className="text-sm text-gray-500 mt-2">
-                    {getPhaseDescription()}
-                  </div>
-                </div>
-              </div>
 
-              {/* Legend for circles */}
-              <div className="flex justify-center gap-6 mb-4 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className="text-gray-600">Active Phase</span>
+                  <ExerciseAnimationPlayer
+                    stepId={currentStep.id}
+                    stepName={currentStep.name}
+                    instructions={currentStep.instructions}
+                    animation={currentStep.animation}
+                    characterId={preferences.characterId}
+                    variant={preferences.variant}
+                    views={preferences.views}
+                    isPlaying={timerState?.status === 'running'}
+                    phase={timerState?.seriesState?.currentPhase || 'exercise'}
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-600 rounded-full" />
-                  <span className="text-gray-600">Rest Phase</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-500 rounded-full" />
-                  <span className="text-gray-600">Total Progress</span>
-                </div>
-              </div>
+              )}
 
-              {/* Step Progress for Series */}
+              {/* Breathing Visualizer for Breathing Practices */}
+              {activeProfile?.type === 'breathing' && breathingPatternForVisualizer ? (
+                <BreathingVisualizer
+                  pattern={breathingPatternForVisualizer}
+                  isActive={timerState?.status === 'running'}
+                  embedded
+                  externalState={{
+                    phase: timerState?.breathingState?.currentPhase.type || 'inhale',
+                    remainingSeconds: timerState?.remainingSeconds || 0,
+                    currentCycle: timerState?.breathingState?.currentCycle || 1,
+                    totalCycles: activeProfile.breathingConfig?.cycleCount || 1,
+                  }}
+                />
+              ) : (
+                /* Dual Progress Circles for Series & Simple Timers */
+                <>
+                  <div className="relative w-56 h-56 mx-auto mb-5">
+                    <svg className="transform -rotate-90 w-56 h-56 absolute" viewBox="0 0 256 256">
+                      <circle cx="128" cy="128" r="120" stroke="#e5e7eb" strokeWidth="8" fill="none" />
+                      <circle
+                        cx="128"
+                        cy="128"
+                        r="120"
+                        stroke="#6b7280"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 120}`}
+                        strokeDashoffset={`${2 * Math.PI * 120 * (1 - getProgressPercentage() / 100)}`}
+                        className="transition-all duration-1000 opacity-50"
+                      />
+                      <circle cx="128" cy="128" r="100" stroke="#f3f4f6" strokeWidth="16" fill="none" />
+                      <circle
+                        cx="128"
+                        cy="128"
+                        r="100"
+                        stroke={isRestPhase() ? '#ca8a04' : '#22c55e'}
+                        strokeWidth="16"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 100}`}
+                        strokeDashoffset={`${2 * Math.PI * 100 * (1 - getPhaseProgressPercentage() / 100)}`}
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div
+                          className={`w-2.5 h-2.5 rounded-full ${
+                            isRestPhase() ? 'bg-yellow-600' : 'bg-green-500'
+                          } animate-pulse`}
+                        />
+                        <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                          {isRestPhase() ? 'Rest' : 'Active'}
+                        </span>
+                      </div>
+                      <div data-testid="time-display" className="text-4xl font-bold text-gray-800">
+                        {formatTime(timerState?.remainingSeconds || 0)}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 text-center px-4">
+                        {getPhaseDescription()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center gap-5 mb-4 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />
+                      <span className="text-gray-600">Active Phase</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 bg-yellow-600 rounded-full" />
+                      <span className="text-gray-600">Rest Phase</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />
+                      <span className="text-gray-600">Total Progress</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Guided Step Progress & Up-Next List for Series */}
               {activeProfile?.type === 'series' && timerState?.seriesState && (
-                <div className="mb-4">
-                  <div className="text-xs text-gray-500 mb-2">
-                    Step {timerState.seriesState.currentStepIndex + 1} of{' '}
-                    {activeProfile.seriesConfig?.steps.length || 0}
+                <div className="mb-5 pt-4 border-t border-gray-100">
+                  <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
+                    <span>
+                      Step {currentStepIndex + 1} of {steps.length}
+                    </span>
+                    {nextStep && <span>Up next: {nextStep.name}</span>}
                   </div>
-                  <div className="flex gap-1">
-                    {activeProfile.seriesConfig?.steps.map((step, index) => (
+                  <div className="flex gap-1 mb-3">
+                    {steps.map((step, index) => (
                       <div
                         key={step.id}
                         className={`flex-1 h-2 rounded ${
                           timerState.seriesState?.completedSteps.includes(step.id)
                             ? 'bg-green-500'
-                            : index === timerState.seriesState?.currentStepIndex
+                            : index === currentStepIndex
                             ? 'bg-blue-500'
                             : 'bg-gray-200'
                         }`}
                       />
                     ))}
                   </div>
-                  {timerState.seriesState.currentStep && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      {timerState.seriesState.currentStep.instructions}
-                    </div>
-                  )}
+                  <ol className="space-y-1 max-h-36 overflow-y-auto text-xs">
+                    {steps.map((step, index) => {
+                      const done = timerState.seriesState?.completedSteps.includes(step.id);
+                      const active = index === currentStepIndex;
+                      return (
+                        <li
+                          key={step.id}
+                          className={`flex justify-between px-2 py-1 rounded ${
+                            active
+                              ? 'bg-blue-50 text-blue-700 font-semibold'
+                              : done
+                              ? 'text-green-700 line-through'
+                              : 'text-gray-500'
+                          }`}
+                        >
+                          <span>
+                            {index + 1}. {step.name}
+                          </span>
+                          <span>{step.durationMinutes}m</span>
+                        </li>
+                      );
+                    })}
+                  </ol>
                 </div>
               )}
 
               {/* Control Buttons */}
-              <div className="flex justify-center gap-4">
+              <div className="flex justify-center gap-4 mt-4">
                 {timerState?.status === 'idle' && (
                   <button
                     data-testid="start-focus-button"
@@ -354,13 +457,12 @@ export default function UnifiedTimerDisplay() {
               </div>
             </div>
 
-            {/* Quick Profile Selection */}
             <div className="text-center">
               <button
-                onClick={() => setShowProfiles(true)}
-                className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                onClick={() => setActiveTab('practices')}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
-                Change Timer Profile →
+                Choose Another Practice →
               </button>
             </div>
           </div>

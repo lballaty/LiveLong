@@ -3,6 +3,8 @@
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2025-10-01
 
+import { generateUUID } from '@/utils/uuid';
+
 /**
  * Unified timer profile supporting multiple timer types
  */
@@ -56,6 +58,31 @@ export interface UnifiedProfile {
   updatedAt: Date;
 }
 
+export type CastCharacterId =
+  | 'm25-athletic'
+  | 'f30-slim'
+  | 'm50-heavier'
+  | 'f50-fuller'
+  | 'f72-stooped'
+  | 'm75-slim';
+
+export type ExerciseVariant = 'standing' | 'chair';
+export type ExerciseViewMode = 'front' | 'side' | 'both';
+
+export interface PracticePreferences {
+  characterId: CastCharacterId;
+  variant: ExerciseVariant;
+  views: ExerciseViewMode;
+  soundEnabled: boolean;
+  voiceCuesEnabled: boolean;
+  vibrationEnabled: boolean;
+}
+
+export interface StepAnimationRef {
+  pack: string;
+  version?: string;
+}
+
 /**
  * Step in a series (exercise, meditation, etc.)
  */
@@ -69,6 +96,7 @@ export interface SeriesStep {
   restSeconds: number;
   instructions?: string;
   breathingPattern?: BreathingPhase[];
+  animation?: StepAnimationRef;
 }
 
 /**
@@ -126,7 +154,8 @@ export function convertExerciseSeriesToUnified(series: any): UnifiedProfile {
     durationSeconds: Math.round((step.durationMinutes % 1) * 60),
     restMinutes: Math.floor(step.restDurationMinutes),
     restSeconds: Math.round((step.restDurationMinutes % 1) * 60),
-    instructions: step.instructions
+    instructions: step.instructions,
+    animation: step.animation
   }));
 
   const totalSeconds = (series.warmupDurationMinutes || 0) * 60 +
@@ -169,32 +198,35 @@ export function convertBreathingPatternToUnified(pattern: any, profile: any): Un
   if (pattern.inhaleSeconds > 0) {
     phases.push({ type: 'inhale', durationSeconds: pattern.inhaleSeconds });
   }
-  if (pattern.holdInhaleSeconds > 0) {
-    phases.push({ type: 'hold-in', durationSeconds: pattern.holdInhaleSeconds });
+  const holdIn = pattern.holdInSeconds ?? pattern.holdInhaleSeconds ?? 0;
+  if (holdIn > 0) {
+    phases.push({ type: 'hold-in', durationSeconds: holdIn });
   }
   if (pattern.exhaleSeconds > 0) {
     phases.push({ type: 'exhale', durationSeconds: pattern.exhaleSeconds });
   }
-  if (pattern.holdExhaleSeconds > 0) {
-    phases.push({ type: 'hold-out', durationSeconds: pattern.holdExhaleSeconds });
+  const holdOut = pattern.holdOutSeconds ?? pattern.holdExhaleSeconds ?? 0;
+  if (holdOut > 0) {
+    phases.push({ type: 'hold-out', durationSeconds: holdOut });
   }
 
+  const cycleCount = pattern.cycles ?? pattern.cycleCount ?? 8;
   const cycleDuration = phases.reduce((total, phase) => total + phase.durationSeconds, 0);
-  const totalSeconds = cycleDuration * (pattern.cycleCount || 8);
+  const totalSeconds = cycleDuration * cycleCount;
 
   return {
     id: profile.id,
     name: profile.name,
     description: profile.description,
     type: 'breathing',
-    color: profile.color || '#8b5cf6',
+    color: profile.themeColor || profile.color || '#8b5cf6',
     icon: profile.icon || '🫁',
-    backgroundAnimation: profile.backgroundAnimation,
+    backgroundAnimation: profile.exerciseSeries?.backgroundAnimation || profile.backgroundAnimation,
     soundEnabled: true,
     vibrationEnabled: true,
     breathingConfig: {
       pattern: phases,
-      cycleCount: pattern.cycleCount || 8,
+      cycleCount,
       totalDurationMinutes: totalSeconds / 60
     },
     totalDurationSeconds: totalSeconds,
@@ -219,7 +251,7 @@ export function createSimpleProfile(
   const totalSeconds = (workMinutes * 60) + (breakMinutes * 60);
 
   return {
-    id: `simple-${Date.now()}`,
+    id: `simple-${generateUUID()}`,
     name,
     description,
     type: 'simple',

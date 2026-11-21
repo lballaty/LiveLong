@@ -1,226 +1,71 @@
-// File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/web-app/e2e/tests/timer/timer-basic.spec.ts
-// Description: Basic timer functionality E2E tests covering start, pause, resume, stop, and reset operations
+// File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/e2e/tests/timer/timer-basic.spec.ts
+// Description: E2E smoke tests for UnifiedTimerDisplay 4-view LiveLong PWA
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2025-09-30
+// Updated: 2026-11-21 - Aligned with UnifiedTimerDisplay and 4-view navigation
 
 import { test, expect } from '@playwright/test';
 
-test.describe('Timer Basic Functionality', () => {
+test.describe('LiveLong Practice & Timer Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('[data-testid="time-display"]');
+    await page.waitForSelector('[data-testid="start-focus-button"]');
   });
 
-  test('should display initial timer state correctly', async ({ page }) => {
-    // Verify initial time display
+  test('should display initial Rajio Taiso practice and animation slot', async ({ page }) => {
     const timeDisplay = await page.textContent('[data-testid="time-display"]');
-    expect(timeDisplay).toBe('25:00');
+    expect(timeDisplay).toBe('00:30');
 
-    // Verify start button is present
+    await expect(page.locator('[data-testid="exercise-animation-player"]')).toBeVisible();
     const startButton = page.locator('[data-testid="start-focus-button"]');
     await expect(startButton).toBeVisible();
     await expect(startButton).toBeEnabled();
-
-    // Verify progress circle is at 0%
-    const progressText = await page.textContent('text=/0% complete/');
-    expect(progressText).toContain('0% complete');
   });
 
-  test('should start timer when Start button is clicked', async ({ page }) => {
-    // Click start button
+  test('should start, pause, resume, and stop practice timer', async ({ page }) => {
     await page.click('[data-testid="start-focus-button"]');
+    await expect(page.locator('[data-testid="pause-button"]')).toBeVisible();
 
-    // Verify pause button appears
-    const pauseButton = page.locator('[data-testid="pause-button"]');
-    await expect(pauseButton).toBeVisible();
+    await page.waitForTimeout(1500);
+    const runningTime = await page.textContent('[data-testid="time-display"]');
+    expect(runningTime).not.toBe('00:30');
 
-    // Wait for timer to tick
-    await page.waitForTimeout(2000);
-
-    // Verify time has decreased
-    const timeDisplay = await page.textContent('[data-testid="time-display"]');
-    expect(timeDisplay).not.toBe('25:00');
-
-    // Parse and verify time is less than 25:00
-    const [minutes, seconds] = timeDisplay!.split(':').map(Number);
-    const totalSeconds = minutes * 60 + seconds;
-    expect(totalSeconds).toBeLessThan(1500);
-    expect(totalSeconds).toBeGreaterThan(1497);
-  });
-
-  test('should pause timer when Pause button is clicked', async ({ page }) => {
-    // Start timer
-    await page.click('[data-testid="start-focus-button"]');
-
-    // Wait for timer to run
-    await page.waitForTimeout(1000);
-
-    // Pause timer
     await page.click('[data-testid="pause-button"]');
-
-    // Verify Resume and Stop buttons appear
-    const resumeButton = page.locator('[data-testid="resume-button"]');
-    const stopButton = page.locator('[data-testid="stop-button"]');
-    await expect(resumeButton).toBeVisible();
-    await expect(stopButton).toBeVisible();
-
-    // Get current time
-    const pausedTime = await page.textContent('[data-testid="time-display"]');
-
-    // Wait and verify time hasn't changed
-    await page.waitForTimeout(1000);
-    const afterPauseTime = await page.textContent('[data-testid="time-display"]');
-    expect(afterPauseTime).toBe(pausedTime);
-  });
-
-  test('should resume timer from paused state', async ({ page }) => {
-    // Start and pause timer
-    await page.click('[data-testid="start-focus-button"]');
-    await page.waitForTimeout(1000);
-    await page.click('[data-testid="pause-button"]');
+    await expect(page.locator('[data-testid="resume-button"]')).toBeVisible();
+    await expect(page.locator('[data-testid="stop-button"]')).toBeVisible();
 
     const pausedTime = await page.textContent('[data-testid="time-display"]');
-    const [pausedMinutes, pausedSeconds] = pausedTime!.split(':').map(Number);
-    const pausedTotalSeconds = pausedMinutes * 60 + pausedSeconds;
+    await page.waitForTimeout(1100);
+    expect(await page.textContent('[data-testid="time-display"]')).toBe(pausedTime);
 
-    // Resume timer
     await page.click('[data-testid="resume-button"]');
+    await expect(page.locator('[data-testid="pause-button"]')).toBeVisible();
 
-    // Verify pause button reappears
-    const pauseButton = page.locator('[data-testid="pause-button"]');
-    await expect(pauseButton).toBeVisible();
-
-    // Wait and verify timer continues counting down
-    await page.waitForTimeout(2000);
-    const resumedTime = await page.textContent('[data-testid="time-display"]');
-    const [resumedMinutes, resumedSeconds] = resumedTime!.split(':').map(Number);
-    const resumedTotalSeconds = resumedMinutes * 60 + resumedSeconds;
-
-    expect(resumedTotalSeconds).toBeLessThan(pausedTotalSeconds);
-  });
-
-  test('should stop timer and show reset button', async ({ page }) => {
-    // Start timer
-    await page.click('[data-testid="start-focus-button"]');
-    await page.waitForTimeout(1000);
-
-    // Pause then stop
-    await page.click('[data-testid="pause-button"]');
     await page.click('[data-testid="stop-button"]');
-
-    // Verify reset button appears
-    const resetButton = page.locator('[data-testid="reset-timer-button"]');
-    await expect(resetButton).toBeVisible();
+    await expect(page.locator('[data-testid="start-focus-button"]')).toBeVisible();
+    expect(await page.textContent('[data-testid="time-display"]')).toBe('00:30');
   });
 
-  test('should reset timer to initial state', async ({ page }) => {
-    // Start, pause, stop timer
-    await page.click('[data-testid="start-focus-button"]');
-    await page.waitForTimeout(2000);
-    await page.click('[data-testid="pause-button"]');
-    await page.click('[data-testid="stop-button"]');
+  test('should switch standing/chair and front/side/both animation views', async ({ page }) => {
+    await page.click('button:has-text("Chair")');
+    await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('Chair');
 
-    // Reset timer
-    await page.click('[data-testid="reset-timer-button"]');
-
-    // Verify timer returns to initial state
-    const timeDisplay = await page.textContent('[data-testid="time-display"]');
-    expect(timeDisplay).toBe('25:00');
-
-    // Verify start button reappears
-    const startButton = page.locator('[data-testid="start-focus-button"]');
-    await expect(startButton).toBeVisible();
-
-    // Verify progress is back to 0%
-    const progressText = await page.textContent('text=/0% complete/');
-    expect(progressText).toContain('0% complete');
+    await page.click('button:has-text("Both")');
+    await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('front view');
+    await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('side view');
   });
 
-  test('should update progress circle as timer runs', async ({ page }) => {
-    // Set a short duration for testing
-    await page.click('[data-testid="duration-30s"]');
+  test('should navigate across Practices, Progress, and Settings views', async ({ page }) => {
+    await page.click('nav button:has-text("Practices")');
+    await expect(page.locator('h2:has-text("Practices & Timers")')).toBeVisible();
 
-    // Start timer
-    await page.click('[data-testid="start-focus-button"]');
+    await page.click('text=Box Breathing');
+    await expect(page.locator('[data-testid="breathing-visualizer"]')).toBeVisible();
 
-    // Get initial progress
-    const initialProgress = await page.textContent('text=/%/');
-    expect(initialProgress).toContain('0%');
+    await page.click('nav button:has-text("Progress")');
+    await expect(page.locator('[data-testid="progress-view"]')).toBeVisible();
 
-    // Wait for some progress
-    await page.waitForTimeout(3000);
-
-    // Verify progress has increased
-    const progressAfter3s = await page.textContent('text=/%/');
-    const progressValue = parseInt(progressAfter3s!.match(/(\d+)%/)![1]);
-    expect(progressValue).toBeGreaterThan(5);
-    expect(progressValue).toBeLessThan(15);
-
-    // Verify progress circle SVG is updating
-    const progressCircle = page.locator('[data-testid="progress-circle"]');
-    const strokeDashoffset = await progressCircle.getAttribute('stroke-dashoffset');
-    expect(strokeDashoffset).not.toBe(null);
-  });
-
-  test('should complete timer and show completion message', async ({ page }) => {
-    // Set very short duration for testing
-    await page.click('[data-testid="duration-30s"]');
-
-    // Manually set to 2 seconds for faster testing
-    await page.click('[data-testid="custom-duration-button"]');
-    await page.fill('[data-testid="custom-minutes-input"]', '0');
-    await page.fill('[data-testid="custom-seconds-input"]', '3');
-    await page.click('[data-testid="apply-custom-duration"]');
-
-    // Start timer
-    await page.click('[data-testid="start-focus-button"]');
-
-    // Wait for completion
-    await page.waitForTimeout(4000);
-
-    // Verify completion message appears
-    const completionMessage = page.locator('text=/Session Complete/');
-    await expect(completionMessage).toBeVisible();
-
-    // Verify time shows 00:00
-    const timeDisplay = await page.textContent('[data-testid="time-display"]');
-    expect(timeDisplay).toBe('00:00');
-
-    // Verify 100% progress
-    const progressText = await page.textContent('text=/%/');
-    expect(progressText).toContain('100%');
-  });
-
-  test('should maintain timer state across page visibility changes', async ({ page, context }) => {
-    // Start timer
-    await page.click('[data-testid="start-focus-button"]');
-    await page.waitForTimeout(1000);
-
-    const timeBeforeHide = await page.textContent('[data-testid="time-display"]');
-
-    // Simulate tab switch (page becomes hidden)
-    await page.evaluate(() => {
-      Object.defineProperty(document, 'hidden', { value: true, writable: true });
-      document.dispatchEvent(new Event('visibilitychange'));
-    });
-
-    await page.waitForTimeout(2000);
-
-    // Simulate returning to tab
-    await page.evaluate(() => {
-      Object.defineProperty(document, 'hidden', { value: false, writable: true });
-      document.dispatchEvent(new Event('visibilitychange'));
-    });
-
-    const timeAfterReturn = await page.textContent('[data-testid="time-display"]');
-
-    // Verify timer continued running
-    const [beforeMinutes, beforeSeconds] = timeBeforeHide!.split(':').map(Number);
-    const [afterMinutes, afterSeconds] = timeAfterReturn!.split(':').map(Number);
-    const beforeTotal = beforeMinutes * 60 + beforeSeconds;
-    const afterTotal = afterMinutes * 60 + afterSeconds;
-
-    expect(afterTotal).toBeLessThan(beforeTotal);
-    expect(beforeTotal - afterTotal).toBeGreaterThanOrEqual(1);
+    await page.click('nav button:has-text("Settings")');
+    await expect(page.locator('[data-testid="settings-view"]')).toBeVisible();
   });
 });

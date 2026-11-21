@@ -8,9 +8,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BreathingPattern } from '@/types/profile.types';
 
+interface ExternalBreathingState {
+  phase: BreathingPhase;
+  remainingSeconds: number;
+  currentCycle: number;
+  totalCycles: number;
+}
+
 interface BreathingVisualizerProps {
   pattern: BreathingPattern;
   isActive: boolean;
+  embedded?: boolean;
+  externalState?: ExternalBreathingState;
   onComplete?: () => void;
   onCycleComplete?: (cycleNumber: number) => void;
 }
@@ -20,6 +29,8 @@ type BreathingPhase = 'inhale' | 'hold-in' | 'exhale' | 'hold-out' | 'complete';
 export default function BreathingVisualizer({
   pattern,
   isActive,
+  embedded = false,
+  externalState,
   onComplete,
   onCycleComplete
 }: BreathingVisualizerProps) {
@@ -115,9 +126,9 @@ export default function BreathingVisualizer({
     }
   }, [timeRemaining, currentPhase, isActive]);
 
-  // Main breathing timer
+  // Main breathing timer (skipped when driven externally)
   useEffect(() => {
-    if (!isActive || isPaused) {
+    if (externalState || !isActive || isPaused) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -185,8 +196,81 @@ export default function BreathingVisualizer({
     setIsPaused(false);
   };
 
-  if (!isActive) {
+  if (!isActive && !embedded) {
     return null;
+  }
+
+  const activePhase = externalState ? externalState.phase : currentPhase;
+  const activeRemaining = externalState ? externalState.remainingSeconds : timeRemaining;
+  const activeCycle = externalState ? externalState.currentCycle : currentCycle + 1;
+  const activeTotalCycles = externalState ? externalState.totalCycles : pattern.cycles;
+
+  const activePhaseText = (() => {
+    switch (activePhase) {
+      case 'inhale': return 'Breathe In';
+      case 'hold-in': return 'Hold';
+      case 'exhale': return 'Breathe Out';
+      case 'hold-out': return 'Hold Empty';
+      case 'complete': return 'Complete!';
+      default: return '';
+    }
+  })();
+
+  const activePhaseColor = (() => {
+    switch (activePhase) {
+      case 'inhale': return 'text-blue-600';
+      case 'hold-in': return 'text-purple-600';
+      case 'exhale': return 'text-green-600';
+      case 'hold-out': return 'text-orange-600';
+      case 'complete': return 'text-emerald-600';
+      default: return 'text-gray-600';
+    }
+  })();
+
+  if (embedded) {
+    const visualStyle = pattern.visualStyle || 'circle';
+    return (
+      <div data-testid="breathing-visualizer" className="flex flex-col items-center py-4">
+        <div className="mb-6 flex justify-center items-center h-48">
+          {visualStyle === 'square' ? (
+            <div
+              className={`w-28 h-28 border-8 transition-all duration-1000 ease-in-out ${
+                activePhase === 'inhale' ? 'border-blue-400 bg-blue-100' :
+                activePhase === 'hold-in' ? 'border-purple-400 bg-purple-100' :
+                activePhase === 'exhale' ? 'border-green-400 bg-green-100' :
+                'border-orange-400 bg-orange-100'
+              }`}
+              style={{
+                transform: `scale(${activePhase === 'inhale' || activePhase === 'hold-in' ? 1.35 : 1})`,
+                transition: 'transform 1s ease-in-out, border-color 0.5s ease-in-out'
+              }}
+            />
+          ) : (
+            <div
+              className={`w-32 h-32 rounded-full border-8 transition-all duration-1000 ease-in-out ${
+                activePhase === 'inhale' ? 'border-blue-400 bg-blue-100' :
+                activePhase === 'hold-in' ? 'border-purple-400 bg-purple-100' :
+                activePhase === 'exhale' ? 'border-green-400 bg-green-100' :
+                'border-orange-400 bg-orange-100'
+              }`}
+              style={{
+                transform: `scale(${activePhase === 'inhale' || activePhase === 'hold-in' ? 1.35 : 1})`,
+                transition: 'transform 1s ease-in-out, border-color 0.5s ease-in-out'
+              }}
+            />
+          )}
+        </div>
+        <div className={`text-3xl font-bold mb-1 transition-colors duration-500 ${activePhaseColor}`}>
+          {activePhaseText}
+        </div>
+        <div className="text-4xl font-mono font-bold text-gray-800 mb-2" data-testid="time-display">
+          {activeRemaining}s
+        </div>
+        <div className="text-sm text-gray-500">
+          Cycle {activeCycle} of {activeTotalCycles}
+        </div>
+      </div>
+    );
   }
 
   return (

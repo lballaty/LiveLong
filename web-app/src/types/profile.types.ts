@@ -19,6 +19,11 @@ export enum ProfileCategory {
  * Exercise step in a series
  * Represents one exercise within a sequence
  */
+export interface StepAnimationRef {
+  readonly pack: string;
+  readonly version?: string;
+}
+
 export interface ExerciseStep {
   readonly id: string;
   readonly name: string;
@@ -28,6 +33,7 @@ export interface ExerciseStep {
   readonly instructions?: string;
   readonly videoUrl?: string;
   readonly imageUrl?: string;
+  readonly animation?: StepAnimationRef;
 }
 
 /**

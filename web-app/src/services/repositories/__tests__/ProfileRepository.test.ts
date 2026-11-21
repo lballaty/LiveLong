@@ -147,6 +147,7 @@ describe('ProfileRepository', () => {
       };
 
       const created = await repository.create(input);
+      await new Promise((resolve) => setTimeout(resolve, 5));
       const updated = await repository.update(created.id, {
         name: 'Updated Name',
         durationMinutes: 30,

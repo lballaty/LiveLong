@@ -28,7 +28,7 @@ export class UnifiedTimerEngine {
     };
 
     switch (profile.type) {
-      case 'simple':
+      case 'simple': {
         const workSeconds = (profile.simpleDuration?.workMinutes || 0) * 60 +
           (profile.simpleDuration?.workSeconds || 0);
         return {
@@ -39,8 +39,9 @@ export class UnifiedTimerEngine {
             sessionsCompleted: 0
           }
         };
+      }
 
-      case 'series':
+      case 'series': {
         const warmupSeconds = (profile.seriesConfig?.warmupMinutes || 0) * 60 +
           (profile.seriesConfig?.warmupSeconds || 0);
         const firstStep = profile.seriesConfig?.steps[0];
@@ -57,8 +58,9 @@ export class UnifiedTimerEngine {
             completedSteps: []
           }
         };
+      }
 
-      case 'breathing':
+      case 'breathing': {
         const pattern = profile.breathingConfig?.pattern || [];
         const firstPhase = pattern[0];
         return {
@@ -70,6 +72,7 @@ export class UnifiedTimerEngine {
             currentPhase: firstPhase || { type: 'inhale', durationSeconds: 4 }
           }
         };
+      }
 
       default:
         return baseState;
@@ -88,7 +91,7 @@ export class UnifiedTimerEngine {
       this.tick();
     }, 1000);
 
-    this.onUpdate?.(this.state);
+    this.onUpdate?.({ ...this.state });
   }
 
   public pause() {
@@ -102,7 +105,7 @@ export class UnifiedTimerEngine {
       this.intervalId = null;
     }
 
-    this.onUpdate?.(this.state);
+    this.onUpdate?.({ ...this.state });
   }
 
   public resume() {
@@ -119,7 +122,7 @@ export class UnifiedTimerEngine {
     }
 
     this.state = this.initializeState(this.profile);
-    this.onUpdate?.(this.state);
+    this.onUpdate?.({ ...this.state });
   }
 
   private tick() {
@@ -130,7 +133,7 @@ export class UnifiedTimerEngine {
       this.handlePhaseComplete();
     }
 
-    this.onUpdate?.(this.state);
+    this.onUpdate?.({ ...this.state });
   }
 
   private handlePhaseComplete() {
@@ -183,7 +186,7 @@ export class UnifiedTimerEngine {
         this.onPhaseChange?.('exercise');
         break;
 
-      case 'exercise':
+      case 'exercise': {
         if (!currentStep) return;
 
         // Move to rest if there's rest time
@@ -197,6 +200,7 @@ export class UnifiedTimerEngine {
           this.moveToNextExercise();
         }
         break;
+      }
 
       case 'rest':
         // Move to next exercise or cooldown
@@ -283,15 +287,16 @@ export class UnifiedTimerEngine {
       case 'simple':
         return this.state.simpleState?.isWorkPhase ? 'Focus Time' : 'Break Time';
 
-      case 'series':
+      case 'series': {
         if (!this.state.seriesState) return '';
         const { currentPhase, currentStep } = this.state.seriesState;
         if (currentPhase === 'warmup') return 'Warming Up';
         if (currentPhase === 'cooldown') return 'Cooling Down';
         if (currentPhase === 'rest') return 'Rest';
         return currentStep?.name || 'Exercise';
+      }
 
-      case 'breathing':
+      case 'breathing': {
         if (!this.state.breathingState) return '';
         const phase = this.state.breathingState.currentPhase;
         const cycle = this.state.breathingState.currentCycle;
@@ -303,6 +308,7 @@ export class UnifiedTimerEngine {
           'hold-out': 'Hold'
         };
         return `${phaseNames[phase.type]} (${cycle}/${totalCycles})`;
+      }
 
       default:
         return '';

@@ -14,11 +14,10 @@ import FDBKeyRange from 'fake-indexeddb/lib/FDBKeyRange';
 global.indexedDB = new FDBFactory();
 global.IDBKeyRange = FDBKeyRange;
 
-// Polyfill for structuredClone (not available in older Node versions)
+// Polyfill for structuredClone in jsdom test environment (preserves Date/Map/Set)
 if (typeof structuredClone === 'undefined') {
-  global.structuredClone = (obj) => {
-    return JSON.parse(JSON.stringify(obj));
-  };
+  const v8 = require('v8');
+  global.structuredClone = (obj) => v8.deserialize(v8.serialize(obj));
 }
 
 // Mock Web Workers

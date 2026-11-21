@@ -33,7 +33,8 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Gentle neck rotations and arm stretches',
       durationMinutes: 1,
       restDurationMinutes: 0.25, // 15 seconds
-      instructions: 'Slowly rotate neck, stretch arms up and out'
+      instructions: 'Slowly rotate neck, stretch arms up and out',
+      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '^1' }
     },
     {
       id: 'arm-swings',
@@ -41,7 +42,8 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Rhythmic arm swinging movements',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Swing arms forward and backward in rhythm'
+      instructions: 'Swing arms forward and backward in rhythm',
+      animation: { pack: 'rajio-taiso.arm-swings', version: '^1' }
     },
     {
       id: 'chest-expansion',
@@ -49,7 +51,8 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Open chest and expand lungs',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Bring arms back to open chest, breathe deeply'
+      instructions: 'Bring arms back to open chest, breathe deeply',
+      animation: { pack: 'rajio-taiso.chest-expansion', version: '^1' }
     },
     {
       id: 'side-bends',
@@ -57,7 +60,8 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Lateral trunk flexibility',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Bend to each side, reach arm overhead'
+      instructions: 'Bend to each side, reach arm overhead',
+      animation: { pack: 'rajio-taiso.side-bends', version: '^1' }
     },
     {
       id: 'trunk-twists',
@@ -65,7 +69,8 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Spinal rotation movements',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Rotate torso left and right with arms extended'
+      instructions: 'Rotate torso left and right with arms extended',
+      animation: { pack: 'rajio-taiso.trunk-twists', version: '^1' }
     },
     {
       id: 'leg-swings',
@@ -73,7 +78,8 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Dynamic leg movements',
       durationMinutes: 1,
       restDurationMinutes: 0,
-      instructions: 'Swing legs forward and back, side to side'
+      instructions: 'Swing legs forward and back, side to side',
+      animation: { pack: 'rajio-taiso.leg-swings', version: '^1' }
     }
   ],
   get totalDurationMinutes() {

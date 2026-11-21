@@ -7,13 +7,13 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Focus Timer',
-  description: 'Stay focused and productive with customizable timers',
+  title: 'LiveLong ⊹',
+  description: 'Japanese longevity exercises, breathing practices, and mindful focus sessions',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Focus Timer'
+    title: 'LiveLong ⊹'
   }
 };
 

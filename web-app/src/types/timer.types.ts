@@ -57,7 +57,7 @@ export interface ITimerController {
 /**
  * Timer state change listener type
  */
-export type TimerStateChangeListener = (state: TimerData) => void;
+export type TimerStateChangeListener = (state: TimerData, event?: TimerEvent) => void;
 
 /**
  * Timer event types for event-driven architecture

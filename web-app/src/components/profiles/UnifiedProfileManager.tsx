@@ -268,7 +268,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
   );
 };
 
-export default function UnifiedProfileManager() {
+interface UnifiedProfileManagerProps {
+  onProfileSelect?: (profile: UnifiedProfile) => void;
+}
+
+export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfileManagerProps = {}) {
   const {
     profiles,
     customProfiles,
@@ -302,7 +306,7 @@ export default function UnifiedProfileManager() {
     <div className="w-full max-w-6xl mx-auto p-4">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Timer Profiles</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Practices & Timers</h2>
           <button
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -312,50 +316,40 @@ export default function UnifiedProfileManager() {
         </div>
 
         <div className="flex gap-2 mb-4">
-          {(['all', 'simple', 'series', 'breathing'] as const).map((type) => (
+          {([
+            { id: 'all', label: 'All' },
+            { id: 'series', label: 'Exercises' },
+            { id: 'breathing', label: 'Breathing' },
+            { id: 'simple', label: 'Focus Timers' },
+          ] as const).map(({ id, label }) => (
             <button
-              key={type}
-              onClick={() => setFilterType(type)}
+              key={id}
+              onClick={() => setFilterType(id)}
               className={`px-3 py-1 rounded-md transition-colors ${
-                filterType === type
+                filterType === id
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {simpleProfiles.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">Simple Timers</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {simpleProfiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                profile={profile}
-                isActive={activeProfile?.id === profile.id}
-                onSelect={() => selectProfile(profile.id)}
-                onEdit={() => setEditingProfile(profile)}
-                onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {seriesProfiles.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">Exercise Series</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">Japanese Longevity Exercises</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {seriesProfiles.map((profile) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
-                onSelect={() => selectProfile(profile.id)}
+                onSelect={() => {
+                  selectProfile(profile.id);
+                  onProfileSelect?.(profile);
+                }}
                 onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
               />
             ))}
@@ -372,7 +366,31 @@ export default function UnifiedProfileManager() {
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
-                onSelect={() => selectProfile(profile.id)}
+                onSelect={() => {
+                  selectProfile(profile.id);
+                  onProfileSelect?.(profile);
+                }}
+                onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {simpleProfiles.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">Focus & Meditation Timers</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {simpleProfiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                isActive={activeProfile?.id === profile.id}
+                onSelect={() => {
+                  selectProfile(profile.id);
+                  onProfileSelect?.(profile);
+                }}
+                onEdit={() => setEditingProfile(profile)}
                 onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
               />
             ))}
