@@ -1,9 +1,31 @@
-// File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/web-app/e2e/tests/timer/timer-duration.spec.ts
-// Description: E2E tests for timer duration selection including exercise intervals and custom durations
+// File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/e2e/tests/timer/timer-duration.spec.ts
+// Description: E2E tests for practice duration selection, custom durations, and time formatting
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2025-09-30
+// Updated: 2026-11-21 - Aligned with UnifiedTimerDisplay Practices view and custom timer creation
 
 import { test, expect } from '@playwright/test';
+
+async function createAndSelectCustomTimer(
+  page: import('@playwright/test').Page,
+  name: string,
+  workMinutes: number,
+  workSeconds: number
+) {
+  await page.click('nav button:has-text("Practices")');
+  await page.click('button:has-text("+ Create Custom Timer")');
+
+  const form = page.locator('form');
+  await form.locator('input[type="text"]').fill(name);
+  const numInputs = form.locator('input[type="number"]');
+  await numInputs.nth(0).fill(String(workMinutes));
+  await numInputs.nth(1).fill(String(workSeconds));
+  await numInputs.nth(2).fill('0');
+  await numInputs.nth(3).fill('0');
+  await form.locator('button[type="submit"]').click();
+
+  await page.locator(`[data-testid^="profile-simple-"]:has-text("${name}")`).click();
+}
 
 test.describe('Timer Duration Selection', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,170 +33,71 @@ test.describe('Timer Duration Selection', () => {
     await page.waitForSelector('[data-testid="time-display"]');
   });
 
-  test.describe('Exercise Interval Presets', () => {
-    test('should set timer to 30 seconds for exercise intervals', async ({ page }) => {
-      await page.click('[data-testid="duration-30s"]');
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('00:30');
-    });
-
-    test('should set timer to 45 seconds for HIIT training', async ({ page }) => {
-      await page.click('[data-testid="duration-45s"]');
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('00:45');
-    });
-
-    test('should set timer to 1 minute for recovery periods', async ({ page }) => {
-      await page.click('[data-testid="duration-1min"]');
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('01:00');
-    });
-  });
-
-  test.describe('Work Session Presets', () => {
-    test('should set timer to 5 minutes for short focus', async ({ page }) => {
-      await page.click('[data-testid="duration-5min"]');
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('05:00');
-    });
-
-    test('should set timer to 15 minutes for medium focus', async ({ page }) => {
-      await page.click('[data-testid="duration-15min"]');
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('15:00');
-    });
-
-    test('should set timer to 25 minutes for Pomodoro', async ({ page }) => {
-      await page.click('[data-testid="duration-25min"]');
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('25:00');
-    });
-  });
-
-  test.describe('Custom Duration Input', () => {
-    test('should open custom duration panel when button clicked', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      const minutesInput = page.locator('[data-testid="custom-minutes-input"]');
-      const secondsInput = page.locator('[data-testid="custom-seconds-input"]');
-
-      await expect(minutesInput).toBeVisible();
-      await expect(secondsInput).toBeVisible();
-    });
-
-    test('should set custom duration with minutes and seconds', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      await page.fill('[data-testid="custom-minutes-input"]', '2');
-      await page.fill('[data-testid="custom-seconds-input"]', '30');
-      await page.click('[data-testid="apply-custom-duration"]');
-
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('02:30');
-    });
-
-    test('should handle only seconds input for intervals', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      await page.fill('[data-testid="custom-minutes-input"]', '0');
-      await page.fill('[data-testid="custom-seconds-input"]', '45');
-      await page.click('[data-testid="apply-custom-duration"]');
-
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('00:45');
-    });
-
-    test('should handle only minutes input for long sessions', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      await page.fill('[data-testid="custom-minutes-input"]', '90');
-      await page.fill('[data-testid="custom-seconds-input"]', '0');
-      await page.click('[data-testid="apply-custom-duration"]');
-
-      // 90 minutes displays as 01:30:00 (hours:minutes:seconds format)
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('01:30:00');
-    });
-
-    test('should limit seconds input to max 59', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      await page.fill('[data-testid="custom-seconds-input"]', '99');
-      await page.click('[data-testid="apply-custom-duration"]');
-
-      // Should cap at 59 seconds
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe('25:59'); // 25 is default minutes
-    });
-
-    test('should cancel custom duration without applying', async ({ page }) => {
-      const initialTime = await page.textContent('[data-testid="time-display"]');
-
-      await page.click('[data-testid="custom-duration-button"]');
-      await page.fill('[data-testid="custom-minutes-input"]', '10');
-      await page.fill('[data-testid="custom-seconds-input"]', '30');
-      await page.click('[data-testid="cancel-custom-duration"]');
-
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toBe(initialTime);
-    });
-
-    test('should handle zero duration gracefully', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      await page.fill('[data-testid="custom-minutes-input"]', '0');
-      await page.fill('[data-testid="custom-seconds-input"]', '0');
-      await page.click('[data-testid="apply-custom-duration"]');
-
-      // Should not apply zero duration
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).not.toBe('00:00');
-    });
-  });
-
-  test.describe('Duration Change During Timer States', () => {
-    test('should allow duration change when timer is idle', async ({ page }) => {
-      await page.click('[data-testid="duration-5min"]');
-      expect(await page.textContent('[data-testid="time-display"]')).toBe('05:00');
-
-      await page.click('[data-testid="duration-30s"]');
+  test.describe('Built-in Practice Durations', () => {
+    test('should show Rajio Taiso default warmup of 00:30 on load', async ({ page }) => {
       expect(await page.textContent('[data-testid="time-display"]')).toBe('00:30');
     });
 
-    test('should reset and change duration after stopping timer', async ({ page }) => {
-      // Start with 30 seconds
-      await page.click('[data-testid="duration-30s"]');
-      await page.click('[data-testid="start-focus-button"]');
-      await page.waitForTimeout(1000);
+    test('should set timer to 15:00 for Quick Focus, 10:00 for Meditation, and 25:00 for Pomodoro', async ({ page }) => {
+      await page.click('nav button:has-text("Practices")');
+      await page.locator('[data-testid^="profile-simple-"]:has-text("Quick Focus")').click();
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('15:00');
 
-      // Pause and stop
-      await page.click('[data-testid="pause-button"]');
-      await page.click('[data-testid="stop-button"]');
-      await page.click('[data-testid="reset-timer-button"]');
+      await page.click('nav button:has-text("Practices")');
+      await page.locator('[data-testid^="profile-simple-"]:has-text("Meditation")').click();
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('10:00');
 
-      // Change to different duration
-      await page.click('[data-testid="duration-5min"]');
-      expect(await page.textContent('[data-testid="time-display"]')).toBe('05:00');
+      await page.click('nav button:has-text("Practices")');
+      await page.locator('[data-testid^="profile-simple-"]:has-text("Pomodoro")').click();
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('25:00');
+    });
+
+    test('should display HH:MM:SS format for Deep Work (90 minutes)', async ({ page }) => {
+      await page.click('nav button:has-text("Practices")');
+      await page.locator('[data-testid^="profile-simple-"]:has-text("Deep Work")').click();
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('01:30:00');
     });
   });
 
-  test.describe('Display Format', () => {
-    test('should display hours for durations over 60 minutes', async ({ page }) => {
-      await page.click('[data-testid="custom-duration-button"]');
-
-      await page.fill('[data-testid="custom-minutes-input"]', '75');
-      await page.fill('[data-testid="custom-seconds-input"]', '30');
-      await page.click('[data-testid="apply-custom-duration"]');
-
-      const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      // 75:30 = 1:15:30
-      expect(timeDisplay).toMatch(/^\d{1,2}:\d{2}:\d{2}$/);
+  test.describe('Custom Duration Creation & Formatting', () => {
+    test('should set custom duration with minutes and seconds (02:30)', async ({ page }) => {
+      await createAndSelectCustomTimer(page, 'Custom 2m30s', 2, 30);
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('02:30');
     });
 
-    test('should maintain MM:SS format for durations under 60 minutes', async ({ page }) => {
-      await page.click('[data-testid="duration-25min"]');
+    test('should set custom duration with seconds only (00:45)', async ({ page }) => {
+      await createAndSelectCustomTimer(page, 'Custom 45s', 0, 45);
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('00:45');
+    });
+
+    test('should format durations over 60 minutes as HH:MM:SS (01:15:30)', async ({ page }) => {
+      await createAndSelectCustomTimer(page, 'Custom 75m30s', 75, 30);
       const timeDisplay = await page.textContent('[data-testid="time-display"]');
-      expect(timeDisplay).toMatch(/^\d{2}:\d{2}$/);
+      expect(timeDisplay).toBe('01:15:30');
+    });
+
+    test('should cancel custom timer creation without changing active duration', async ({ page }) => {
+      const initialTime = await page.textContent('[data-testid="time-display"]');
+      await page.click('nav button:has-text("Practices")');
+      await page.click('button:has-text("+ Create Custom Timer")');
+      await page.locator('form input[type="text"]').fill('Ignored');
+      await page.click('form button:has-text("Cancel")');
+
+      await page.click('nav button:has-text("Practice")');
+      expect(await page.textContent('[data-testid="time-display"]')).toBe(initialTime);
+    });
+  });
+
+  test.describe('Switching Duration After Stopping Timer', () => {
+    test('should allow switching practice after stopping an active timer', async ({ page }) => {
+      await page.click('[data-testid="start-focus-button"]');
+      await page.waitForTimeout(1000);
+      await page.click('[data-testid="pause-button"]');
+      await page.click('[data-testid="stop-button"]');
+
+      await page.click('nav button:has-text("Practices")');
+      await page.locator('[data-testid^="profile-simple-"]:has-text("Pomodoro")').click();
+      expect(await page.textContent('[data-testid="time-display"]')).toBe('25:00');
     });
   });
 });

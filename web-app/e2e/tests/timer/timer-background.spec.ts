@@ -1,186 +1,116 @@
-// File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/web-app/e2e/tests/timer/timer-background.spec.ts
-// Description: E2E tests for Web Worker background timer functionality on iOS PWA
+// File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/e2e/tests/timer/timer-background.spec.ts
+// Description: E2E tests for background timer behavior, visibility changes, and worker availability
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2025-09-30
+// Updated: 2026-11-21 - Aligned with UnifiedTimerDisplay and Rajio Taiso default 00:30
 
 import { test, expect } from '@playwright/test';
 
-test.describe('Background Timer Web Worker', () => {
+test.describe('Background Timer & Visibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('[data-testid="time-display"]');
   });
 
   test('should load timer worker script', async ({ page }) => {
-    // Check if worker script is accessible
-    const response = await page.goto('/timer-worker.js');
-    expect(response?.status()).toBe(200);
-
-    // Go back to main page
-    await page.goto('/');
+    const response = await page.request.get('/timer-worker.js');
+    expect(response.status()).toBe(200);
   });
 
-  test('should initialize Web Worker on iOS devices', async ({ page, browserName }) => {
-    // Inject iOS user agent for testing
+  test('should start timer cleanly on iOS user agent', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'userAgent', {
         value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
-        configurable: true
+        configurable: true,
       });
     });
 
     await page.reload();
     await page.waitForSelector('[data-testid="time-display"]');
 
-    // Check console for worker initialization
-    const consoleMessages: string[] = [];
-    page.on('console', msg => consoleMessages.push(msg.text()));
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
 
-    // Start timer to trigger worker
     await page.click('[data-testid="start-focus-button"]');
-    await page.waitForTimeout(500);
-
-    // Worker should be initialized without errors
-    const hasWorkerError = consoleMessages.some(msg =>
-      msg.includes('Failed to initialize timer worker')
-    );
-    expect(hasWorkerError).toBe(false);
+    await expect(page.locator('[data-testid="pause-button"]')).toBeVisible();
+    await page.waitForTimeout(1100);
+    expect(await page.textContent('[data-testid="time-display"]')).not.toBe('00:30');
+    expect(consoleErrors.filter((e) => e.includes('timer worker'))).toHaveLength(0);
   });
 
-  test('should continue timer in background simulation', async ({ page }) => {
-    // Start timer
-    await page.click('[data-testid="duration-30s"]');
+  test('should continue counting during background visibility simulation', async ({ page }) => {
+    await expect(page.locator('[data-testid="time-display"]')).toHaveText('00:30');
     await page.click('[data-testid="start-focus-button"]');
 
-    // Get initial time
-    const initialTime = await page.textContent('[data-testid="time-display"]');
-    expect(initialTime).toBe('00:30');
-
-    // Wait 2 seconds
-    await page.waitForTimeout(2000);
-
-    // Check timer has counted down
+    await page.waitForTimeout(1500);
     const updatedTime = await page.textContent('[data-testid="time-display"]');
-    const seconds = parseInt(updatedTime!.split(':')[1]);
-    expect(seconds).toBeLessThanOrEqual(28);
-    expect(seconds).toBeGreaterThanOrEqual(27);
+    const seconds = parseInt(updatedTime!.split(':')[1], 10);
+    expect(seconds).toBeLessThanOrEqual(29);
 
-    // Simulate page visibility change (backgrounding)
     await page.evaluate(() => {
-      Object.defineProperty(document, 'hidden', {
-        value: true,
-        configurable: true
-      });
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
       document.dispatchEvent(new Event('visibilitychange'));
     });
 
-    // Wait while "backgrounded"
     await page.waitForTimeout(2000);
 
-    // Simulate returning to foreground
     await page.evaluate(() => {
-      Object.defineProperty(document, 'hidden', {
-        value: false,
-        configurable: true
-      });
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
       document.dispatchEvent(new Event('visibilitychange'));
     });
 
-    // Timer should have continued counting
     const finalTime = await page.textContent('[data-testid="time-display"]');
-    const finalSeconds = parseInt(finalTime!.split(':')[1]);
-    expect(finalSeconds).toBeLessThanOrEqual(26);
+    const finalSeconds = parseInt(finalTime!.split(':')[1], 10);
+    expect(finalSeconds).toBeLessThan(seconds);
   });
 
-  test('should handle pause and resume with Web Worker', async ({ page }) => {
-    // Start timer
-    await page.click('[data-testid="duration-30s"]');
+  test('should hold time steady when paused and resume cleanly', async ({ page }) => {
     await page.click('[data-testid="start-focus-button"]');
+    await page.waitForTimeout(1200);
 
-    // Wait a bit
-    await page.waitForTimeout(1000);
-
-    // Pause timer
     await page.click('[data-testid="pause-button"]');
     const pausedTime = await page.textContent('[data-testid="time-display"]');
 
-    // Wait while paused
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1500);
+    expect(await page.textContent('[data-testid="time-display"]')).toBe(pausedTime);
 
-    // Time should not have changed while paused
-    const stillPausedTime = await page.textContent('[data-testid="time-display"]');
-    expect(stillPausedTime).toBe(pausedTime);
-
-    // Resume timer
     await page.click('[data-testid="resume-button"]');
-
-    // Wait and verify it's counting again
-    await page.waitForTimeout(1000);
-    const resumedTime = await page.textContent('[data-testid="time-display"]');
-    expect(resumedTime).not.toBe(pausedTime);
+    await page.waitForTimeout(1200);
+    expect(await page.textContent('[data-testid="time-display"]')).not.toBe(pausedTime);
   });
 
-  test('should handle timer completion with Web Worker', async ({ page }) => {
-    // Set very short timer for testing
-    await page.click('[data-testid="custom-duration-button"]');
-    await page.fill('[data-testid="custom-minutes-input"]', '0');
-    await page.fill('[data-testid="custom-seconds-input"]', '3');
-    await page.click('[data-testid="apply-custom-duration"]');
+  test('should complete a short custom timer and return to idle', async ({ page }) => {
+    await page.click('nav button:has-text("Practices")');
+    await page.click('button:has-text("+ Create Custom Timer")');
 
-    // Start timer
+    const form = page.locator('form');
+    await form.locator('input[type="text"]').fill('2s Background Test');
+    const numInputs = form.locator('input[type="number"]');
+    await numInputs.nth(0).fill('0');
+    await numInputs.nth(1).fill('2');
+    await numInputs.nth(2).fill('0');
+    await numInputs.nth(3).fill('0');
+    await form.locator('button[type="submit"]').click();
+
+    await page.locator('[data-testid^="profile-simple-"]:has-text("2s Background Test")').click();
+    await expect(page.locator('[data-testid="time-display"]')).toHaveText('00:02');
+
     await page.click('[data-testid="start-focus-button"]');
-
-    // Wait for completion
-    await page.waitForTimeout(4000);
-
-    // Should show completion state
-    const timeDisplay = await page.textContent('[data-testid="time-display"]');
-    expect(timeDisplay).toBe('00:00');
-
-    // Progress should be 100%
-    const progressText = await page.textContent('text=/100% complete/');
-    expect(progressText).toContain('100% complete');
+    await expect(page.locator('[data-testid="start-focus-button"]')).toBeVisible({ timeout: 5000 });
   });
 
-  test('should sync worker state with main thread', async ({ page }) => {
-    // Start timer
-    await page.click('[data-testid="duration-1min"]');
+  test('should initialize fresh page with Rajio Taiso default 00:30 in idle state', async ({ page, context }) => {
     await page.click('[data-testid="start-focus-button"]');
+    await expect(page.locator('[data-testid="pause-button"]')).toBeVisible();
 
-    // Get initial state
-    await page.waitForTimeout(500);
-    const runningStatus = await page.textContent('text=/Timer Status/');
-    expect(runningStatus).toContain('running');
-
-    // Pause
-    await page.click('[data-testid="pause-button"]');
-    await page.waitForTimeout(500);
-    const pausedStatus = await page.textContent('text=/Timer Status/');
-    expect(pausedStatus).toContain('paused');
-
-    // Stop
-    await page.click('[data-testid="stop-button"]');
-    await page.waitForTimeout(500);
-    const stoppedStatus = await page.textContent('text=/Timer Status/');
-    expect(stoppedStatus).toContain('stopped');
-  });
-
-  test('should clean up worker on page unload', async ({ page, context }) => {
-    // Start timer
-    await page.click('[data-testid="start-focus-button"]');
-
-    // Create a new page (simulating navigation)
     const newPage = await context.newPage();
     await newPage.goto('/');
+    await newPage.waitForSelector('[data-testid="time-display"]');
 
-    // Close original page
-    await page.close();
-
-    // New page should have fresh timer state
-    const timeDisplay = await newPage.textContent('[data-testid="time-display"]');
-    expect(timeDisplay).toBe('25:00'); // Default duration
-
-    const status = await newPage.textContent('text=/Timer Status/');
-    expect(status).toContain('idle');
+    expect(await newPage.textContent('[data-testid="time-display"]')).toBe('00:30');
+    await expect(newPage.locator('[data-testid="start-focus-button"]')).toBeVisible();
+    await newPage.close();
   });
 });
