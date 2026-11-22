@@ -408,7 +408,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             };
 
             if (phase === 'inhale' && totalCycles > 2 && cycle === totalCycles) {
-              audioCueService.speakCue('breathing.last-round', 'One last round.');
+              audioCueService.speakCue('breathing.inhale.last', 'One last round. Breathe in.');
               return;
             }
             if (phase === 'inhale' && totalCycles >= 4 && cycle === Math.ceil(totalCycles / 2)) {
