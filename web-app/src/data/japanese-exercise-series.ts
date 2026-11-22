@@ -39,10 +39,10 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
     {
       id: 'arm-swings',
       name: 'Arm Swings',
-      description: 'Rhythmic arm swinging movements',
+      description: 'Radio Taiso movement 2 — cross-body arm swings with knee bounce',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Swing arms forward and backward in rhythm',
+      instructions: 'Swing arms across the front and out to the sides while gently bending and straightening knees with heel raises',
       animation: { pack: 'rajio-taiso.arm-swings', version: '^1' }
     },
     {

@@ -270,7 +270,7 @@ describe('useUnifiedTimerStore', () => {
       useUnifiedTimerStore.getState().startTimer();
       expect(audioCueService.unlock).toHaveBeenCalled();
       expect(audioCueService.playChime).toHaveBeenCalledWith('start');
-      expect(audioCueService.speak).toHaveBeenCalled();
+      expect(audioCueService.speakCue).toHaveBeenCalled();
       expect(useUnifiedTimerStore.getState().sessionStartedAt).toBeInstanceOf(Date);
       expect(useUnifiedTimerStore.getState().timerState?.status).toBe('running');
 
@@ -321,7 +321,7 @@ describe('useUnifiedTimerStore', () => {
       jest.advanceTimersByTime(2000);
       expect(onPhaseChange).toHaveBeenCalledWith('break');
       expect(audioCueService.playChime).toHaveBeenCalledWith('rest');
-      expect(audioCueService.speak).toHaveBeenCalledWith('Break time');
+      expect(audioCueService.speakCue).toHaveBeenCalledWith('session.break', 'Break time.');
 
       // Break (1s) -> 0s -> Complete
       jest.advanceTimersByTime(2000);
@@ -331,7 +331,10 @@ describe('useUnifiedTimerStore', () => {
 
       expect(onTimerComplete).toHaveBeenCalledTimes(1);
       expect(audioCueService.playChime).toHaveBeenCalledWith('complete');
-      expect(audioCueService.speak).toHaveBeenCalledWith('Session complete. Great work.');
+      expect(audioCueService.speakCue).toHaveBeenCalledWith(
+        'session.complete',
+        "That's the end of your session. Take a moment to notice how you feel. Well done."
+      );
       expect(vibrateMock).toHaveBeenCalledWith([200, 100, 200]);
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({

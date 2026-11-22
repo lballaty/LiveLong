@@ -65,6 +65,7 @@ interface UnifiedTimerStore {
   timerEngine: UnifiedTimerEngine | null;
   timerState: UnifiedTimerState | null;
   sessionStartedAt: Date | null;
+  isIntroPlaying: boolean;
 
   // Preferences & Progress
   preferences: PracticePreferences;
@@ -82,6 +83,7 @@ interface UnifiedTimerStore {
 
   // Timer controls
   startTimer: () => void;
+  skipIntro: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => void;
@@ -108,6 +110,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   timerEngine: null,
   timerState: null,
   sessionStartedAt: null,
+  isIntroPlaying: false,
   preferences: DEFAULT_PREFERENCES,
   stats: null,
   recentSessions: [],
@@ -279,8 +282,15 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     }
   },
 
+  skipIntro: () => {
+    if (!get().isIntroPlaying) return;
+    audioCueService.stopSpeech();
+    set({ isIntroPlaying: false });
+    get().startTimer();
+  },
+
   startTimer: () => {
-    const { timerEngine, activeProfile, preferences } = get();
+    const { timerEngine, activeProfile, preferences, isIntroPlaying } = get();
     if (!timerEngine || !activeProfile) {
       const profiles = get().profiles;
       if (profiles.length > 0) {
@@ -290,18 +300,44 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     }
 
     audioCueService.unlock();
+
+    // Play ~20s calming intro before Round 1 when voice cues are enabled for breathing
+    if (
+      activeProfile.type === 'breathing' &&
+      preferences.voiceCuesEnabled &&
+      !isIntroPlaying &&
+      (get().timerState?.totalElapsedSeconds || 0) === 0
+    ) {
+      set({ isIntroPlaying: true });
+      const introFallback =
+        "Let's take a few minutes just for you. Sit comfortably, let your shoulders soften, and follow my voice. Gently let all the air out.";
+      audioCueService.speakCue('breathing.intro', introFallback, () => {
+        if (get().isIntroPlaying) {
+          set({ isIntroPlaying: false });
+          get().startTimer();
+        }
+      });
+      return;
+    }
+
     if (preferences.soundEnabled) {
       audioCueService.playChime('start');
     }
     if (preferences.voiceCuesEnabled) {
-      const initialCue =
-        activeProfile.type === 'series'
-          ? activeProfile.seriesConfig?.steps[0]?.name || activeProfile.name
-          : activeProfile.name;
-      audioCueService.speak(`Starting ${initialCue}`);
+      if (activeProfile.type === 'breathing') {
+        audioCueService.speakCue('breathing.inhale', 'Breathe in slowly through your nose.');
+      } else {
+        const initialCue =
+          activeProfile.type === 'series'
+            ? activeProfile.seriesConfig?.steps[0]?.name || activeProfile.name
+            : activeProfile.name;
+        const cueId =
+          activeProfile.id === 'rajio-taiso-series' ? 'rajio-taiso.warmup' : activeProfile.id;
+        audioCueService.speakCue(cueId, `Starting ${initialCue}`);
+      }
     }
 
-    set({ sessionStartedAt: new Date() });
+    set({ sessionStartedAt: new Date(), isIntroPlaying: false });
 
     timerEngine.start(
       (state) => set({ timerState: state }),
@@ -313,7 +349,10 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
           audioCueService.playChime('complete');
         }
         if (prefs.voiceCuesEnabled) {
-          audioCueService.speak('Session complete. Great work.');
+          audioCueService.speakCue(
+            'session.complete',
+            "That's the end of your session. Take a moment to notice how you feel. Well done."
+          );
         }
         if (prefs.vibrationEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
           navigator.vibrate([200, 100, 200]);
@@ -344,25 +383,62 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         }
       },
       (phase) => {
-        const { onPhaseChange, preferences: prefs, timerState } = get();
+        const { onPhaseChange, preferences: prefs, timerState, activeProfile: prof } = get();
         onPhaseChange?.(phase);
 
         if (prefs.soundEnabled) {
           audioCueService.playChime(phase === 'rest' || phase === 'break' ? 'rest' : 'phase');
         }
         if (prefs.voiceCuesEnabled) {
-          const stepName = timerState?.seriesState?.currentStep?.name;
+          if (prof?.type === 'breathing' && timerState?.breathingState) {
+            const cycle = timerState.breathingState.currentCycle;
+            const totalCycles = prof.breathingConfig?.cycleCount || 1;
+            const isShort = cycle > 1;
+            const shortCues: Record<string, string> = {
+              inhale: 'Breathe in.',
+              'hold-in': 'Hold.',
+              exhale: 'And let it go.',
+              'hold-out': 'And pause.',
+            };
+            const fullCues: Record<string, string> = {
+              inhale: 'Breathe in slowly through your nose.',
+              'hold-in': 'And hold, nice and easy.',
+              exhale: 'Now breathe out slowly, and let the tension go.',
+              'hold-out': 'Rest here, empty and still.',
+            };
+
+            if (phase === 'inhale' && totalCycles > 2 && cycle === totalCycles) {
+              audioCueService.speakCue('breathing.last-round', 'One last round.');
+              return;
+            }
+            if (phase === 'inhale' && totalCycles >= 4 && cycle === Math.ceil(totalCycles / 2)) {
+              audioCueService.speakCue(
+                'breathing.encourage',
+                "You're doing really well. Keep following the rhythm."
+              );
+              return;
+            }
+
+            const cueId = isShort ? `breathing.${phase}.short` : `breathing.${phase}`;
+            const fallback = (isShort ? shortCues : fullCues)[phase] || phase;
+            audioCueService.speakCue(cueId, fallback);
+            return;
+          }
+
+          const step = timerState?.seriesState?.currentStep;
           const cueMap: Record<string, string> = {
-            inhale: 'Breathe in',
-            'hold-in': 'Hold',
-            exhale: 'Breathe out',
-            'hold-out': 'Hold',
-            rest: 'Rest',
-            break: 'Break time',
-            cooldown: 'Cooling down',
-            exercise: stepName || 'Next exercise',
+            rest: 'Rest.',
+            break: 'Break time.',
+            cooldown: 'Cooling down.',
+            exercise: step?.name || 'Next exercise.',
           };
-          audioCueService.speak(cueMap[phase] || phase);
+          const cueId =
+            phase === 'rest'
+              ? 'session.rest'
+              : phase === 'exercise' && step
+              ? `rajio-taiso.${step.id}`
+              : `session.${phase}`;
+          audioCueService.speakCue(cueId, cueMap[phase] || phase);
         }
       }
     );

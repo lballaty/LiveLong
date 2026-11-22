@@ -21,7 +21,9 @@ export default function UnifiedTimerDisplay() {
     activeProfile,
     timerState,
     preferences,
+    isIntroPlaying,
     startTimer,
+    skipIntro,
     pauseTimer,
     resumeTimer,
     stopTimer,
@@ -178,7 +180,26 @@ export default function UnifiedTimerDisplay() {
 
   const renderControlButtons = () => (
     <div className="flex gap-2">
-      {timerState?.status === 'idle' && (
+      {isIntroPlaying ? (
+        <>
+          <button
+            type="button"
+            onClick={skipIntro}
+            className="flex-1 px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold text-sm"
+          >
+            Skip Intro &amp; Start
+          </button>
+          <button
+            type="button"
+            onClick={stopTimer}
+            className="flex-1 px-5 py-3 bg-slate-200 text-slate-800 rounded-xl hover:bg-slate-300 transition-colors font-semibold text-sm"
+          >
+            Cancel
+          </button>
+        </>
+      ) : (
+        <>
+          {timerState?.status === 'idle' && (
         <button
           data-testid="start-focus-button"
           onClick={startTimer}
@@ -223,6 +244,8 @@ export default function UnifiedTimerDisplay() {
           >
             Stop
           </button>
+        </>
+      )}
         </>
       )}
     </div>

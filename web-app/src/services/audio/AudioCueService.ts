@@ -104,27 +104,31 @@ class AudioCueService {
   /**
    * Play a pre-rendered openScriptAudio cue clip if present, otherwise fall back to speechSynthesis.
    */
-  public async speakCue(cueId: string, fallbackText: string): Promise<void> {
+  public async speakCue(cueId: string, fallbackText: string, onEnded?: () => void): Promise<void> {
     try {
       const manifest = await this.loadManifest();
       const file = manifest?.cues?.[cueId];
       if (file && typeof Audio !== 'undefined') {
         const audio = new Audio(`/audio/cues/${file}`);
+        if (onEnded) {
+          audio.addEventListener('ended', onEnded, { once: true });
+        }
         await audio.play();
         return;
       }
     } catch {
       // Fall through to speechSynthesis
     }
-    this.speak(fallbackText);
+    this.speak(fallbackText, onEnded);
   }
 
   /**
    * Speak a short guidance cue using Web Speech API when voice cues are enabled.
    */
-  public speak(text: string): void {
+  public speak(text: string, onEnded?: () => void): void {
     try {
       if (typeof window === 'undefined' || !('speechSynthesis' in window) || !text.trim()) {
+        onEnded?.();
         return;
       }
       window.speechSynthesis.cancel();
@@ -132,9 +136,13 @@ class AudioCueService {
       utterance.rate = 0.95;
       utterance.pitch = 1.0;
       utterance.volume = 0.85;
+      if (onEnded) {
+        utterance.onend = () => onEnded();
+        utterance.onerror = () => onEnded();
+      }
       window.speechSynthesis.speak(utterance);
     } catch {
-      // Ignore speech synthesis errors
+      onEnded?.();
     }
   }
 
