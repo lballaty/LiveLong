@@ -82,6 +82,7 @@ interface UnifiedTimerStore {
   loadProgress: () => Promise<void>;
 
   // Timer controls
+  setBreathingCycles: (cycles: number) => void;
   startTimer: () => void;
   skipIntro: () => void;
   pauseTimer: () => void;
@@ -232,10 +233,40 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       }
     }
 
+    const isUpdatingIdleActive =
+      updatedActiveProfile?.id === profileId && get().timerState?.status === 'idle';
+    const nextEngine =
+      isUpdatingIdleActive && updatedActiveProfile
+        ? new UnifiedTimerEngine(updatedActiveProfile)
+        : get().timerEngine;
+
     set({
       profiles: updatedProfiles,
       customProfiles: updatedCustomProfiles,
       activeProfile: updatedActiveProfile,
+      timerEngine: nextEngine,
+      timerState: nextEngine ? nextEngine.getState() : get().timerState,
+    });
+  },
+
+  setBreathingCycles: (cycles: number) => {
+    const { activeProfile } = get();
+    if (!activeProfile || activeProfile.type !== 'breathing' || !activeProfile.breathingConfig) {
+      return;
+    }
+    const clamped = Math.max(1, Math.min(60, Math.round(cycles)));
+    const cycleDuration = activeProfile.breathingConfig.pattern.reduce(
+      (sum, p) => sum + p.durationSeconds,
+      0
+    );
+    const totalDurationSeconds = cycleDuration * clamped;
+    get().updateProfile(activeProfile.id, {
+      breathingConfig: {
+        ...activeProfile.breathingConfig,
+        cycleCount: clamped,
+        totalDurationMinutes: totalDurationSeconds / 60,
+      },
+      totalDurationSeconds,
     });
   },
 

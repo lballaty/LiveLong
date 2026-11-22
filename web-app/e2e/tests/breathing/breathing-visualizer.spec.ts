@@ -133,5 +133,24 @@ test.describe('Breathing Visualizer', () => {
       await page.click('[data-testid="pause-button"]');
       await expect(page.locator('[data-testid="resume-button"]')).toBeVisible();
     });
+
+    test('should show breathing loop phase indicator and allow configuring loop count', async ({ page }) => {
+      await page.click('nav button:has-text("Routines")');
+      await page.click('[data-testid="profile-box-breathing-profile"]');
+
+      const loopIndicator = page.locator('[data-testid="breathing-loop-indicator"]');
+      await expect(loopIndicator).toBeVisible();
+      await expect(loopIndicator.locator('[data-active="true"]')).toContainText('Inhale');
+
+      await expect(page.locator('[data-testid="loops-count"]')).toHaveText('8');
+      await page.click('[data-testid="loops-increase"]');
+      await expect(page.locator('[data-testid="loops-count"]')).toHaveText('9');
+      await expect(page.locator('text=Cycle 1 of 9')).toBeVisible();
+
+      await page.click('[data-testid="loops-decrease"]');
+      await page.click('[data-testid="loops-decrease"]');
+      await expect(page.locator('[data-testid="loops-count"]')).toHaveText('7');
+      await expect(page.locator('text=Cycle 1 of 7')).toBeVisible();
+    });
   });
 });

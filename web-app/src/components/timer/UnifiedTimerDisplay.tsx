@@ -22,6 +22,7 @@ export default function UnifiedTimerDisplay() {
     timerState,
     preferences,
     isIntroPlaying,
+    setBreathingCycles,
     startTimer,
     skipIntro,
     pauseTimer,
@@ -520,17 +521,61 @@ export default function UnifiedTimerDisplay() {
 
               <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-6">
                 {activeProfile?.type === 'breathing' && breathingPatternForVisualizer ? (
-                  <BreathingVisualizer
-                    pattern={breathingPatternForVisualizer}
-                    isActive={timerState?.status === 'running'}
-                    embedded
-                    externalState={{
-                      phase: timerState?.breathingState?.currentPhase.type || 'inhale',
-                      remainingSeconds: timerState?.remainingSeconds || 0,
-                      currentCycle: timerState?.breathingState?.currentCycle || 1,
-                      totalCycles: activeProfile.breathingConfig?.cycleCount || 1,
-                    }}
-                  />
+                  <>
+                    <BreathingVisualizer
+                      pattern={breathingPatternForVisualizer}
+                      isActive={timerState?.status === 'running'}
+                      embedded
+                      externalState={{
+                        phase: timerState?.breathingState?.currentPhase.type || 'inhale',
+                        remainingSeconds: timerState?.remainingSeconds || 0,
+                        currentCycle: timerState?.breathingState?.currentCycle || 1,
+                        totalCycles: activeProfile.breathingConfig?.cycleCount || 1,
+                      }}
+                    />
+                    {timerState?.status === 'idle' && !isIntroPlaying && activeProfile.breathingConfig && (
+                      <div
+                        data-testid="breathing-loops-config"
+                        className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm"
+                      >
+                        <span className="text-slate-600 font-medium">
+                          Loops ({formatTime(activeProfile.totalDurationSeconds)} total)
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            data-testid="loops-decrease"
+                            onClick={() =>
+                              setBreathingCycles((activeProfile.breathingConfig?.cycleCount || 1) - 1)
+                            }
+                            disabled={(activeProfile.breathingConfig?.cycleCount || 1) <= 1}
+                            className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+                            aria-label="Decrease loops"
+                          >
+                            −
+                          </button>
+                          <span
+                            data-testid="loops-count"
+                            className="w-8 text-center font-semibold tabular-nums text-slate-900"
+                          >
+                            {activeProfile.breathingConfig.cycleCount}
+                          </span>
+                          <button
+                            type="button"
+                            data-testid="loops-increase"
+                            onClick={() =>
+                              setBreathingCycles((activeProfile.breathingConfig?.cycleCount || 1) + 1)
+                            }
+                            disabled={(activeProfile.breathingConfig?.cycleCount || 1) >= 60}
+                            className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+                            aria-label="Increase loops"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
                     <div className="relative w-56 h-56 mx-auto mb-5">

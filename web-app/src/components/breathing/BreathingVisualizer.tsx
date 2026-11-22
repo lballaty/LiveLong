@@ -229,9 +229,22 @@ export default function BreathingVisualizer({
 
   if (embedded) {
     const visualStyle = pattern.visualStyle || 'circle';
+    const loopPhases: Array<{ key: BreathingPhase; label: string; seconds: number; activeClass: string; barClass: string }> = [
+      { key: 'inhale', label: 'Inhale', seconds: pattern.inhaleSeconds, activeClass: 'border-blue-500 bg-blue-50 text-blue-700', barClass: 'bg-blue-500' },
+      ...(pattern.holdInSeconds ? [{ key: 'hold-in' as BreathingPhase, label: 'Hold', seconds: pattern.holdInSeconds, activeClass: 'border-purple-500 bg-purple-50 text-purple-700', barClass: 'bg-purple-500' }] : []),
+      { key: 'exhale', label: 'Exhale', seconds: pattern.exhaleSeconds, activeClass: 'border-green-500 bg-green-50 text-green-700', barClass: 'bg-green-500' },
+      ...(pattern.holdOutSeconds ? [{ key: 'hold-out' as BreathingPhase, label: 'Hold', seconds: pattern.holdOutSeconds, activeClass: 'border-orange-500 bg-orange-50 text-orange-700', barClass: 'bg-orange-500' }] : []),
+    ];
+
+    const currentPhaseObj = loopPhases.find((p) => p.key === activePhase);
+    const currentPhaseTotal = currentPhaseObj?.seconds || 1;
+    const phaseElapsedPct = isActive
+      ? Math.min(100, Math.max(0, ((currentPhaseTotal - activeRemaining) / currentPhaseTotal) * 100))
+      : 0;
+
     return (
-      <div data-testid="breathing-visualizer" className="flex flex-col items-center py-4">
-        <div className="mb-6 flex justify-center items-center h-48">
+      <div data-testid="breathing-visualizer" className="flex flex-col items-center py-2">
+        <div className="mb-4 flex justify-center items-center h-44">
           {visualStyle === 'square' ? (
             <div
               className={`w-28 h-28 border-8 transition-all duration-1000 ease-in-out ${
@@ -263,11 +276,48 @@ export default function BreathingVisualizer({
         <div className={`text-3xl font-bold mb-1 transition-colors duration-500 ${activePhaseColor}`}>
           {activePhaseText}
         </div>
-        <div className="text-4xl font-mono font-bold text-gray-800 mb-2" data-testid="time-display">
+        <div className="text-4xl font-mono font-bold text-gray-800 mb-3" data-testid="time-display">
           {activeRemaining}s
         </div>
-        <div className="text-sm text-gray-500">
-          Cycle {activeCycle} of {activeTotalCycles}
+
+        {/* Visual Breathing Loop Indicator */}
+        <div
+          data-testid="breathing-loop-indicator"
+          className="w-full grid gap-1.5 mb-3"
+          style={{ gridTemplateColumns: `repeat(${loopPhases.length}, minmax(0, 1fr))` }}
+        >
+          {loopPhases.map((step) => {
+            const isCurrent = step.key === activePhase;
+            return (
+              <div
+                key={step.key}
+                data-active={isCurrent ? 'true' : 'false'}
+                className={`rounded-lg border px-2 py-1.5 text-center transition-colors ${
+                  isCurrent ? step.activeClass : 'border-slate-200 bg-slate-50 text-slate-400'
+                }`}
+              >
+                <div className="text-[11px] font-semibold truncate">{step.label}</div>
+                <div className="text-[10px] opacity-80">{step.seconds}s</div>
+                <div className="mt-1 h-1 w-full rounded-full bg-slate-200 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${isCurrent ? step.barClass : 'bg-transparent'}`}
+                    style={{ width: isCurrent ? `${Math.max(12, phaseElapsedPct)}%` : '0%' }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="w-full flex items-center justify-between text-xs text-slate-500 mb-1">
+          <span>Cycle {activeCycle} of {activeTotalCycles}</span>
+          <span>{Math.round(((activeCycle - 1) / Math.max(1, activeTotalCycles)) * 100)}% loops</span>
+        </div>
+        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-500 transition-all duration-500"
+            style={{ width: `${Math.min(100, (activeCycle / Math.max(1, activeTotalCycles)) * 100)}%` }}
+          />
         </div>
       </div>
     );
