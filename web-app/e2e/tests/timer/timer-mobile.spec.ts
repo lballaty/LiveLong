@@ -18,7 +18,7 @@ test.describe('Mobile Responsiveness & Accessibility', () => {
     await expect(page.locator('[data-testid="start-focus-button"]')).toBeVisible();
     await expect(page.locator('[data-testid="exercise-animation-player"]')).toBeVisible();
 
-    for (const label of ['Practice', 'Practices', 'Progress', 'Settings']) {
+    for (const label of ['Session', 'Routines', 'Progress', 'Settings']) {
       await expect(page.locator('nav').getByRole('button', { name: label, exact: true })).toBeVisible();
     }
   });

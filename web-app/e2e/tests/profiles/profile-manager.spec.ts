@@ -12,8 +12,8 @@ test.describe('Profile Manager (Practices View)', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.waitForSelector('[data-testid="time-display"]');
-    await page.click('nav button:has-text("Practices")');
-    await expect(page.locator('h2:has-text("Practices & Timers")')).toBeVisible();
+    await page.click('nav button:has-text("Routines")');
+    await expect(page.locator('h2:has-text("Routines & Timers")')).toBeVisible();
   });
 
   test.describe('Default Profiles & Filtering', () => {
@@ -52,11 +52,11 @@ test.describe('Profile Manager (Practices View)', () => {
       expect(await page.textContent('[data-testid="time-display"]')).toBe('25:00');
       await expect(page.locator('h2:has-text("Pomodoro")')).toBeVisible();
 
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.locator('[data-testid^="profile-simple-"]:has-text("Deep Work")').click();
       expect(await page.textContent('[data-testid="time-display"]')).toBe('01:30:00');
 
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.locator('[data-testid^="profile-simple-"]:has-text("Exercise")').click();
       expect(await page.textContent('[data-testid="time-display"]')).toBe('00:30');
     });
@@ -93,7 +93,7 @@ test.describe('Profile Manager (Practices View)', () => {
 
       // Reload and verify custom profile persists in Practices
       await page.reload();
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await expect(page.locator('[data-testid^="profile-simple-"]:has-text("Study Session")')).toBeVisible();
     });
 

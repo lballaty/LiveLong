@@ -7,7 +7,7 @@
 import { test, expect } from '@playwright/test';
 
 async function createAndSelectShortTimer(page: import('@playwright/test').Page, seconds: number) {
-  await page.click('nav button:has-text("Practices")');
+  await page.click('nav button:has-text("Routines")');
   await page.click('button:has-text("+ Create Custom Timer")');
 
   const form = page.locator('form');

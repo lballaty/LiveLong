@@ -15,8 +15,8 @@ test.describe('Enhanced UI: Practices, Branding, & Settings', () => {
   test('should display LiveLong ⊹ branding and all 4 navigation views', async ({ page }) => {
     await expect(page.locator('h1:has-text("LiveLong ⊹")')).toBeVisible();
 
-    await page.click('nav button:has-text("Practices")');
-    await expect(page.locator('h2:has-text("Practices & Timers")')).toBeVisible();
+    await page.click('nav button:has-text("Routines")');
+    await expect(page.locator('h2:has-text("Routines & Timers")')).toBeVisible();
 
     await page.click('nav button:has-text("Progress")');
     await expect(page.locator('[data-testid="progress-view"]')).toBeVisible();
@@ -26,12 +26,12 @@ test.describe('Enhanced UI: Practices, Branding, & Settings', () => {
     await expect(page.locator('[data-testid="settings-view"]')).toBeVisible();
     await expect(page.locator('h2:has-text("Practice Settings")')).toBeVisible();
 
-    await page.click('nav button:has-text("Practice")');
+    await page.click('nav button:has-text("Session")');
     await expect(page.locator('[data-testid="start-focus-button"]')).toBeVisible();
   });
 
   test('should show clear duration and unit labels in Create Custom Timer modal', async ({ page }) => {
-    await page.click('nav button:has-text("Practices")');
+    await page.click('nav button:has-text("Routines")');
     await page.click('button:has-text("+ Create Custom Timer")');
 
     const form = page.locator('form');
@@ -64,7 +64,7 @@ test.describe('Enhanced UI: Practices, Branding, & Settings', () => {
     await checkboxes.nth(1).check(); // Enable Voice Guidance
 
     // Switch back to Practice and verify ExerciseAnimationPlayer reflects Settings
-    await page.click('nav button:has-text("Practice")');
+    await page.click('nav button:has-text("Session")');
     const player = page.locator('[data-testid="exercise-animation-player"]');
     await expect(player).toContainText('Woman ~72 (Gentle Stoop)');
     await expect(player).toContainText('Chair');
@@ -75,7 +75,7 @@ test.describe('Enhanced UI: Practices, Branding, & Settings', () => {
   test('should render Practices and Settings cleanly on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
 
-    await page.click('nav button:has-text("Practices")');
+    await page.click('nav button:has-text("Routines")');
     await expect(page.locator('[data-testid="profile-rajio-taiso-series"]')).toBeVisible();
 
     await page.click('nav button:has-text("Settings")');

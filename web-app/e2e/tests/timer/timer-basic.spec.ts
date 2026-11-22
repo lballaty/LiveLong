@@ -53,15 +53,15 @@ test.describe('LiveLong Practice & Timer Functionality', () => {
     await page.click('button:has-text("Chair-Based")');
     await page.click('button:has-text("Front + Side")');
 
-    await page.click('nav button:has-text("Practice")');
+    await page.click('nav button:has-text("Session")');
     await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('Chair');
     await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('front view');
     await expect(page.locator('[data-testid="exercise-animation-player"]')).toContainText('side view');
   });
 
   test('should navigate across Practices, Progress, and Settings views', async ({ page }) => {
-    await page.click('nav button:has-text("Practices")');
-    await expect(page.locator('h2:has-text("Practices & Timers")')).toBeVisible();
+    await page.click('nav button:has-text("Routines")');
+    await expect(page.locator('h2:has-text("Routines & Timers")')).toBeVisible();
 
     await page.click('text=Box Breathing');
     await expect(page.locator('[data-testid="breathing-visualizer"]')).toBeVisible();

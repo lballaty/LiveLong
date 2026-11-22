@@ -10,7 +10,7 @@ test.describe('Japanese Exercise Series', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('[data-testid="time-display"]');
-    await page.click('nav button:has-text("Practices")');
+    await page.click('nav button:has-text("Routines")');
     await page.waitForSelector('[data-testid="profile-rajio-taiso-series"]');
   });
 
@@ -46,11 +46,11 @@ test.describe('Japanese Exercise Series', () => {
       await page.click('[data-testid="profile-rajio-taiso-series"]');
       expect(await page.textContent('[data-testid="time-display"]')).toBe('00:30');
 
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-tai-chi-morning-series"]');
       expect(await page.textContent('[data-testid="time-display"]')).toBe('01:00');
 
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-shinrin-yoku-series"]');
       expect(await page.textContent('[data-testid="time-display"]')).toBe('02:00');
     });
@@ -93,7 +93,7 @@ test.describe('Japanese Exercise Series', () => {
       await page.click('button:has-text("Chair-Based")');
       await page.click('button:has-text("Front + Side")');
 
-      await page.click('nav button:has-text("Practice")');
+      await page.click('nav button:has-text("Session")');
       const player = page.locator('[data-testid="exercise-animation-player"]');
       await expect(player).toContainText('Chair');
       await expect(player).toContainText('front view');
@@ -102,9 +102,9 @@ test.describe('Japanese Exercise Series', () => {
 
     test('should handle rapid profile switching between Japanese exercises', async ({ page }) => {
       await page.click('[data-testid="profile-rajio-taiso-series"]');
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-tai-chi-morning-series"]');
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-shinrin-yoku-series"]');
 
       expect(await page.textContent('[data-testid="time-display"]')).toBe('02:00');
@@ -116,7 +116,7 @@ test.describe('Japanese Exercise Series', () => {
     test('should work correctly on mobile viewports', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
 
       await expect(page.locator('[data-testid="profile-rajio-taiso-series"]')).toBeVisible();
       await page.click('[data-testid="profile-tai-chi-morning-series"]');

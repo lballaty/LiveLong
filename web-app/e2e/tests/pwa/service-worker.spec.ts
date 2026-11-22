@@ -47,8 +47,8 @@ test.describe('Service Worker & PWA', () => {
       await expect(page.locator('[data-testid="start-focus-button"]')).toBeVisible();
 
       // View navigation still works offline
-      await page.click('nav button:has-text("Practices")');
-      await expect(page.locator('h2:has-text("Practices & Timers")')).toBeVisible();
+      await page.click('nav button:has-text("Routines")');
+      await expect(page.locator('h2:has-text("Routines & Timers")')).toBeVisible();
 
       await page.click('nav button:has-text("Settings")');
       await expect(page.locator('[data-testid="settings-view"]')).toBeVisible();

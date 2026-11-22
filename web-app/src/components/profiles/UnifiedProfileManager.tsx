@@ -306,7 +306,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     <div className="w-full max-w-6xl mx-auto p-4">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Practices & Timers</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Routines & Timers</h2>
           <button
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"

@@ -237,8 +237,8 @@ export default function UnifiedTimerDisplay() {
             <h1 className="text-lg font-bold text-slate-900">LiveLong ⊹</h1>
             <nav className="flex items-center gap-1" aria-label="Primary">
               {([
-                { id: 'practice', label: 'Practice' },
-                { id: 'practices', label: 'Practices' },
+                { id: 'practice', label: 'Session' },
+                { id: 'practices', label: 'Routines' },
                 { id: 'progress', label: 'Progress' },
                 { id: 'settings', label: 'Settings' },
               ] as { id: ActiveTab; label: string }[]).map((tab) => (
@@ -568,7 +568,7 @@ export default function UnifiedTimerDisplay() {
                   onClick={() => setActiveTab('practices')}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
-                  Choose Another Practice →
+                  Choose Another Routine →
                 </button>
               </div>
             </div>

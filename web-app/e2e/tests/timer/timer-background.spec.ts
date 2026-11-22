@@ -82,7 +82,7 @@ test.describe('Background Timer & Visibility', () => {
   });
 
   test('should complete a short custom timer and return to idle', async ({ page }) => {
-    await page.click('nav button:has-text("Practices")');
+    await page.click('nav button:has-text("Routines")');
     await page.click('button:has-text("+ Create Custom Timer")');
 
     const form = page.locator('form');

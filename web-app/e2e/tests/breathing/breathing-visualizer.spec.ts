@@ -10,7 +10,7 @@ test.describe('Breathing Visualizer', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('[data-testid="time-display"]');
-    await page.click('nav button:has-text("Practices")');
+    await page.click('nav button:has-text("Routines")');
     await page.waitForSelector('[data-testid="profile-box-breathing-profile"]');
   });
 
@@ -46,7 +46,7 @@ test.describe('Breathing Visualizer', () => {
       await expect(page.locator('[data-testid="time-display"]')).toHaveText('4s');
       await expect(page.locator('[data-testid="breathing-visualizer"]')).toContainText('Cycle 1 of 8');
 
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-deep-breathing-profile"]');
       await expect(page.locator('[data-testid="time-display"]')).toHaveText('6s');
       await expect(page.locator('[data-testid="breathing-visualizer"]')).toContainText('Cycle 1 of 10');
@@ -83,7 +83,7 @@ test.describe('Breathing Visualizer', () => {
       await expect(boxShape).toBeVisible();
       await expect(boxShape).not.toHaveClass(/rounded-full/);
 
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-deep-breathing-profile"]');
       const circleShape = page.locator('[data-testid="breathing-visualizer"] div.border-8').first();
       await expect(circleShape).toBeVisible();
@@ -117,7 +117,7 @@ test.describe('Breathing Visualizer', () => {
     test('should render cleanly and support touch interactions on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
-      await page.click('nav button:has-text("Practices")');
+      await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-4-7-8-breathing-profile"]');
 
       const visualizer = page.locator('[data-testid="breathing-visualizer"]');
