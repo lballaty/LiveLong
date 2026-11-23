@@ -6,12 +6,12 @@
 import { BreathingPattern } from '@/types/profile.types';
 
 /**
- * Box Breathing (4-4-4-4) - Navy SEAL technique
+ * Box Breathing (4-4-4-4) - Equal four-count breathing (Sama Vritti)
  */
 export const BOX_BREATHING: BreathingPattern = {
   id: 'box-breathing',
   name: 'Box Breathing',
-  description: 'Navy SEAL technique - equal counts for inhale, hold, exhale, hold',
+  description: 'Equal four-count breathing for inhale, hold, exhale, and hold',
   inhaleSeconds: 4,
   holdInSeconds: 4,
   exhaleSeconds: 4,

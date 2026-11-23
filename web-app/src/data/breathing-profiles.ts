@@ -12,7 +12,7 @@ import { BREATHING_PATTERNS, calculateBreathingPatternDuration } from './breathi
 export const BOX_BREATHING_PROFILE: Profile = {
   id: 'box-breathing-profile',
   name: 'Box Breathing',
-  description: 'Navy SEAL technique for focus and stress reduction',
+  description: 'Equal four-count breathing for calm focus and stress reduction',
   category: ProfileCategory.MEDITATION,
   durationMinutes: calculateBreathingPatternDuration(BREATHING_PATTERNS.BOX_BREATHING),
   breakDurationMinutes: 2,

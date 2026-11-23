@@ -26,7 +26,7 @@ test.describe('Breathing Visualizer', () => {
       const boxProfile = page.locator('[data-testid="profile-box-breathing-profile"]');
       await expect(boxProfile).toContainText('🫁');
       await expect(boxProfile).toContainText('Box Breathing');
-      await expect(boxProfile).toContainText('Navy SEAL technique');
+      await expect(boxProfile).toContainText('Equal four-count breathing');
       await expect(boxProfile).toContainText('8 cycles');
 
       const breathing478Profile = page.locator('[data-testid="profile-4-7-8-breathing-profile"]');
