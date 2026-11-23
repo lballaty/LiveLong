@@ -511,11 +511,11 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             const cycle = timerState.breathingState.currentCycle;
             const totalCycles = prof.breathingConfig?.cycleCount || 1;
             const isShort = cycle > 1;
-            const shortCues: Record<string, string> = {
-              inhale: 'Breathe in.',
-              'hold-in': 'Hold.',
-              exhale: 'And let it go.',
-              'hold-out': 'And pause.',
+            const shortCues: Record<string, string[]> = {
+              inhale: ['Breathe in.', 'Inhale gently.', 'Draw air in.'],
+              'hold-in': ['Hold.', 'Pause here.', 'Hold gently.'],
+              exhale: ['And let it go.', 'Breathe out slowly.', 'Release softly.'],
+              'hold-out': ['And pause.', 'Rest empty.', 'Stay still.'],
             };
             const fullCues: Record<string, string> = {
               inhale: 'Breathe in slowly through your nose.',
@@ -536,7 +536,11 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             if (phase === 'inhale' && totalCycles >= 4 && cycle === Math.ceil(totalCycles / 2)) {
               audioCueService.speakCue(
                 'breathing.encourage',
-                "You're doing really well. Keep following the rhythm.",
+                [
+                  "You're doing really well. Keep following the rhythm.",
+                  'Stay steady and relaxed.',
+                  'Nice and easy, keep going.',
+                ],
                 undefined,
                 prefs.voiceVolume
               );
