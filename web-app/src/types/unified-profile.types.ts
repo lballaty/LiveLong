@@ -70,6 +70,8 @@ export type CastCharacterId =
 export type ExerciseVariant = 'standing' | 'chair';
 export type ExerciseViewMode = 'front' | 'side' | 'both';
 
+export type VoiceOptionId = 'woman' | 'man';
+
 export interface PracticePreferences {
   characterId: CastCharacterId;
   variant: ExerciseVariant;
@@ -77,6 +79,7 @@ export interface PracticePreferences {
   soundEnabled: boolean;
   chimeVolume: number; // 0.0 - 1.0
   voiceCuesEnabled: boolean;
+  voiceId: VoiceOptionId;
   voiceVolume: number; // 0.0 - 1.0
   musicMuted: boolean;
   musicVolume: number; // 0.0 - 1.0

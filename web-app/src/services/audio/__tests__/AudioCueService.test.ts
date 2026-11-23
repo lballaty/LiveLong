@@ -230,9 +230,9 @@ describe('AudioCueService', () => {
       await service.speakCue('exhale', 'Breathe out');
 
       expect(global.fetch).toHaveBeenCalledTimes(1);
-      expect(global.fetch).toHaveBeenCalledWith('/audio/cues/manifest.json');
-      expect(global.Audio).toHaveBeenNthCalledWith(1, '/audio/cues/inhale.mp3');
-      expect(global.Audio).toHaveBeenNthCalledWith(2, '/audio/cues/exhale.mp3');
+      expect(global.fetch).toHaveBeenCalledWith('/audio/cues/woman/manifest.json');
+      expect(global.Audio).toHaveBeenNthCalledWith(1, '/audio/cues/woman/inhale.mp3');
+      expect(global.Audio).toHaveBeenNthCalledWith(2, '/audio/cues/woman/exhale.mp3');
       expect(playMock).toHaveBeenCalledTimes(2);
       expect(window.speechSynthesis.speak).not.toHaveBeenCalled();
     });

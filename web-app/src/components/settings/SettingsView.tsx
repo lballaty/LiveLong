@@ -12,6 +12,7 @@ import {
   CastCharacterId,
   ExerciseVariant,
   ExerciseViewMode,
+  VoiceOptionId,
 } from '@/types/unified-profile.types';
 import { audioCueService } from '@/services/audio/AudioCueService';
 
@@ -137,6 +138,28 @@ export default function SettingsView() {
                 onChange={(e) => updatePreferences({ voiceCuesEnabled: e.target.checked })}
                 className="h-4 w-4 accent-blue-500"
               />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500 w-24">Guide Voice</span>
+              <div className="flex gap-2">
+                {([
+                  { id: 'woman', label: 'Woman' },
+                  { id: 'man', label: 'Man' },
+                ] as { id: VoiceOptionId; label: string }[]).map((v) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => updatePreferences({ voiceId: v.id })}
+                    className={`px-3 py-1 rounded-md text-xs font-medium border ${
+                      preferences.voiceId === v.id
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-500 w-24">Voice Volume</span>

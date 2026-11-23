@@ -10,6 +10,14 @@ interface AudioCueManifest {
   format: string;
   cues: Record<string, string | string[]>;
   variants?: Record<string, string[]>;
+  voices?: Record<
+    string,
+    {
+      label?: string;
+      cues?: Record<string, string | string[]>;
+      variants?: Record<string, string[]>;
+    }
+  >;
 }
 
 /**
@@ -18,8 +26,8 @@ interface AudioCueManifest {
  */
 class AudioCueService {
   private ctx: AudioContext | null = null;
-  private manifest: AudioCueManifest | null = null;
-  private manifestPromise: Promise<AudioCueManifest | null> | null = null;
+  private manifestByVoice: Record<string, AudioCueManifest | null> = {};
+  private manifestPromiseByVoice: Record<string, Promise<AudioCueManifest | null> | undefined> = {};
   private lastPickedByCue: Record<string, number> = {};
 
   private pickVariant<T>(cueKey: string, value: T | T[]): T {
@@ -34,19 +42,35 @@ class AudioCueService {
     return value[nextIdx];
   }
 
-  private async loadManifest(): Promise<AudioCueManifest | null> {
-    if (this.manifest) return this.manifest;
-    if (typeof window === 'undefined' || typeof fetch === 'undefined') return null;
-    if (!this.manifestPromise) {
-      this.manifestPromise = fetch('/audio/cues/manifest.json')
+  private async loadManifest(voiceId = 'woman'): Promise<{ manifest: AudioCueManifest | null; basePath: string }> {
+    if (typeof window === 'undefined' || typeof fetch === 'undefined') {
+      return { manifest: null, basePath: '/audio/cues' };
+    }
+    const key = voiceId || 'woman';
+    if (key in this.manifestByVoice) {
+      return {
+        manifest: this.manifestByVoice[key],
+        basePath: this.manifestByVoice[key]?.voices?.[key] ? '/audio/cues' : `/audio/cues/${key}`,
+      };
+    }
+    if (!this.manifestPromiseByVoice[key]) {
+      this.manifestPromiseByVoice[key] = fetch(`/audio/cues/${key}/manifest.json`)
         .then((res) => (res.ok ? (res.json() as Promise<AudioCueManifest>) : null))
-        .then((data) => {
-          this.manifest = data;
-          return data;
+        .then(async (voiceManifest) => {
+          if (voiceManifest) {
+            this.manifestByVoice[key] = voiceManifest;
+            return voiceManifest;
+          }
+          const rootRes = await fetch('/audio/cues/manifest.json').catch(() => null);
+          const rootManifest = rootRes && rootRes.ok ? ((await rootRes.json()) as AudioCueManifest) : null;
+          this.manifestByVoice[key] = rootManifest;
+          return rootManifest;
         })
         .catch(() => null);
     }
-    return this.manifestPromise;
+    const manifest = (await this.manifestPromiseByVoice[key]) ?? null;
+    const basePath = manifest?.voices?.[key] || !manifest ? '/audio/cues' : `/audio/cues/${key}`;
+    return { manifest, basePath };
   }
 
   private getContext(): AudioContext | null {
@@ -124,16 +148,19 @@ class AudioCueService {
     cueId: string,
     fallbackText: string | string[],
     onEnded?: () => void,
-    volume = 0.9
+    volume = 0.9,
+    voiceId = 'woman'
   ): Promise<void> {
     const clampedVol = Math.max(0, Math.min(1, volume));
     try {
-      const manifest = await this.loadManifest();
-      const variantList = manifest?.variants?.[cueId];
-      const entry = variantList && variantList.length > 0 ? variantList : manifest?.cues?.[cueId];
-      const file = entry ? this.pickVariant(`clip:${cueId}`, entry) : undefined;
+      const { manifest, basePath } = await this.loadManifest(voiceId);
+      const voiceSection = manifest?.voices?.[voiceId];
+      const variantList = voiceSection?.variants?.[cueId] ?? manifest?.variants?.[cueId];
+      const cueEntry = voiceSection?.cues?.[cueId] ?? manifest?.cues?.[cueId];
+      const entry = variantList && variantList.length > 0 ? variantList : cueEntry;
+      const file = entry ? this.pickVariant(`clip:${voiceId}:${cueId}`, entry) : undefined;
       if (file && typeof Audio !== 'undefined') {
-        const audio = new Audio(`/audio/cues/${file}`);
+        const audio = new Audio(`${basePath}/${file}`);
         audio.volume = clampedVol;
         if (onEnded) {
           audio.addEventListener('ended', onEnded, { once: true });
