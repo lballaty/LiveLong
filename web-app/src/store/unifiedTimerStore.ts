@@ -16,12 +16,29 @@ import { UnifiedTimerEngine } from '@/services/timer/UnifiedTimerEngine';
 import { JAPANESE_EXERCISE_SERIES } from '@/data/japanese-exercise-series';
 import { getAllBreathingProfiles } from '@/data/breathing-profiles';
 import { audioCueService } from '@/services/audio/AudioCueService';
+import {
+  backgroundMusicService,
+  MusicTrackOption,
+} from '@/services/audio/BackgroundMusicService';
 import { IndexedDBService } from '@/services/database/IndexedDBService';
 import { SessionRepository } from '@/services/repositories/SessionRepository';
 import { Session, SessionStatistics, SessionStatus } from '@/types/profile.types';
 
 const PREFS_STORAGE_KEY = 'livelong_preferences';
 const CUSTOM_PROFILES_STORAGE_KEY = 'livelong_custom_profiles';
+const PROFILE_MUSIC_STORAGE_KEY = 'livelong_profile_music';
+const CUSTOM_MUSIC_STORAGE_KEY = 'livelong_custom_music';
+
+function loadStoredJson<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
 
 const DEFAULT_PREFERENCES: PracticePreferences = {
   characterId: 'm25-athletic',
@@ -69,6 +86,8 @@ interface UnifiedTimerStore {
 
   // Preferences & Progress
   preferences: PracticePreferences;
+  profileMusicMap: Record<string, string>;
+  customMusicTracks: MusicTrackOption[];
   stats: SessionStatistics | null;
   recentSessions: Session[];
 
@@ -79,6 +98,8 @@ interface UnifiedTimerStore {
   updateProfile: (profileId: string, updates: Partial<UnifiedProfile>) => void;
   deleteCustomProfile: (profileId: string) => void;
   updatePreferences: (updates: Partial<PracticePreferences>) => void;
+  setProfileMusic: (profileId: string, trackId: string) => void;
+  addCustomMusicTrack: (track: MusicTrackOption) => void;
   loadProgress: () => Promise<void>;
 
   // Timer controls
@@ -113,6 +134,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   sessionStartedAt: null,
   isIntroPlaying: false,
   preferences: DEFAULT_PREFERENCES,
+  profileMusicMap: {},
+  customMusicTracks: [],
   stats: null,
   recentSessions: [],
 
@@ -162,6 +185,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
 
     const storedCustom = loadStoredCustomProfiles();
     const storedPrefs = loadStoredPreferences();
+    const storedProfileMusic = loadStoredJson<Record<string, string>>(PROFILE_MUSIC_STORAGE_KEY, {});
+    const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
     const defaultActive = allProfiles[0];
     const engine = defaultActive ? new UnifiedTimerEngine(defaultActive) : null;
 
@@ -169,6 +194,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       profiles: allProfiles,
       customProfiles: storedCustom,
       preferences: storedPrefs,
+      profileMusicMap: storedProfileMusic,
+      customMusicTracks: storedCustomMusic,
       activeProfile: defaultActive || null,
       timerEngine: engine,
       timerState: engine ? engine.getState() : null,
@@ -181,6 +208,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       timerEngine.stop();
     }
     audioCueService.stopSpeech();
+    backgroundMusicService.stop();
 
     const allProfiles = [...profiles, ...customProfiles];
     const profile = allProfiles.find((p) => p.id === profileId);
@@ -295,6 +323,30 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     set({ preferences: next });
   },
 
+  setProfileMusic: (profileId: string, trackId: string) => {
+    const next = { ...get().profileMusicMap, [profileId]: trackId };
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(PROFILE_MUSIC_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+    }
+    set({ profileMusicMap: next });
+  },
+
+  addCustomMusicTrack: (track: MusicTrackOption) => {
+    const next = [...get().customMusicTracks, track];
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(CUSTOM_MUSIC_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore quota errors
+      }
+    }
+    set({ customMusicTracks: next });
+  },
+
   loadProgress: async () => {
     try {
       const repo = await getSessionRepository();
@@ -370,10 +422,16 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
 
     set({ sessionStartedAt: new Date(), isIntroPlaying: false });
 
+    const activeTrackId = get().profileMusicMap[activeProfile.id] || activeProfile.musicTrackId || 'none';
+    if (activeTrackId !== 'none') {
+      backgroundMusicService.start(activeTrackId, get().customMusicTracks);
+    }
+
     timerEngine.start(
       (state) => set({ timerState: state }),
       async () => {
         const { onTimerComplete, preferences: prefs, sessionStartedAt, timerState } = get();
+        backgroundMusicService.stop();
         onTimerComplete?.();
 
         if (prefs.soundEnabled) {
@@ -479,12 +537,19 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     const { timerEngine } = get();
     timerEngine?.pause();
     audioCueService.stopSpeech();
+    backgroundMusicService.pause();
     set({ timerState: timerEngine?.getState() || null });
   },
 
   resumeTimer: () => {
-    const { timerEngine } = get();
+    const { timerEngine, activeProfile, profileMusicMap, customMusicTracks } = get();
     audioCueService.unlock();
+    if (activeProfile) {
+      const trackId = profileMusicMap[activeProfile.id] || activeProfile.musicTrackId || 'none';
+      if (trackId !== 'none') {
+        backgroundMusicService.resume(trackId, customMusicTracks);
+      }
+    }
     timerEngine?.resume();
   },
 
@@ -492,6 +557,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     const { timerEngine } = get();
     timerEngine?.stop();
     audioCueService.stopSpeech();
+    backgroundMusicService.stop();
     set({ timerState: timerEngine?.getState() || null, sessionStartedAt: null });
   },
 }));

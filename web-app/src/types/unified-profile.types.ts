@@ -23,6 +23,7 @@ export interface UnifiedProfile {
   soundEnabled: boolean;
   vibrationEnabled: boolean;
   notificationSound?: string;
+  musicTrackId?: string;
 
   // Simple timer properties (when type === 'simple')
   simpleDuration?: {

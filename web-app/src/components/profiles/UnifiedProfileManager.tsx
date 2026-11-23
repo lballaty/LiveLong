@@ -5,19 +5,32 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
 import { UnifiedProfile, createSimpleProfile } from '@/types/unified-profile.types';
+import { BUILTIN_MUSIC_TRACKS, MusicTrackOption } from '@/services/audio/BackgroundMusicService';
 
 interface ProfileCardProps {
   profile: UnifiedProfile;
   isActive: boolean;
+  selectedMusicId: string;
+  musicOptions: MusicTrackOption[];
+  onMusicChange: (trackId: string) => void;
   onSelect: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isActive, onSelect, onEdit, onDelete }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({
+  profile,
+  isActive,
+  selectedMusicId,
+  musicOptions,
+  onMusicChange,
+  onSelect,
+  onEdit,
+  onDelete,
+}) => {
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -108,6 +121,27 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isActive, onSelect, 
           </div>
         </div>
       )}
+      <div
+        className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between gap-2"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <label className="text-xs text-gray-500 shrink-0" htmlFor={`music-${profile.id}`}>
+          🎵 Music
+        </label>
+        <select
+          id={`music-${profile.id}`}
+          data-testid={`music-select-${profile.id}`}
+          value={selectedMusicId}
+          onChange={(e) => onMusicChange(e.target.value)}
+          className="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700 max-w-[180px]"
+        >
+          {musicOptions.map((track) => (
+            <option key={track.id} value={track.id}>
+              {track.label}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };
@@ -277,12 +311,38 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     profiles,
     customProfiles,
     activeProfile,
+    profileMusicMap,
+    customMusicTracks,
     initializeProfiles,
     selectProfile,
     createCustomProfile,
     updateProfile,
-    deleteCustomProfile
+    deleteCustomProfile,
+    setProfileMusic,
+    addCustomMusicTrack,
   } = useUnifiedTimerStore();
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const allMusicOptions = [...BUILTIN_MUSIC_TRACKS, ...customMusicTracks];
+
+  const handleAddAudioFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        addCustomMusicTrack({
+          id: `custom-${Date.now()}`,
+          label: file.name.replace(/\.[^.]+$/, ''),
+          description: 'Custom audio file',
+          isCustom: true,
+          dataUrl: reader.result,
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const [showForm, setShowForm] = useState(false);
   const [editingProfile, setEditingProfile] = useState<UnifiedProfile | null>(null);
@@ -305,14 +365,31 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
           <h2 className="text-2xl font-bold text-gray-800">Routines & Timers</h2>
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            + Create Custom Timer
-          </button>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="audio/*"
+              onChange={handleAddAudioFile}
+              className="hidden"
+              data-testid="custom-music-input"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+            >
+              + Add Music File
+            </button>
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              + Create Custom Timer
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-2 mb-4">
@@ -346,6 +423,9 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
+                selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
+                musicOptions={allMusicOptions}
+                onMusicChange={(trackId) => setProfileMusic(profile.id, trackId)}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -366,6 +446,9 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
+                selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
+                musicOptions={allMusicOptions}
+                onMusicChange={(trackId) => setProfileMusic(profile.id, trackId)}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -386,6 +469,9 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
+                selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
+                musicOptions={allMusicOptions}
+                onMusicChange={(trackId) => setProfileMusic(profile.id, trackId)}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
