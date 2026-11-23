@@ -501,7 +501,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         }
       },
       (phase) => {
-        const { onPhaseChange, preferences: prefs, timerState, activeProfile: prof } = get();
+        const { onPhaseChange, preferences: prefs, timerEngine, activeProfile: prof } = get();
+        const latestState = timerEngine?.getState() || get().timerState;
         onPhaseChange?.(phase);
 
         if (prefs.soundEnabled) {
@@ -511,8 +512,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
           );
         }
         if (prefs.voiceCuesEnabled) {
-          if (prof?.type === 'breathing' && timerState?.breathingState) {
-            const cycle = timerState.breathingState.currentCycle;
+          if (prof?.type === 'breathing' && latestState?.breathingState) {
+            const cycle = latestState.breathingState.currentCycle;
             const totalCycles = prof.breathingConfig?.cycleCount || 1;
             const isShort = cycle > 1;
             const shortCues: Record<string, string[]> = {
@@ -557,12 +558,14 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             return;
           }
 
-          const step = timerState?.seriesState?.currentStep;
+          const step = latestState?.seriesState?.currentStep;
           const cueMap: Record<string, string> = {
             rest: 'Rest.',
             break: 'Break time.',
             cooldown: 'Cooling down.',
-            exercise: step?.name || 'Next exercise.',
+            exercise: step
+              ? `${step.name}. ${step.instructions || ''}`.trim()
+              : 'Next exercise.',
           };
           const cueId =
             phase === 'rest'
