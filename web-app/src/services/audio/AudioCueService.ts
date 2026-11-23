@@ -9,6 +9,7 @@ interface AudioCueManifest {
   version: string;
   format: string;
   cues: Record<string, string | string[]>;
+  variants?: Record<string, string[]>;
 }
 
 /**
@@ -23,10 +24,12 @@ class AudioCueService {
 
   private pickVariant<T>(cueKey: string, value: T | T[]): T {
     if (!Array.isArray(value)) return value;
-    if (value.length === 0) return value[0];
-    if (value.length === 1) return value[0];
+    if (value.length <= 1) return value[0];
     const prev = this.lastPickedByCue[cueKey];
-    const nextIdx = prev === undefined ? 0 : (prev + 1) % value.length;
+    let nextIdx = Math.floor(Math.random() * value.length);
+    if (prev !== undefined && nextIdx === prev) {
+      nextIdx = (prev + 1) % value.length;
+    }
     this.lastPickedByCue[cueKey] = nextIdx;
     return value[nextIdx];
   }
@@ -126,7 +129,8 @@ class AudioCueService {
     const clampedVol = Math.max(0, Math.min(1, volume));
     try {
       const manifest = await this.loadManifest();
-      const entry = manifest?.cues?.[cueId];
+      const variantList = manifest?.variants?.[cueId];
+      const entry = variantList && variantList.length > 0 ? variantList : manifest?.cues?.[cueId];
       const file = entry ? this.pickVariant(`clip:${cueId}`, entry) : undefined;
       if (file && typeof Audio !== 'undefined') {
         const audio = new Audio(`/audio/cues/${file}`);
