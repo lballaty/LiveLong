@@ -40,6 +40,22 @@ export const BUILTIN_MUSIC_TRACKS: MusicTrackOption[] = [
   },
 ];
 
+const LEGACY_TRACK_ID_MAP: Record<string, string> = {
+  'zen-drone': 'zen-garden',
+  'morning-bamboo': 'morning-exercise',
+  'ocean-waves': 'calm-breath',
+  'gentle-rain': 'calm-breath',
+};
+
+/**
+ * Maps retired Web Audio synth track IDs (e.g. from existing localStorage)
+ * onto the current bundled MP3 tracks so saved user selections keep working.
+ */
+export function normalizeMusicTrackId(trackId?: string): string {
+  if (!trackId) return 'none';
+  return LEGACY_TRACK_ID_MAP[trackId] ?? trackId;
+}
+
 /**
  * Plays looping background music (bundled MP3 loops or user-added audio files)
  * with live volume and mute control independent of chimes and voice cues.
@@ -68,18 +84,19 @@ class BackgroundMusicService {
   }
 
   public start(trackId: string, customTracks: MusicTrackOption[] = []): void {
-    if (!trackId || trackId === 'none') {
+    const resolvedId = normalizeMusicTrackId(trackId);
+    if (!resolvedId || resolvedId === 'none') {
       this.stop();
       return;
     }
-    if (this.isPlaying && this.currentTrackId === trackId) {
+    if (this.isPlaying && this.currentTrackId === resolvedId) {
       return;
     }
 
     this.stop();
-    this.currentTrackId = trackId;
+    this.currentTrackId = resolvedId;
 
-    const track = [...BUILTIN_MUSIC_TRACKS, ...customTracks].find((t) => t.id === trackId);
+    const track = [...BUILTIN_MUSIC_TRACKS, ...customTracks].find((t) => t.id === resolvedId);
     const audioSrc = track?.dataUrl || track?.src;
     if (!audioSrc || typeof Audio === 'undefined') {
       this.isPlaying = false;
@@ -90,9 +107,16 @@ class BackgroundMusicService {
       const audio = new Audio(audioSrc);
       audio.loop = true;
       audio.volume = this.muted ? 0 : Math.max(0, Math.min(1, this.volume));
-      audio.play().catch(() => {});
       this.audioEl = audio;
       this.isPlaying = true;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          if (this.audioEl === audio) {
+            this.isPlaying = false;
+          }
+        });
+      }
     } catch {
       this.isPlaying = false;
     }
@@ -106,12 +130,15 @@ class BackgroundMusicService {
   }
 
   public resume(trackId: string, customTracks: MusicTrackOption[] = []): void {
-    if (this.audioEl && this.currentTrackId === trackId) {
+    const resolvedId = normalizeMusicTrackId(trackId);
+    if (this.audioEl && this.currentTrackId === resolvedId) {
       this.isPlaying = true;
-      this.audioEl.play().catch(() => {});
+      this.audioEl.play().catch(() => {
+        this.isPlaying = false;
+      });
       return;
     }
-    this.start(trackId, customTracks);
+    this.start(resolvedId, customTracks);
   }
 
   public stop(): void {

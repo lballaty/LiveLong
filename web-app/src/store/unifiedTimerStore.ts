@@ -19,6 +19,7 @@ import { audioCueService } from '@/services/audio/AudioCueService';
 import {
   backgroundMusicService,
   MusicTrackOption,
+  normalizeMusicTrackId,
 } from '@/services/audio/BackgroundMusicService';
 import { IndexedDBService } from '@/services/database/IndexedDBService';
 import { SessionRepository } from '@/services/repositories/SessionRepository';
@@ -192,7 +193,10 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     const storedPrefs = loadStoredPreferences();
     backgroundMusicService.setVolume(storedPrefs.musicVolume);
     backgroundMusicService.setMuted(storedPrefs.musicMuted);
-    const storedProfileMusic = loadStoredJson<Record<string, string>>(PROFILE_MUSIC_STORAGE_KEY, {});
+    const rawProfileMusic = loadStoredJson<Record<string, string>>(PROFILE_MUSIC_STORAGE_KEY, {});
+    const storedProfileMusic = Object.fromEntries(
+      Object.entries(rawProfileMusic).map(([k, v]) => [k, normalizeMusicTrackId(v)])
+    );
     const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
     const defaultActive = allProfiles[0];
     const engine = defaultActive ? new UnifiedTimerEngine(defaultActive) : null;
@@ -340,7 +344,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   },
 
   setProfileMusic: (profileId: string, trackId: string) => {
-    const next = { ...get().profileMusicMap, [profileId]: trackId };
+    const resolvedId = normalizeMusicTrackId(trackId);
+    const next = { ...get().profileMusicMap, [profileId]: resolvedId };
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(PROFILE_MUSIC_STORAGE_KEY, JSON.stringify(next));
@@ -349,6 +354,17 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       }
     }
     set({ profileMusicMap: next });
+
+    const { activeProfile, timerState, isIntroPlaying, preferences, customMusicTracks } = get();
+    if (activeProfile?.id === profileId && (timerState?.status === 'running' || isIntroPlaying)) {
+      if (resolvedId === 'none') {
+        backgroundMusicService.stop();
+      } else {
+        backgroundMusicService.setVolume(preferences.musicVolume);
+        backgroundMusicService.setMuted(preferences.musicMuted);
+        backgroundMusicService.start(resolvedId, customMusicTracks);
+      }
+    }
   },
 
   addCustomMusicTrack: (track: MusicTrackOption) => {
@@ -401,6 +417,15 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     audioCueService.unlock();
 
     // Play ~20s calming intro before Round 1 when voice cues are enabled for breathing
+    const activeTrackId = normalizeMusicTrackId(
+      get().profileMusicMap[activeProfile.id] || activeProfile.musicTrackId || 'none'
+    );
+    if (activeTrackId !== 'none') {
+      backgroundMusicService.setVolume(preferences.musicVolume);
+      backgroundMusicService.setMuted(preferences.musicMuted);
+      backgroundMusicService.start(activeTrackId, get().customMusicTracks);
+    }
+
     if (
       activeProfile.type === 'breathing' &&
       preferences.voiceCuesEnabled &&
@@ -455,13 +480,6 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     }
 
     set({ sessionStartedAt: new Date(), isIntroPlaying: false });
-
-    const activeTrackId = get().profileMusicMap[activeProfile.id] || activeProfile.musicTrackId || 'none';
-    if (activeTrackId !== 'none') {
-      backgroundMusicService.setVolume(preferences.musicVolume);
-      backgroundMusicService.setMuted(preferences.musicMuted);
-      backgroundMusicService.start(activeTrackId, get().customMusicTracks);
-    }
 
     timerEngine.start(
       (state) => set({ timerState: state }),
