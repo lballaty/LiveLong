@@ -8,7 +8,9 @@ import {
   UnifiedProfile,
   UnifiedTimerState,
   PracticePreferences,
+  SessionPlan,
   createSimpleProfile,
+  cloneProfileAsCustom,
   convertExerciseSeriesToUnified,
   convertBreathingPatternToUnified,
 } from '@/types/unified-profile.types';
@@ -29,6 +31,7 @@ const PREFS_STORAGE_KEY = 'livelong_preferences';
 const CUSTOM_PROFILES_STORAGE_KEY = 'livelong_custom_profiles';
 const PROFILE_MUSIC_STORAGE_KEY = 'livelong_profile_music';
 const CUSTOM_MUSIC_STORAGE_KEY = 'livelong_custom_music';
+const SESSION_PLANS_STORAGE_KEY = 'livelong_session_plans';
 
 function loadStoredJson<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -90,6 +93,11 @@ interface UnifiedTimerStore {
   sessionStartedAt: Date | null;
   isIntroPlaying: boolean;
 
+  // Session Plans (multi-routine playlists)
+  sessionPlans: SessionPlan[];
+  activeSessionPlan: SessionPlan | null;
+  activeSessionIndex: number;
+
   // Preferences & Progress
   preferences: PracticePreferences;
   profileMusicMap: Record<string, string>;
@@ -101,20 +109,30 @@ interface UnifiedTimerStore {
   initializeProfiles: () => void;
   selectProfile: (profileId: string) => void;
   createCustomProfile: (profile: UnifiedProfile) => void;
+  duplicateProfile: (profileId: string) => UnifiedProfile | null;
   updateProfile: (profileId: string, updates: Partial<UnifiedProfile>) => void;
   deleteCustomProfile: (profileId: string) => void;
+  createSessionPlan: (plan: Omit<SessionPlan, 'id' | 'createdAt' | 'updatedAt'>) => SessionPlan;
+  updateSessionPlan: (planId: string, updates: Partial<SessionPlan>) => void;
+  deleteSessionPlan: (planId: string) => void;
+  startSessionPlan: (planId: string) => void;
+  stopSessionPlan: () => void;
   updatePreferences: (updates: Partial<PracticePreferences>) => void;
   setProfileMusic: (profileId: string, trackId: string) => void;
   addCustomMusicTrack: (track: MusicTrackOption) => void;
   loadProgress: () => Promise<void>;
 
-  // Timer controls
+  // Timer & review controls
   setBreathingCycles: (cycles: number) => void;
   startTimer: () => void;
   skipIntro: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => void;
+  jumpToStep: (stepIndex: number) => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  previewStepCue: (stepIndex?: number) => void;
 
   // Callbacks
   onTimerUpdate?: (state: UnifiedTimerState) => void;
@@ -139,6 +157,9 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   timerState: null,
   sessionStartedAt: null,
   isIntroPlaying: false,
+  sessionPlans: [],
+  activeSessionPlan: null,
+  activeSessionIndex: 0,
   preferences: DEFAULT_PREFERENCES,
   profileMusicMap: {},
   customMusicTracks: [],
@@ -198,12 +219,14 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       Object.entries(rawProfileMusic).map(([k, v]) => [k, normalizeMusicTrackId(v)])
     );
     const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
+    const storedSessionPlans = loadStoredJson<SessionPlan[]>(SESSION_PLANS_STORAGE_KEY, []);
     const defaultActive = allProfiles[0];
     const engine = defaultActive ? new UnifiedTimerEngine(defaultActive) : null;
 
     set({
       profiles: allProfiles,
       customProfiles: storedCustom,
+      sessionPlans: storedSessionPlans,
       preferences: storedPrefs,
       profileMusicMap: storedProfileMusic,
       customMusicTracks: storedCustomMusic,
@@ -320,6 +343,83 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       }
     }
     set({ customProfiles: next });
+  },
+
+  duplicateProfile: (profileId: string) => {
+    const all = [...get().profiles, ...get().customProfiles];
+    const source = all.find((p) => p.id === profileId);
+    if (!source) return null;
+    const cloned = cloneProfileAsCustom(source);
+    get().createCustomProfile(cloned);
+    return cloned;
+  },
+
+  createSessionPlan: (plan) => {
+    const now = new Date();
+    const created: SessionPlan = {
+      ...plan,
+      id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const next = [...get().sessionPlans, created];
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(SESSION_PLANS_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+    }
+    set({ sessionPlans: next });
+    return created;
+  },
+
+  updateSessionPlan: (planId: string, updates: Partial<SessionPlan>) => {
+    const next = get().sessionPlans.map((p) =>
+      p.id === planId ? { ...p, ...updates, id: p.id, updatedAt: new Date() } : p
+    );
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(SESSION_PLANS_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+    }
+    const active = get().activeSessionPlan;
+    set({
+      sessionPlans: next,
+      activeSessionPlan: active?.id === planId ? next.find((p) => p.id === planId) || null : active,
+    });
+  },
+
+  deleteSessionPlan: (planId: string) => {
+    const next = get().sessionPlans.filter((p) => p.id !== planId);
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(SESSION_PLANS_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+    }
+    const active = get().activeSessionPlan;
+    set({
+      sessionPlans: next,
+      activeSessionPlan: active?.id === planId ? null : active,
+    });
+  },
+
+  startSessionPlan: (planId: string) => {
+    const plan = get().sessionPlans.find((p) => p.id === planId);
+    if (!plan || plan.items.length === 0) return;
+    const firstItem = plan.items[0];
+    get().selectProfile(firstItem.profileId);
+    set({ activeSessionPlan: plan, activeSessionIndex: 0 });
+    get().startTimer();
+  },
+
+  stopSessionPlan: () => {
+    get().stopTimer();
+    set({ activeSessionPlan: null, activeSessionIndex: 0 });
   },
 
   updatePreferences: (updates: Partial<PracticePreferences>) => {
@@ -527,6 +627,17 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         } catch {
           // Ignore persistence errors
         }
+
+        const { activeSessionPlan, activeSessionIndex } = get();
+        if (activeSessionPlan && activeSessionIndex + 1 < activeSessionPlan.items.length) {
+          const nextIdx = activeSessionIndex + 1;
+          const nextItem = activeSessionPlan.items[nextIdx];
+          get().selectProfile(nextItem.profileId);
+          set({ activeSessionPlan, activeSessionIndex: nextIdx });
+          get().startTimer();
+        } else if (activeSessionPlan) {
+          set({ activeSessionPlan: null, activeSessionIndex: 0 });
+        }
       },
       (phase) => {
         const { onPhaseChange, preferences: prefs, timerEngine, activeProfile: prof } = get();
@@ -594,14 +705,14 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             break: 'Break time.',
             cooldown: 'Cooling down.',
             exercise: step
-              ? `${step.name}. ${step.instructions || ''}`.trim()
+              ? step.voiceScript || `${step.name}. ${step.instructions || ''}`.trim()
               : 'Next exercise.',
           };
           const cueId =
             phase === 'rest'
               ? 'session.rest'
               : phase === 'exercise' && step
-              ? `rajio-taiso.${step.id}`
+              ? step.cueId || (prof?.id === 'rajio-taiso-series' ? `rajio-taiso.${step.id}` : step.id)
               : `session.${phase}`;
           audioCueService.speakCue(
             cueId,
@@ -640,6 +751,74 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     timerEngine?.stop();
     audioCueService.stopSpeech();
     backgroundMusicService.stop();
-    set({ timerState: timerEngine?.getState() || null, sessionStartedAt: null });
+    set({
+      timerState: timerEngine?.getState() || null,
+      sessionStartedAt: null,
+      isIntroPlaying: false,
+      activeSessionPlan: null,
+      activeSessionIndex: 0,
+    });
+  },
+
+  jumpToStep: (stepIndex: number) => {
+    const { timerEngine } = get();
+    if (!timerEngine) return;
+    if (timerEngine.jumpToStep(stepIndex)) {
+      set({ timerState: timerEngine.getState() });
+      get().previewStepCue(stepIndex);
+    }
+  },
+
+  nextStep: () => {
+    const { timerEngine } = get();
+    if (!timerEngine) return;
+    if (timerEngine.nextStep()) {
+      const nextState = timerEngine.getState();
+      set({ timerState: nextState });
+      get().previewStepCue(nextState.seriesState?.currentStepIndex);
+    }
+  },
+
+  prevStep: () => {
+    const { timerEngine } = get();
+    if (!timerEngine) return;
+    if (timerEngine.prevStep()) {
+      const nextState = timerEngine.getState();
+      set({ timerState: nextState });
+      get().previewStepCue(nextState.seriesState?.currentStepIndex);
+    }
+  },
+
+  previewStepCue: (stepIndex?: number) => {
+    const { activeProfile, timerState, preferences } = get();
+    if (!activeProfile) return;
+    audioCueService.unlock();
+    if (preferences.soundEnabled) {
+      audioCueService.playChime('phase', preferences.chimeVolume);
+    }
+    if (!preferences.voiceCuesEnabled) return;
+    if (activeProfile.type === 'series' && activeProfile.seriesConfig) {
+      const idx =
+        stepIndex !== undefined
+          ? stepIndex
+          : timerState?.seriesState?.currentStepIndex ?? 0;
+      const step = activeProfile.seriesConfig.steps[idx];
+      if (!step) return;
+      const cueId =
+        step.cueId || (activeProfile.id === 'rajio-taiso-series' ? `rajio-taiso.${step.id}` : step.id);
+      const script = step.voiceScript || `${step.name}. ${step.instructions || ''}`.trim();
+      audioCueService.speakCue(cueId, script, undefined, preferences.voiceVolume, preferences.voiceId);
+    } else if (activeProfile.type === 'breathing' && activeProfile.breathingConfig) {
+      const phase =
+        timerState?.breathingState?.currentPhase || activeProfile.breathingConfig.pattern[0];
+      if (!phase) return;
+      audioCueService.speakCue(
+        `breathing.${phase.type}`,
+        phase.instruction || `Breathe ${phase.type}`,
+        undefined,
+        preferences.voiceVolume,
+        preferences.voiceId
+      );
+    }
   },
 }));

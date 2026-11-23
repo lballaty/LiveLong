@@ -7,8 +7,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
-import { UnifiedProfile, createSimpleProfile } from '@/types/unified-profile.types';
+import {
+  UnifiedProfile,
+  SessionPlan,
+  createSimpleProfile,
+} from '@/types/unified-profile.types';
 import { BUILTIN_MUSIC_TRACKS, MusicTrackOption } from '@/services/audio/BackgroundMusicService';
+import RoutineEditorModal from './RoutineEditorModal';
+import SessionComposerModal from './SessionComposerModal';
 
 interface ProfileCardProps {
   profile: UnifiedProfile;
@@ -18,6 +24,7 @@ interface ProfileCardProps {
   onMusicChange: (trackId: string) => void;
   onSelect: () => void;
   onEdit?: () => void;
+  onDuplicate?: () => void;
   onDelete?: () => void;
 }
 
@@ -29,6 +36,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onMusicChange,
   onSelect,
   onEdit,
+  onDuplicate,
   onDelete,
 }) => {
   const formatDuration = (seconds: number): string => {
@@ -88,7 +96,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           </div>
         </div>
         <div className="flex gap-1">
-          {onEdit && profile.type === 'simple' && (
+          {onEdit && (profile.type === 'simple' || profile.isCustom) && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -98,6 +106,19 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
               aria-label="Edit profile"
             >
               ✏️
+            </button>
+          )}
+          {onDuplicate && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate();
+              }}
+              className="p-1 text-slate-600 hover:bg-slate-100 rounded"
+              aria-label="Clone routine"
+              title="Clone & customize"
+            >
+              📋
             </button>
           )}
           {profile.isCustom && onDelete && (
@@ -311,16 +332,27 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     profiles,
     customProfiles,
     activeProfile,
+    sessionPlans,
     profileMusicMap,
     customMusicTracks,
     initializeProfiles,
     selectProfile,
     createCustomProfile,
+    duplicateProfile,
     updateProfile,
     deleteCustomProfile,
+    createSessionPlan,
+    updateSessionPlan,
+    deleteSessionPlan,
+    startSessionPlan,
     setProfileMusic,
     addCustomMusicTrack,
   } = useUnifiedTimerStore();
+
+  const [showRoutineModal, setShowRoutineModal] = useState(false);
+  const [editingRoutine, setEditingRoutine] = useState<UnifiedProfile | null>(null);
+  const [showSessionComposer, setShowSessionComposer] = useState(false);
+  const [editingSessionPlan, setEditingSessionPlan] = useState<SessionPlan | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const allMusicOptions = [...BUILTIN_MUSIC_TRACKS, ...customMusicTracks];
@@ -384,6 +416,26 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
               + Add Music File
             </button>
             <button
+              type="button"
+              onClick={() => {
+                setEditingRoutine(null);
+                setShowRoutineModal(true);
+              }}
+              className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+            >
+              + New Routine
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingSessionPlan(null);
+                setShowSessionComposer(true);
+              }}
+              className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+            >
+              + Compose Session
+            </button>
+            <button
               onClick={() => setShowForm(true)}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
@@ -414,6 +466,66 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         </div>
       </div>
 
+      {sessionPlans.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">Composed Sessions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sessionPlans.map((plan) => (
+              <div
+                key={plan.id}
+                data-testid={`session-plan-${plan.id}`}
+                className="p-4 rounded-lg border-2 border-indigo-200 bg-indigo-50/40 flex flex-col justify-between gap-3"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{plan.icon}</span>
+                      <h4 className="font-semibold text-slate-900">{plan.name}</h4>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingSessionPlan(plan);
+                          setShowSessionComposer(true);
+                        }}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        aria-label="Edit session plan"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteSessionPlan(plan.id)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        aria-label="Delete session plan"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-1">{plan.description}</p>
+                  <p className="text-xs text-indigo-700 font-medium mt-2">
+                    {plan.items.length} routines in sequence
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    startSessionPlan(plan.id);
+                    const first = allProfiles.find((p) => p.id === plan.items[0]?.profileId);
+                    if (first) onProfileSelect?.(first);
+                  }}
+                  className="w-full py-2 px-3 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"
+                >
+                  ▶ Start Session
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {seriesProfiles.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Japanese Longevity Exercises</h3>
@@ -429,6 +541,11 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
+                }}
+                onEdit={profile.isCustom ? () => setEditingRoutine(profile) : undefined}
+                onDuplicate={() => {
+                  const cloned = duplicateProfile(profile.id);
+                  if (cloned) setEditingRoutine(cloned);
                 }}
                 onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
               />
@@ -452,6 +569,11 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
+                }}
+                onEdit={profile.isCustom ? () => setEditingRoutine(profile) : undefined}
+                onDuplicate={() => {
+                  const cloned = duplicateProfile(profile.id);
+                  if (cloned) setEditingRoutine(cloned);
                 }}
                 onDelete={profile.isCustom ? () => deleteCustomProfile(profile.id) : undefined}
               />
@@ -605,6 +727,42 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
             </form>
           </div>
         </div>
+      )}
+
+      {(showRoutineModal || editingRoutine) && (
+        <RoutineEditorModal
+          profile={editingRoutine || undefined}
+          musicOptions={allMusicOptions}
+          onClose={() => {
+            setShowRoutineModal(false);
+            setEditingRoutine(null);
+          }}
+          onSave={(saved) => {
+            if (editingRoutine) {
+              updateProfile(editingRoutine.id, saved);
+            } else {
+              createCustomProfile(saved);
+            }
+          }}
+        />
+      )}
+
+      {showSessionComposer && (
+        <SessionComposerModal
+          plan={editingSessionPlan || undefined}
+          availableProfiles={allProfiles}
+          onClose={() => {
+            setShowSessionComposer(false);
+            setEditingSessionPlan(null);
+          }}
+          onSave={(data) => {
+            if (editingSessionPlan) {
+              updateSessionPlan(editingSessionPlan.id, data);
+            } else {
+              createSessionPlan(data);
+            }
+          }}
+        />
       )}
     </div>
   );

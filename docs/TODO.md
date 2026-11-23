@@ -8,13 +8,21 @@
 
 ---
 
-## 📊 Verified Baseline (`2026-11-21`, branch `feature/unified-profile-system` @ `d347225` + local changes)
+## 📊 Verified Baseline (`2026-11-23`, branch `main`)
 
 - `npm --prefix web-app run type-check`: **PASS** — 0 TypeScript errors
-- `npm --prefix web-app run lint`: **PASS** — 0 ESLint errors (6 pre-existing React Hook warnings)
-- `npm --prefix web-app run build`: **PASS** — Next.js 14 production build + `next-pwa` service worker compiled cleanly
-- `cd web-app && npx jest --ci --maxWorkers=2`: **PASS** — 4/4 suites, 37/37 tests passing (note: `test:ci` 80% global coverage threshold still not met until `Unified*` unit tests are added)
-- `cd web-app && npx playwright test e2e/tests/timer/timer-basic.spec.ts --project=chromium`: **PASS** — 4/4 smoke tests passing (`UnifiedTimerDisplay` 4-view navigation, Rajio Taiso animation slot, standing/chair + front/side/both toggles, start/pause/resume/stop)
+- `npm --prefix web-app run lint`: **PASS** — 0 ESLint errors (3 pre-existing React Hook warnings)
+- `cd web-app && npx jest --ci --maxWorkers=2`: **PASS** — 7/7 suites, 74/74 tests passing
+- `cd web-app && npx playwright test e2e/tests/profiles/profile-manager.spec.ts e2e/tests/timer/timer-basic.spec.ts --project=chromium`: **PASS** — 12/12 tests passing
+
+---
+
+## ✅ Completed: Routine & Session Editor + Review Controls (`done`)
+- [x] (`done`) Extend `unified-profile.types.ts` with `SessionPlan`, `SessionPlanItem`, and `SeriesStep` cue/voiceScript fields; verify all built-in exercise steps declare `cueId` and `animation`
+- [x] (`done`) Add `jumpToStep` / `nextStep` / `prevStep` review controls in `UnifiedTimerEngine.ts` and `duplicateProfile`, full `series`/`breathing` editing, and `SessionPlan` CRUD + queue runner in `unifiedTimerStore.ts`
+- [x] (`done`) Build `RoutineEditorModal.tsx` (`Simple` | `Series` | `Breathing`), `SessionComposerModal.tsx` (multi-routine playlists), and Session HUD step review + cue preview controls
+- [x] (`done`) Wire `/animations/<pack>/` drop-in probe in `ExerciseAnimationPlayer.tsx` and external cue/animation readiness status in `SettingsView.tsx`
+- [x] (`done`) Add Jest + Playwright tests for routine editing, session composition, and step review controls (74/74 Jest, 12/12 Playwright passing)
 
 ---
 
@@ -23,10 +31,9 @@
 - [x] Implement IndexedDB persistence (`IndexedDBService`, `ProfileRepository`, `SessionRepository`) and `localStorage` session recovery (`SessionPersistenceService`)
 - [x] Implement unified profile system (`UnifiedProfile`, `UnifiedTimerEngine`, `UnifiedTimerDisplay`, `UnifiedProfileManager`)
 - [x] Implement breathing patterns (`Box Breathing`, `4-7-8`, `Deep Breathing`, `Wim Hof`) and Japanese longevity series (`Rajio Taiso`, `Tai Chi`, `Shinrin-yoku`, `Ikigai`, `Zazen`)
-- [x] Configure Playwright (`web-app/playwright.config.ts`) and author 10 E2E spec files under `web-app/e2e/tests/`
-- [x] Fix all 14 TypeScript errors, 18 ESLint errors, and Jest repository test failures (`type-check`, `lint`, `next build`, and 37/37 Jest tests passing)
+- [x] Configure Playwright (`web-app/playwright.config.ts`) and author E2E specs under `web-app/e2e/tests/`
 - [x] Generate `/icon-192.png`, `/icon-192x192.png`, and `/icon-512.png` in `web-app/public/`
-- [x] Build 4-view LiveLong PWA shell (`Practice`, `Practices`, `Progress`, `Settings`), wire `BreathingVisualizer`, `AudioCueService` (Web Audio + Web Speech), `SessionRepository` progress tracking, and `ExerciseAnimationPlayer` slot for `animation` fleet bundles
+- [x] Build 4-view LiveLong PWA shell (`Session`, `Routines`, `Progress`, `Settings`), 3-channel audio mixer (`Chimes` / `Script` / `Music`), selectable `Woman` / `Man` voice cues, and mastered `.mp3` music loops (`morning-exercise.mp3`, `zen-garden.mp3`, `calm-breath.mp3`, `focus-flow.mp3`)
 - [x] Reconcile `docs/` (`REQUIREMENTS.md`, `DESIGN.md`, `SPECIFICATIONS.md`, `TODO.md`) with actual `web-app/` state
 
 ---
@@ -58,4 +65,4 @@
 
 ---
 
-**Last Updated**: 2026-11-21
+**Last Updated**: 2026-11-23

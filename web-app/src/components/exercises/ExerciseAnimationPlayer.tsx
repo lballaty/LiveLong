@@ -50,6 +50,7 @@ export default function ExerciseAnimationPlayer({
   phase,
 }: ExerciseAnimationPlayerProps) {
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [hasExternalPack, setHasExternalPack] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
@@ -63,12 +64,28 @@ export default function ExerciseAnimationPlayer({
   const viewList: Array<'front' | 'side'> =
     views === 'both' ? ['front', 'side'] : [views];
   const packLabel = animation?.pack || `rajio-taiso.${stepId}`;
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof fetch === 'undefined') return;
+    let cancelled = false;
+    fetch(`/animations/${packLabel}/manifest.json`, { method: 'HEAD' })
+      .then((res) => {
+        if (!cancelled) setHasExternalPack(res.ok);
+      })
+      .catch(() => {
+        if (!cancelled) setHasExternalPack(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [packLabel]);
   const isRestOrStatic = phase === 'rest' || phase === 'cooldown' || !isPlaying || reducedMotion;
   const activeClass = isRestOrStatic ? '' : `anim-${stepId}`;
 
   return (
     <div
       data-testid="exercise-animation-player"
+      data-animation-source={hasExternalPack ? 'external' : 'robot-poc'}
       className={`relative flex flex-col items-center justify-center p-4 sm:p-6 min-h-[220px] sm:min-h-[340px] transition-colors ${
         phase === 'rest' || phase === 'cooldown' ? 'bg-amber-50/70' : 'bg-white'
       }`}

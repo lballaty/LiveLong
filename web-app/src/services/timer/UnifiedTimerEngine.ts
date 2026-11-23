@@ -282,6 +282,63 @@ export class UnifiedTimerEngine {
     return { ...this.state };
   }
 
+  /**
+   * Jump directly to a 0-based step (for series) or cycle (for breathing) for rapid review.
+   */
+  public jumpToStep(stepIndex: number): boolean {
+    if (this.profile.type === 'series' && this.profile.seriesConfig && this.state.seriesState) {
+      const steps = this.profile.seriesConfig.steps;
+      if (steps.length === 0) return false;
+      const idx = Math.max(0, Math.min(steps.length - 1, Math.round(stepIndex)));
+      const step = steps[idx];
+      this.state.seriesState = {
+        currentPhase: 'exercise',
+        currentStepIndex: idx,
+        currentStep: step,
+        completedSteps: steps.slice(0, idx).map((s) => s.id),
+      };
+      this.state.remainingSeconds = step.durationMinutes * 60 + step.durationSeconds;
+      this.onUpdate?.({ ...this.state });
+      return true;
+    }
+
+    if (this.profile.type === 'breathing' && this.profile.breathingConfig && this.state.breathingState) {
+      const { pattern, cycleCount } = this.profile.breathingConfig;
+      if (pattern.length === 0) return false;
+      const idx = Math.max(0, Math.min(Math.max(1, cycleCount) - 1, Math.round(stepIndex)));
+      this.state.breathingState = {
+        currentCycle: idx + 1,
+        currentPhaseIndex: 0,
+        currentPhase: pattern[0],
+      };
+      this.state.remainingSeconds = pattern[0].durationSeconds;
+      this.onUpdate?.({ ...this.state });
+      return true;
+    }
+
+    return false;
+  }
+
+  public nextStep(): boolean {
+    if (this.profile.type === 'series' && this.state.seriesState) {
+      return this.jumpToStep(this.state.seriesState.currentStepIndex + 1);
+    }
+    if (this.profile.type === 'breathing' && this.state.breathingState) {
+      return this.jumpToStep(this.state.breathingState.currentCycle);
+    }
+    return false;
+  }
+
+  public prevStep(): boolean {
+    if (this.profile.type === 'series' && this.state.seriesState) {
+      return this.jumpToStep(this.state.seriesState.currentStepIndex - 1);
+    }
+    if (this.profile.type === 'breathing' && this.state.breathingState) {
+      return this.jumpToStep(this.state.breathingState.currentCycle - 2);
+    }
+    return false;
+  }
+
   public getCurrentPhaseDescription(): string {
     switch (this.profile.type) {
       case 'simple':

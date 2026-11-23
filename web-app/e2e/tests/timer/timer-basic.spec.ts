@@ -72,4 +72,21 @@ test.describe('LiveLong Practice & Timer Functionality', () => {
     await page.click('nav button:has-text("Settings")');
     await expect(page.locator('[data-testid="settings-view"]')).toBeVisible();
   });
+
+  test('should support step review controls and routine/session composer modals', async ({ page }) => {
+    await page.click('[data-testid="review-next-step"]');
+    await expect(page.locator('h2:has-text("2. Arm Swings")')).toBeVisible();
+    await page.click('[data-testid="review-prev-step"]');
+    await expect(page.locator('h2:has-text("1. Neck and Arm Stretches")')).toBeVisible();
+
+    await page.click('nav button:has-text("Routines")');
+    await page.click('button:has-text("+ New Routine")');
+    await expect(page.locator('[data-testid="routine-editor-modal"]')).toBeVisible();
+    await page.click('button[aria-label="Close routine editor"]');
+
+    await page.click('button:has-text("+ Compose Session")');
+    await expect(page.locator('[data-testid="session-composer-modal"]')).toBeVisible();
+    await page.click('[data-testid="save-session-plan-button"]');
+    await expect(page.locator('h3:has-text("Composed Sessions")')).toBeVisible();
+  });
 });

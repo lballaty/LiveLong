@@ -1,0 +1,72 @@
+plan:
+  title: Implement Routine & Session Editor, Step Review Controls, and External Voice/Animation Readiness in LiveLong
+  goal_validation:
+    - docs/DESIGN.md, docs/REQUIREMENTS.md, docs/SPECIFICATIONS.md, and docs/TODO.md are updated first before coding and kept current as each work package completes
+    - Users can create, clone, and edit Simple, Exercise Series, and Breathing routines (steps, timings, scripts, cues, animations, music)
+    - Users can compose, save, and run multi-routine SessionPlans (ordered playlists with transition rest and queue progress)
+    - Session HUD provides Prev Step / Next Step / Step Jump and Cue Preview controls for fast routine review
+    - External voice manifests (/audio/cues/<voiceId>/manifest.json) and animation packs (/animations/<pack>/...) load cleanly when added without breaking fallbacks
+    - npm run type-check, npm run lint, Jest unit tests, and Playwright Chromium tests pass
+  steps:
+    - id: reserve-shared-files
+      description: Reserve canonical docs and shared types/store files in queuectl before editing
+      command: queuectl reserve --agent "${QUEUECTL_AGENT:-codex-ui-livelong}" --working-on "Routine & Session Editor, review controls, and live doc/tracker updates" --files /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/DESIGN.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/TODO.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/REQUIREMENTS.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/SPECIFICATIONS.md /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/types/unified-profile.types.ts /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/store/unifiedTimerStore.ts
+      validation: queuectl show --format json | grep -q "DESIGN.md"
+      depends_on: []
+      fatal_on_failure: true
+
+    - id: update-docs-and-trackers-initial
+      description: Update docs/DESIGN.md, docs/REQUIREMENTS.md, docs/SPECIFICATIONS.md, and docs/TODO.md FIRST with SessionPlan model, Routine & Session Editor scope, review controls, external asset contracts, and [in progress] tracker entries
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong && git diff --stat docs/DESIGN.md docs/REQUIREMENTS.md docs/SPECIFICATIONS.md docs/TODO.md
+      validation: grep -q "SessionPlan" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/DESIGN.md && grep -q "Routine & Session Editor" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/TODO.md && grep -q "in progress" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/TODO.md
+      depends_on: [reserve-shared-files]
+      fatal_on_failure: true
+
+    - id: extend-types-and-routine-data
+      description: Add SessionPlan, SessionPlanItem, and SeriesStep cueId/voiceScript fields in unified-profile.types.ts, ensure all built-in exercise steps declare explicit cueId and animation pack refs, and update docs/TODO.md progress
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check
+      validation: grep -q "SessionPlan" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/types/unified-profile.types.ts && npm --prefix /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app run type-check
+      depends_on: [update-docs-and-trackers-initial]
+      fatal_on_failure: true
+
+    - id: store-session-queue-and-review-controls
+      description: Add step jump/next/prev review controls to UnifiedTimerEngine, add duplicateProfile, full series/breathing edit support, and SessionPlan CRUD + queue runner to unifiedTimerStore, and update docs/TODO.md progress
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check && npx jest --ci --maxWorkers=2 src/store/__tests__/unifiedTimerStore.test.ts src/services/timer/__tests__/UnifiedTimerEngine.test.ts
+      validation: grep -q "sessionPlans" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/store/unifiedTimerStore.ts && grep -q "jumpToStep" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/services/timer/UnifiedTimerEngine.ts
+      depends_on: [extend-types-and-routine-data]
+      fatal_on_failure: true
+
+    - id: routine-and-session-editor-ui
+      description: Build RoutineEditorModal (Simple/Series/Breathing create, clone, edit), SessionComposerModal (multi-routine SessionPlan builder), and Session HUD step review controls (Prev/Next/Step Jump/Preview Cue), and update docs/TODO.md progress
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check && npm run lint
+      validation: test -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/profiles/RoutineEditorModal.tsx && test -f /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/profiles/SessionComposerModal.tsx && npm --prefix /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app run type-check
+      depends_on: [store-session-queue-and-review-controls]
+      fatal_on_failure: true
+
+    - id: external-asset-loader-hooks
+      description: Wire drop-in external animation pack probe (/animations/<pack>/) in ExerciseAnimationPlayer with robot SVG fallback, add cue/animation readiness status in Settings, and update docs/TODO.md progress
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check && npm run lint
+      validation: grep -q "/animations/" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/exercises/ExerciseAnimationPlayer.tsx && npm --prefix /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app run type-check
+      depends_on: [extend-types-and-routine-data]
+      fatal_on_failure: false
+
+    - id: verify-tests-and-e2e
+      description: Add Jest unit tests and Playwright E2E coverage for routine editing, session composition, and step review controls, then run full type-check, lint, Jest, and Playwright suites
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app && npm run type-check && npm run lint && npx jest --ci --maxWorkers=2 && npx playwright test e2e/tests/profiles/profile-manager.spec.ts e2e/tests/timer/timer-basic.spec.ts --project=chromium --reporter=list
+      validation: returns exit code 0
+      depends_on: [routine-and-session-editor-ui, external-asset-loader-hooks]
+      fatal_on_failure: true
+
+    - id: sync-docs-and-trackers-final
+      description: Sync docs/DESIGN.md, docs/REQUIREMENTS.md, docs/SPECIFICATIONS.md, and docs/TODO.md with implemented file paths, symbols, verified test counts, and [done] status
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong && git diff --stat docs/DESIGN.md docs/REQUIREMENTS.md docs/SPECIFICATIONS.md docs/TODO.md
+      validation: grep -q "done" /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/docs/TODO.md
+      depends_on: [verify-tests-and-e2e]
+      fatal_on_failure: true
+
+    - id: commit-and-release-locks
+      description: Commit all docs, implementation, and tests on main with path-form commit and release queuectl reservations
+      command: cd /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong && git status --short
+      validation: git status --short
+      depends_on: [sync-docs-and-trackers-final]
+      fatal_on_failure: false

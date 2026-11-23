@@ -244,6 +244,15 @@ export default function SettingsView() {
         </div>
 
         <div className="pt-4 border-t border-gray-100">
+          <span className="block text-sm font-semibold text-gray-800 mb-1">
+            Drop-In Voice &amp; Animation Bundles
+          </span>
+          <p className="text-xs text-gray-500">
+            Voice manifests resolve from <code className="bg-slate-100 px-1 rounded">/audio/cues/&lt;voiceId&gt;/manifest.json</code> (Web Speech fallback active) and animation packs resolve from <code className="bg-slate-100 px-1 rounded">/animations/&lt;pack&gt;/manifest.json</code> (Robot POC fallback active).
+          </p>
+        </div>
+
+        <div className="pt-4 border-t border-gray-100">
           <span className="block text-sm font-semibold text-gray-800 mb-2">
             Live Figure Preview (staticPose)
           </span>

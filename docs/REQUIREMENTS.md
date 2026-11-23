@@ -7,6 +7,8 @@
 - [x] **Breathing Exercises**: Implement visual guides and patterns for Box Breathing (4-4-4-4), 4-7-8 Relaxation, Deep Breathing, and Wim Hof (`web-app/src/data/breathing-patterns.ts`, `breathing-profiles.ts`, `BreathingVisualizer.tsx`).
 - [x] **Longevity Practices**: Provide structured exercise series for Rajio Taiso, Tai Chi Morning, Shinrin-yoku, Ikigai Reflection, and Zazen Sitting (`web-app/src/data/japanese-exercise-series.ts`).
 - [x] **Profile & Session Persistence**: Store custom/default profiles and completed sessions locally via IndexedDB (`IndexedDBService`, `ProfileRepository`, `SessionRepository`) and `localStorage` (`SessionPersistenceService`).
+- [x] **Routine & Session Editor**: Create, clone, and edit `simple`, `series`, and `breathing` routines (steps, timings, scripts, cues, animations, music) and compose multi-routine `SessionPlan` playlists (`RoutineEditorModal.tsx`, `SessionComposerModal.tsx`, `unifiedTimerStore.ts`).
+- [x] **Routine Review & Asset Readiness**: Step jump/prev/next controls and cue preview for rapid routine verification, plus drop-in detection for `/audio/cues/<voiceId>/manifest.json` and `/animations/<pack>/` (`UnifiedTimerDisplay.tsx`, `ExerciseAnimationPlayer.tsx`, `SettingsView.tsx`).
 
 ### User Stories
 - [x] As a user, I want to start a Pomodoro timer so that I can focus on my tasks for 25 minutes uninterrupted.
@@ -31,5 +33,5 @@
 
 ---
 
-**Status**: Reconciled against `web-app/` implementation
-**Last Updated**: 2026-11-21
+**Status**: Updated for Routine & Session Editor + Review Controls
+**Last Updated**: 2026-11-23

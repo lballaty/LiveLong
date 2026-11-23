@@ -354,4 +354,60 @@ describe('useUnifiedTimerStore', () => {
       expect(useUnifiedTimerStore.getState().recentSessions.map((s) => s.id)).toEqual(['s2', 's1']);
     });
   });
+
+  describe('Routine cloning, step review, and SessionPlan composition', () => {
+    it('duplicates a built-in series routine as a custom editable routine', () => {
+      useUnifiedTimerStore.getState().initializeProfiles();
+      const cloned = useUnifiedTimerStore.getState().duplicateProfile('rajio-taiso-series');
+      expect(cloned).not.toBeNull();
+      expect(cloned?.isCustom).toBe(true);
+      expect(cloned?.type).toBe('series');
+      expect(cloned?.name).toContain('(Custom)');
+      expect(
+        useUnifiedTimerStore.getState().customProfiles.some((p) => p.id === cloned?.id)
+      ).toBe(true);
+    });
+
+    it('jumps between steps for rapid review', () => {
+      useUnifiedTimerStore.getState().initializeProfiles();
+      useUnifiedTimerStore.getState().selectProfile('rajio-taiso-series');
+
+      useUnifiedTimerStore.getState().jumpToStep(2);
+      expect(useUnifiedTimerStore.getState().timerState?.seriesState?.currentStepIndex).toBe(2);
+
+      useUnifiedTimerStore.getState().nextStep();
+      expect(useUnifiedTimerStore.getState().timerState?.seriesState?.currentStepIndex).toBe(3);
+
+      useUnifiedTimerStore.getState().prevStep();
+      expect(useUnifiedTimerStore.getState().timerState?.seriesState?.currentStepIndex).toBe(2);
+    });
+
+    it('creates, updates, starts, stops, and deletes a SessionPlan', () => {
+      useUnifiedTimerStore.getState().initializeProfiles();
+      const profiles = useUnifiedTimerStore.getState().profiles;
+      const plan = useUnifiedTimerStore.getState().createSessionPlan({
+        name: 'Morning Stack',
+        description: 'Rajio + Breath',
+        icon: '🌅',
+        items: [
+          { id: 'i1', profileId: profiles[0].id },
+          { id: 'i2', profileId: profiles[1].id },
+        ],
+      });
+
+      expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(1);
+      useUnifiedTimerStore.getState().startSessionPlan(plan.id);
+      expect(useUnifiedTimerStore.getState().activeSessionPlan?.id).toBe(plan.id);
+      expect(useUnifiedTimerStore.getState().activeSessionIndex).toBe(0);
+
+      useUnifiedTimerStore.getState().updateSessionPlan(plan.id, { name: 'Updated Stack' });
+      expect(useUnifiedTimerStore.getState().activeSessionPlan?.name).toBe('Updated Stack');
+
+      useUnifiedTimerStore.getState().stopSessionPlan();
+      expect(useUnifiedTimerStore.getState().activeSessionPlan).toBeNull();
+
+      useUnifiedTimerStore.getState().deleteSessionPlan(plan.id);
+      expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(0);
+    });
+  });
 });

@@ -34,6 +34,7 @@ export interface ExerciseStep {
   readonly videoUrl?: string;
   readonly imageUrl?: string;
   readonly animation?: StepAnimationRef;
+  readonly cueId?: string;
 }
 
 /**

@@ -104,7 +104,9 @@ export const TAI_CHI_MORNING_SERIES: ExerciseSeries = {
       description: 'Center and ground yourself',
       durationMinutes: 2,
       restDurationMinutes: 0.5,
-      instructions: 'Stand feet shoulder-width apart, breathe deeply'
+      instructions: 'Stand feet shoulder-width apart, breathe deeply',
+      cueId: 'tai-chi.beginning-stance',
+      animation: { pack: 'tai-chi.beginning-stance', version: '^1' }
     },
     {
       id: 'raise-arms',
@@ -112,7 +114,9 @@ export const TAI_CHI_MORNING_SERIES: ExerciseSeries = {
       description: 'Slow arm raising movement',
       durationMinutes: 2,
       restDurationMinutes: 0.5,
-      instructions: 'Slowly raise arms to shoulder height'
+      instructions: 'Slowly raise arms to shoulder height',
+      cueId: 'tai-chi.raise-arms',
+      animation: { pack: 'tai-chi.raise-arms', version: '^1' }
     },
     {
       id: 'wave-hands',
@@ -120,7 +124,9 @@ export const TAI_CHI_MORNING_SERIES: ExerciseSeries = {
       description: 'Flowing horizontal arm movements',
       durationMinutes: 3,
       restDurationMinutes: 0.5,
-      instructions: 'Move arms in smooth horizontal waves'
+      instructions: 'Move arms in smooth horizontal waves',
+      cueId: 'tai-chi.wave-hands',
+      animation: { pack: 'tai-chi.wave-hands', version: '^1' }
     },
     {
       id: 'single-whip',
@@ -128,7 +134,9 @@ export const TAI_CHI_MORNING_SERIES: ExerciseSeries = {
       description: 'Classic tai chi movement',
       durationMinutes: 3,
       restDurationMinutes: 0.5,
-      instructions: 'Extend one arm, turn body slowly'
+      instructions: 'Extend one arm, turn body slowly',
+      cueId: 'tai-chi.single-whip',
+      animation: { pack: 'tai-chi.single-whip', version: '^1' }
     },
     {
       id: 'embrace-tiger',
@@ -136,7 +144,9 @@ export const TAI_CHI_MORNING_SERIES: ExerciseSeries = {
       description: 'Circular gathering movement',
       durationMinutes: 3,
       restDurationMinutes: 0,
-      instructions: 'Large circular arm movements, gather energy'
+      instructions: 'Large circular arm movements, gather energy',
+      cueId: 'tai-chi.embrace-tiger',
+      animation: { pack: 'tai-chi.embrace-tiger', version: '^1' }
     }
   ],
   get totalDurationMinutes() {
@@ -163,7 +173,9 @@ export const SHINRIN_YOKU_SERIES: ExerciseSeries = {
       description: 'Open all five senses',
       durationMinutes: 4,
       restDurationMinutes: 1,
-      instructions: 'Notice what you see, hear, smell, feel, taste'
+      instructions: 'Notice what you see, hear, smell, feel, taste',
+      cueId: 'shinrin-yoku.sensory-awakening',
+      animation: { pack: 'shinrin-yoku.sensory-awakening', version: '^1' }
     },
     {
       id: 'mindful-breathing',
@@ -171,7 +183,9 @@ export const SHINRIN_YOKU_SERIES: ExerciseSeries = {
       description: 'Breathe with the forest rhythm',
       durationMinutes: 5,
       restDurationMinutes: 1,
-      instructions: 'Breathe deeply, imagine breathing with trees'
+      instructions: 'Breathe deeply, imagine breathing with trees',
+      cueId: 'shinrin-yoku.mindful-breathing',
+      animation: { pack: 'shinrin-yoku.mindful-breathing', version: '^1' }
     },
     {
       id: 'tree-connection',
@@ -179,7 +193,9 @@ export const SHINRIN_YOKU_SERIES: ExerciseSeries = {
       description: 'Connect with a specific tree or plant',
       durationMinutes: 6,
       restDurationMinutes: 1,
-      instructions: 'Focus on one tree, feel its presence and energy'
+      instructions: 'Focus on one tree, feel its presence and energy',
+      cueId: 'shinrin-yoku.tree-connection',
+      animation: { pack: 'shinrin-yoku.tree-connection', version: '^1' }
     },
     {
       id: 'gratitude-reflection',
@@ -187,7 +203,9 @@ export const SHINRIN_YOKU_SERIES: ExerciseSeries = {
       description: 'Express gratitude to nature',
       durationMinutes: 4,
       restDurationMinutes: 0,
-      instructions: 'Silently thank nature for its gifts and wisdom'
+      instructions: 'Silently thank nature for its gifts and wisdom',
+      cueId: 'shinrin-yoku.gratitude-reflection',
+      animation: { pack: 'shinrin-yoku.gratitude-reflection', version: '^1' }
     }
   ],
   get totalDurationMinutes() {

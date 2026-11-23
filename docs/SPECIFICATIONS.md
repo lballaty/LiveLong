@@ -15,7 +15,7 @@ LiveLong ⊹ (`web-app/`) is a standalone Progressive Web App requiring no backe
 ## 3. Data Models
 
 Canonical TypeScript interfaces live in:
-- `web-app/src/types/unified-profile.types.ts`: `UnifiedProfile` (`type: 'simple' | 'series' | 'breathing'`), `SeriesStep`, `BreathingPhase`
+- `web-app/src/types/unified-profile.types.ts`: `UnifiedProfile` (`type: 'simple' | 'series' | 'breathing'`), `SeriesStep` (with optional `cueId`, `voiceScript`, `animation`), `BreathingPhase`, `SessionPlan`, `SessionPlanItem`, `PracticePreferences`
 - `web-app/src/types/profile.types.ts`: `Profile`, `ProfileCategory`, `ExerciseSeries`, `ExerciseStep`, `BreathingPattern`, `Session`, `IProfileRepository`, `ISessionRepository`
 - `web-app/src/types/timer.types.ts`: `TimerState`, `TimerConfig`, `TimerData`, `TimerEvent`, `ITimerController`
 
@@ -36,5 +36,5 @@ Canonical TypeScript interfaces live in:
 
 ---
 
-**Status**: Reconciled against `web-app/` implementation
-**Last Updated**: 2026-11-21
+**Status**: Implemented & Verified (Routine & Session Editor + SessionPlan specs)
+**Last Updated**: 2026-11-23

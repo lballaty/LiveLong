@@ -103,8 +103,27 @@ export interface SeriesStep {
   restMinutes: number;
   restSeconds: number;
   instructions?: string;
+  cueId?: string;
+  voiceScript?: string;
   breathingPattern?: BreathingPhase[];
   animation?: StepAnimationRef;
+}
+
+export interface SessionPlanItem {
+  id: string;
+  profileId: string;
+  transitionRestSeconds?: number;
+  musicOverrideId?: string;
+}
+
+export interface SessionPlan {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  items: SessionPlanItem[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -163,6 +182,8 @@ export function convertExerciseSeriesToUnified(series: any): UnifiedProfile {
     restMinutes: Math.floor(step.restDurationMinutes),
     restSeconds: Math.round((step.restDurationMinutes % 1) * 60),
     instructions: step.instructions,
+    cueId: step.cueId,
+    voiceScript: step.voiceScript,
     animation: step.animation
   }));
 
@@ -278,5 +299,117 @@ export function createSimpleProfile(
     isCustom: true,
     createdAt: new Date(),
     updatedAt: new Date()
+  };
+}
+
+export function calculateSeriesTotalSeconds(
+  warmupMinutes: number,
+  warmupSeconds: number,
+  cooldownMinutes: number,
+  cooldownSeconds: number,
+  steps: SeriesStep[]
+): number {
+  const warmup = (warmupMinutes * 60) + warmupSeconds;
+  const cooldown = (cooldownMinutes * 60) + cooldownSeconds;
+  const stepsTotal = steps.reduce(
+    (sum, s) =>
+      sum + (s.durationMinutes * 60 + s.durationSeconds) + (s.restMinutes * 60 + s.restSeconds),
+    0
+  );
+  return warmup + stepsTotal + cooldown;
+}
+
+export function createSeriesProfile(params: {
+  id?: string;
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+  musicTrackId?: string;
+  warmupMinutes: number;
+  warmupSeconds: number;
+  cooldownMinutes: number;
+  cooldownSeconds: number;
+  steps: SeriesStep[];
+}): UnifiedProfile {
+  const totalSeconds = calculateSeriesTotalSeconds(
+    params.warmupMinutes,
+    params.warmupSeconds,
+    params.cooldownMinutes,
+    params.cooldownSeconds,
+    params.steps
+  );
+  const now = new Date();
+  return {
+    id: params.id || `series-${generateUUID()}`,
+    name: params.name,
+    description: params.description,
+    type: 'series',
+    color: params.color,
+    icon: params.icon,
+    musicTrackId: params.musicTrackId,
+    soundEnabled: true,
+    vibrationEnabled: true,
+    seriesConfig: {
+      warmupMinutes: params.warmupMinutes,
+      warmupSeconds: params.warmupSeconds,
+      cooldownMinutes: params.cooldownMinutes,
+      cooldownSeconds: params.cooldownSeconds,
+      steps: params.steps,
+    },
+    totalDurationSeconds: totalSeconds,
+    isDefault: false,
+    isCustom: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export function createBreathingProfile(params: {
+  id?: string;
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+  musicTrackId?: string;
+  pattern: BreathingPhase[];
+  cycleCount: number;
+}): UnifiedProfile {
+  const cycleSeconds = params.pattern.reduce((sum, p) => sum + p.durationSeconds, 0);
+  const totalSeconds = cycleSeconds * params.cycleCount;
+  const now = new Date();
+  return {
+    id: params.id || `breathing-${generateUUID()}`,
+    name: params.name,
+    description: params.description,
+    type: 'breathing',
+    color: params.color,
+    icon: params.icon,
+    musicTrackId: params.musicTrackId,
+    soundEnabled: true,
+    vibrationEnabled: true,
+    breathingConfig: {
+      pattern: params.pattern,
+      cycleCount: params.cycleCount,
+      totalDurationMinutes: totalSeconds / 60,
+    },
+    totalDurationSeconds: totalSeconds,
+    isDefault: false,
+    isCustom: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export function cloneProfileAsCustom(source: UnifiedProfile): UnifiedProfile {
+  const now = new Date();
+  return {
+    ...JSON.parse(JSON.stringify(source)),
+    id: `${source.type}-${generateUUID()}`,
+    name: `${source.name} (Custom)`,
+    isDefault: false,
+    isCustom: true,
+    createdAt: now,
+    updatedAt: now,
   };
 }

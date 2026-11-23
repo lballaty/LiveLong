@@ -23,6 +23,8 @@ export default function UnifiedTimerDisplay() {
     preferences,
     profileMusicMap,
     isIntroPlaying,
+    activeSessionPlan,
+    activeSessionIndex,
     updatePreferences,
     setBreathingCycles,
     startTimer,
@@ -30,6 +32,10 @@ export default function UnifiedTimerDisplay() {
     pauseTimer,
     resumeTimer,
     stopTimer,
+    jumpToStep,
+    nextStep: goToNextStep,
+    prevStep: goToPrevStep,
+    previewStepCue,
     initializeProfiles,
   } = useUnifiedTimerStore();
 
@@ -535,33 +541,79 @@ export default function UnifiedTimerDisplay() {
                       : currentStep?.instructions || activeProfile.description}
                   </p>
 
-                  {/* Desktop Step List (hidden on compact mobile to stay zero-scroll) */}
-                  <ol className="hidden md:grid gap-1 text-xs mb-4">
+                  {/* Desktop Step List (clickable for rapid review) */}
+                  <ol className="hidden md:grid gap-1 text-xs mb-3">
                     {steps.map((step, index) => {
                       const done = timerState?.seriesState?.completedSteps.includes(step.id);
                       const active = index === currentStepIndex;
                       return (
-                        <li
-                          key={step.id}
-                          className={`flex justify-between px-2.5 py-1.5 rounded-lg ${
-                            active
-                              ? 'bg-blue-50 text-blue-700 font-semibold'
-                              : done
-                              ? 'text-green-700 line-through'
-                              : 'text-slate-500'
-                          }`}
-                        >
-                          <span>
-                            {index + 1}. {step.name}
-                          </span>
-                          <span>
-                            {step.durationMinutes}m
-                            {step.restSeconds > 0 ? ` + ${step.restSeconds}s` : ''}
-                          </span>
+                        <li key={step.id}>
+                          <button
+                            type="button"
+                            onClick={() => jumpToStep(index)}
+                            className={`w-full flex justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
+                              active
+                                ? 'bg-blue-50 text-blue-700 font-semibold'
+                                : done
+                                ? 'text-green-700 line-through hover:bg-slate-100'
+                                : 'text-slate-500 hover:bg-slate-100'
+                            }`}
+                          >
+                            <span>
+                              {index + 1}. {step.name}
+                            </span>
+                            <span>
+                              {step.durationMinutes}m
+                              {step.restSeconds > 0 ? ` + ${step.restSeconds}s` : ''}
+                            </span>
+                          </button>
                         </li>
                       );
                     })}
                   </ol>
+
+                  {activeSessionPlan && (
+                    <div
+                      data-testid="active-session-plan-banner"
+                      className="mb-2 px-2.5 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-xs text-indigo-800 flex justify-between items-center"
+                    >
+                      <span className="font-medium">
+                        {activeSessionPlan.icon} {activeSessionPlan.name}
+                      </span>
+                      <span>
+                        Routine {activeSessionIndex + 1}/{activeSessionPlan.items.length}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <button
+                      type="button"
+                      data-testid="review-prev-step"
+                      onClick={goToPrevStep}
+                      disabled={currentStepIndex <= 0}
+                      className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+                    >
+                      ◀ Prev Step
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="review-preview-cue"
+                      onClick={() => previewStepCue(currentStepIndex)}
+                      className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100"
+                    >
+                      🔊 Preview Cue
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="review-next-step"
+                      onClick={goToNextStep}
+                      disabled={currentStepIndex >= steps.length - 1}
+                      className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+                    >
+                      Next Step ▶
+                    </button>
+                  </div>
                 </div>
 
                 <div>

@@ -21,9 +21,11 @@ LiveLong ⊹ is a frontend-first Progressive Web App (PWA) located in `web-app/`
   - `UnifiedProfileManager` (`web-app/src/components/profiles/UnifiedProfileManager.tsx`)
   - `ExerciseAnimationPlayer` (`web-app/src/components/exercises/ExerciseAnimationPlayer.tsx`) — host slot for the `animation` fleet's `exercise-figures-runtime.js` + JSON packs (`characterId` cast of 6, `standing`/`chair` variant, `front`/`side`/`both` views)
   - `BreathingVisualizer` (`web-app/src/components/breathing/BreathingVisualizer.tsx`) — embedded and driven by `UnifiedTimerEngine` for breathing practices
-  - `AudioCueService` (`web-app/src/services/audio/AudioCueService.ts`) — zero-asset Web Audio API chimes + optional Web Speech API voice cues
+  - `AudioCueService` (`web-app/src/services/audio/AudioCueService.ts`) — Web Audio API chimes + optional pre-rendered `/audio/cues/<voiceId>/manifest.json` voice clips (`woman` / `man`) with Web Speech API fallback
+  - `BackgroundMusicService` (`web-app/src/services/audio/BackgroundMusicService.ts`) — looping `.mp3` music tracks (`/audio/music/*.mp3`) and custom user audio uploads with independent volume/mute
+  - `RoutineEditorModal` & `SessionComposerModal` (`web-app/src/components/profiles/`) — create, clone, and edit `simple`, `series`, and `breathing` routines, plus compose multi-routine `SessionPlan` playlists
   - `ProgressView` (`web-app/src/components/progress/ProgressView.tsx`) & `SettingsView` (`web-app/src/components/settings/SettingsView.tsx`)
-  - `UnifiedProfile` types (`web-app/src/types/unified-profile.types.ts`)
+  - `UnifiedProfile` & `SessionPlan` types (`web-app/src/types/unified-profile.types.ts`)
 
 ### Supporting Modules
 - **Breathing Visualizer**: `web-app/src/components/breathing/BreathingVisualizer.tsx` with patterns in `src/data/breathing-patterns.ts` and `src/data/breathing-profiles.ts`.
@@ -39,10 +41,14 @@ Multiple parallel implementations currently coexist in `web-app/src/`, causing t
 
 ## 3. Data Flow
 
-1. User selects a unified profile (`simple`, `series`, or `breathing`) and interacts with `UnifiedTimerDisplay`.
-2. UI dispatches actions to `unifiedTimerStore`, which coordinates `UnifiedTimerEngine` (and optional `BackgroundTimerWorkerService`).
-3. Profile definitions and completed sessions persist to IndexedDB (`IndexedDBService` -> `ProfileRepository` / `SessionRepository`), while active session recovery state persists to `localStorage` (`SessionPersistenceService`).
+1. User selects a unified profile (`simple`, `series`, or `breathing`) or launches a composed `SessionPlan` (ordered queue of `SessionPlanItem` routines) in `UnifiedTimerDisplay`.
+2. UI dispatches actions to `unifiedTimerStore`, which coordinates `UnifiedTimerEngine` (including review step-scrub controls `jumpToStep` / `nextStep` / `prevStep`), `AudioCueService`, and `BackgroundMusicService`.
+3. Custom routines, `SessionPlan`s, per-profile music mappings, and user preferences persist to `localStorage` and IndexedDB (`IndexedDBService` -> `ProfileRepository` / `SessionRepository`).
 4. UI re-renders from Zustand store updates.
+
+### External Asset Drop-In Contracts
+- **Voice Bundles (`openScriptAudio`):** Drop `/audio/cues/<voiceId>/manifest.json` (`woman` / `man`) and audio clips under `web-app/public/audio/cues/`. When absent, `AudioCueService` falls back cleanly to Web Speech API synthesis.
+- **Animation Packs (`animation`):** Drop pack bundles under `web-app/public/animations/<pack>/` (manifest/frames/bundle). When absent, `ExerciseAnimationPlayer` renders the built-in animated robot SVG (`standing`/`chair`, `front`/`side`/`both`).
 
 ## 4. Data Storage
 
@@ -60,5 +66,5 @@ Multiple parallel implementations currently coexist in `web-app/src/`, causing t
 
 ---
 
-**Status**: Reconciled against `web-app/` implementation
-**Last Updated**: 2026-11-21
+**Status**: Implemented & Verified (Routine & Session Editor, Review Controls, External Asset Contracts)
+**Last Updated**: 2026-11-23
