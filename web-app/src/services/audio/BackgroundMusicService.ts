@@ -31,6 +31,37 @@ class BackgroundMusicService {
   private audioEl: HTMLAudioElement | null = null;
   private currentTrackId: string = 'none';
   private isPlaying = false;
+  private volume = 0.25;
+  private muted = false;
+
+  private getEffectiveGain(): number {
+    if (this.muted) return 0.0001;
+    // Scale 0..1 user slider to gentle ambient ceiling 0..0.35
+    return Math.max(0.0001, Math.min(0.35, this.volume * 0.35));
+  }
+
+  public setVolume(volume: number): void {
+    this.volume = Math.max(0, Math.min(1, volume));
+    this.applyLiveLevel();
+  }
+
+  public setMuted(muted: boolean): void {
+    this.muted = muted;
+    this.applyLiveLevel();
+  }
+
+  private applyLiveLevel(): void {
+    if (this.audioEl) {
+      this.audioEl.volume = this.muted ? 0 : Math.max(0, Math.min(1, this.volume));
+    }
+    if (this.masterGain && this.ctx) {
+      try {
+        this.masterGain.gain.setTargetAtTime(this.getEffectiveGain(), this.ctx.currentTime, 0.05);
+      } catch {
+        // Ignore
+      }
+    }
+  }
 
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -65,7 +96,7 @@ class BackgroundMusicService {
       try {
         const audio = new Audio(custom.dataUrl);
         audio.loop = true;
-        audio.volume = 0.28;
+        audio.volume = this.muted ? 0 : Math.max(0, Math.min(1, this.volume));
         audio.play().catch(() => {});
         this.audioEl = audio;
         return;
@@ -138,7 +169,7 @@ class BackgroundMusicService {
 
       const master = ctx.createGain();
       master.gain.setValueAtTime(0.001, ctx.currentTime);
-      master.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 1.2);
+      master.gain.exponentialRampToValueAtTime(this.getEffectiveGain(), ctx.currentTime + 1.2);
       master.connect(ctx.destination);
       this.masterGain = master;
 

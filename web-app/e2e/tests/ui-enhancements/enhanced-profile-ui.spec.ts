@@ -58,10 +58,11 @@ test.describe('Enhanced UI: Practices, Branding, & Settings', () => {
     await settings.locator('button:has-text("Chair-Based")').click();
     await settings.locator('button:has-text("Front + Side")').click();
 
-    // Audio / Voice / Haptic checkboxes
+    // Audio Chimes / Script Voice / Background Music / Haptic checkboxes + 2 volume sliders
     const checkboxes = settings.locator('input[type="checkbox"]');
-    await expect(checkboxes).toHaveCount(3);
-    await checkboxes.nth(1).check(); // Enable Voice Guidance
+    await expect(checkboxes).toHaveCount(4);
+    await expect(settings.locator('input[type="range"]')).toHaveCount(2);
+    await checkboxes.nth(1).check(); // Enable Script / Voice Guidance
 
     // Switch back to Practice and verify ExerciseAnimationPlayer reflects Settings
     await page.click('nav button:has-text("Session")');

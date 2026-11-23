@@ -46,6 +46,9 @@ const resetStore = () => {
       views: 'front',
       soundEnabled: true,
       voiceCuesEnabled: false,
+      voiceVolume: 0.9,
+      musicMuted: false,
+      musicVolume: 0.25,
       vibrationEnabled: true,
     },
     stats: null,
@@ -321,7 +324,7 @@ describe('useUnifiedTimerStore', () => {
       jest.advanceTimersByTime(2000);
       expect(onPhaseChange).toHaveBeenCalledWith('break');
       expect(audioCueService.playChime).toHaveBeenCalledWith('rest');
-      expect(audioCueService.speakCue).toHaveBeenCalledWith('session.break', 'Break time.');
+      expect(audioCueService.speakCue).toHaveBeenCalledWith('session.break', 'Break time.', undefined, 0.9);
 
       // Break (1s) -> 0s -> Complete
       jest.advanceTimersByTime(2000);
@@ -333,7 +336,9 @@ describe('useUnifiedTimerStore', () => {
       expect(audioCueService.playChime).toHaveBeenCalledWith('complete');
       expect(audioCueService.speakCue).toHaveBeenCalledWith(
         'session.complete',
-        "That's the end of your session. Take a moment to notice how you feel. Well done."
+        "That's the end of your session. Take a moment to notice how you feel. Well done.",
+        undefined,
+        0.9
       );
       expect(vibrateMock).toHaveBeenCalledWith([200, 100, 200]);
       expect(mockCreate).toHaveBeenCalledWith(

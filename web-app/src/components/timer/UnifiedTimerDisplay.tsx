@@ -21,7 +21,9 @@ export default function UnifiedTimerDisplay() {
     activeProfile,
     timerState,
     preferences,
+    profileMusicMap,
     isIntroPlaying,
+    updatePreferences,
     setBreathingCycles,
     startTimer,
     skipIntro,
@@ -178,6 +180,70 @@ export default function UnifiedTimerDisplay() {
     if (!timerState || currentStepRestTotal === 0 || seriesPhase !== 'rest') return 0;
     return Math.min(((currentStepRestTotal - timerState.remainingSeconds) / currentStepRestTotal) * 100, 100);
   })();
+
+  const activeMusicTrackId = activeProfile
+    ? profileMusicMap[activeProfile.id] || activeProfile.musicTrackId || 'none'
+    : 'none';
+
+  const renderAudioMixer = () => (
+    <div
+      data-testid="audio-channel-mixer"
+      className="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"
+    >
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          data-testid="toggle-voice-mute"
+          onClick={() => updatePreferences({ voiceCuesEnabled: !preferences.voiceCuesEnabled })}
+          className={`px-2 py-1 rounded border font-medium shrink-0 ${
+            preferences.voiceCuesEnabled
+              ? 'bg-blue-50 border-blue-200 text-blue-700'
+              : 'bg-slate-100 border-slate-200 text-slate-500'
+          }`}
+          aria-label={preferences.voiceCuesEnabled ? 'Mute script voice' : 'Unmute script voice'}
+        >
+          {preferences.voiceCuesEnabled ? '🔊 Script' : '🔇 Script'}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={Math.round(preferences.voiceVolume * 100)}
+          onChange={(e) => updatePreferences({ voiceVolume: Number(e.target.value) / 100 })}
+          disabled={!preferences.voiceCuesEnabled}
+          className="w-full accent-blue-600 disabled:opacity-40"
+          aria-label="Session script volume"
+        />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          data-testid="toggle-music-mute"
+          onClick={() => updatePreferences({ musicMuted: !preferences.musicMuted })}
+          disabled={activeMusicTrackId === 'none'}
+          className={`px-2 py-1 rounded border font-medium shrink-0 disabled:opacity-40 ${
+            !preferences.musicMuted && activeMusicTrackId !== 'none'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+              : 'bg-slate-100 border-slate-200 text-slate-500'
+          }`}
+          aria-label={preferences.musicMuted ? 'Unmute background music' : 'Mute background music'}
+        >
+          {preferences.musicMuted || activeMusicTrackId === 'none' ? '🔇 Music' : '🎵 Music'}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={Math.round(preferences.musicVolume * 100)}
+          onChange={(e) => updatePreferences({ musicVolume: Number(e.target.value) / 100 })}
+          disabled={preferences.musicMuted || activeMusicTrackId === 'none'}
+          className="w-full accent-emerald-600 disabled:opacity-40"
+          aria-label="Session music volume"
+        />
+      </div>
+    </div>
+  );
 
   const renderControlButtons = () => (
     <div className="flex gap-2">
@@ -474,6 +540,7 @@ export default function UnifiedTimerDisplay() {
 
                 <div>
                   {renderControlButtons()}
+                  {renderAudioMixer()}
                   <div className="mt-3 pt-2.5 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
                     <span>
                       {nextStep ? (
@@ -629,6 +696,7 @@ export default function UnifiedTimerDisplay() {
                 )}
 
                 <div className="mt-4">{renderControlButtons()}</div>
+                {renderAudioMixer()}
               </div>
 
               <div className="text-center">

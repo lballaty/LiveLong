@@ -106,19 +106,71 @@ export default function SettingsView() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold text-gray-800">Voice Guidance</div>
-              <div className="text-xs text-gray-500">
-                Spoken cues for exercise steps and breathing phases (Web Speech API)
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Script / Voice Guidance</div>
+                <div className="text-xs text-gray-500">
+                  Spoken cues for exercise steps and breathing phases (independent channel)
+                </div>
               </div>
+              <input
+                type="checkbox"
+                checked={preferences.voiceCuesEnabled}
+                onChange={(e) => updatePreferences({ voiceCuesEnabled: e.target.checked })}
+                className="h-4 w-4 accent-blue-500"
+              />
             </div>
-            <input
-              type="checkbox"
-              checked={preferences.voiceCuesEnabled}
-              onChange={(e) => updatePreferences({ voiceCuesEnabled: e.target.checked })}
-              className="h-4 w-4 accent-blue-500"
-            />
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500 w-24">Voice Volume</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(preferences.voiceVolume * 100)}
+                onChange={(e) => updatePreferences({ voiceVolume: Number(e.target.value) / 100 })}
+                className="flex-1 accent-blue-500"
+                aria-label="Voice volume"
+              />
+              <span className="text-xs text-gray-600 w-10 text-right tabular-nums">
+                {Math.round(preferences.voiceVolume * 100)}%
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Background Music</div>
+                <div className="text-xs text-gray-500">
+                  Mute or adjust background music independently of script voice cues
+                </div>
+              </div>
+              <label className="flex items-center gap-1.5 text-xs text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={!preferences.musicMuted}
+                  onChange={(e) => updatePreferences({ musicMuted: !e.target.checked })}
+                  className="h-4 w-4 accent-blue-500"
+                />
+                Enabled
+              </label>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500 w-24">Music Volume</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(preferences.musicVolume * 100)}
+                onChange={(e) => updatePreferences({ musicVolume: Number(e.target.value) / 100 })}
+                className="flex-1 accent-blue-500"
+                aria-label="Music volume"
+              />
+              <span className="text-xs text-gray-600 w-10 text-right tabular-nums">
+                {Math.round(preferences.musicVolume * 100)}%
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">

@@ -46,6 +46,9 @@ const DEFAULT_PREFERENCES: PracticePreferences = {
   views: 'front',
   soundEnabled: true,
   voiceCuesEnabled: false,
+  voiceVolume: 0.9,
+  musicMuted: false,
+  musicVolume: 0.25,
   vibrationEnabled: true,
 };
 
@@ -185,6 +188,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
 
     const storedCustom = loadStoredCustomProfiles();
     const storedPrefs = loadStoredPreferences();
+    backgroundMusicService.setVolume(storedPrefs.musicVolume);
+    backgroundMusicService.setMuted(storedPrefs.musicMuted);
     const storedProfileMusic = loadStoredJson<Record<string, string>>(PROFILE_MUSIC_STORAGE_KEY, {});
     const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
     const defaultActive = allProfiles[0];
@@ -313,6 +318,15 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
 
   updatePreferences: (updates: Partial<PracticePreferences>) => {
     const next = { ...get().preferences, ...updates };
+    if (updates.musicVolume !== undefined) {
+      backgroundMusicService.setVolume(next.musicVolume);
+    }
+    if (updates.musicMuted !== undefined) {
+      backgroundMusicService.setMuted(next.musicMuted);
+    }
+    if (updates.voiceCuesEnabled === false) {
+      audioCueService.stopSpeech();
+    }
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next));
@@ -394,12 +408,17 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       set({ isIntroPlaying: true });
       const introFallback =
         "Let's take a few minutes just for you. Sit comfortably, let your shoulders soften, and follow my voice. Gently let all the air out.";
-      audioCueService.speakCue('breathing.intro', introFallback, () => {
-        if (get().isIntroPlaying) {
-          set({ isIntroPlaying: false });
-          get().startTimer();
-        }
-      });
+      audioCueService.speakCue(
+        'breathing.intro',
+        introFallback,
+        () => {
+          if (get().isIntroPlaying) {
+            set({ isIntroPlaying: false });
+            get().startTimer();
+          }
+        },
+        preferences.voiceVolume
+      );
       return;
     }
 
@@ -408,7 +427,12 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     }
     if (preferences.voiceCuesEnabled) {
       if (activeProfile.type === 'breathing') {
-        audioCueService.speakCue('breathing.inhale', 'Breathe in slowly through your nose.');
+        audioCueService.speakCue(
+          'breathing.inhale',
+          'Breathe in slowly through your nose.',
+          undefined,
+          preferences.voiceVolume
+        );
       } else {
         const initialCue =
           activeProfile.type === 'series'
@@ -416,7 +440,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             : activeProfile.name;
         const cueId =
           activeProfile.id === 'rajio-taiso-series' ? 'rajio-taiso.warmup' : activeProfile.id;
-        audioCueService.speakCue(cueId, `Starting ${initialCue}`);
+        audioCueService.speakCue(cueId, `Starting ${initialCue}`, undefined, preferences.voiceVolume);
       }
     }
 
@@ -424,6 +448,8 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
 
     const activeTrackId = get().profileMusicMap[activeProfile.id] || activeProfile.musicTrackId || 'none';
     if (activeTrackId !== 'none') {
+      backgroundMusicService.setVolume(preferences.musicVolume);
+      backgroundMusicService.setMuted(preferences.musicMuted);
       backgroundMusicService.start(activeTrackId, get().customMusicTracks);
     }
 
@@ -440,7 +466,9 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         if (prefs.voiceCuesEnabled) {
           audioCueService.speakCue(
             'session.complete',
-            "That's the end of your session. Take a moment to notice how you feel. Well done."
+            "That's the end of your session. Take a moment to notice how you feel. Well done.",
+            undefined,
+            prefs.voiceVolume
           );
         }
         if (prefs.vibrationEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -497,20 +525,27 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
             };
 
             if (phase === 'inhale' && totalCycles > 2 && cycle === totalCycles) {
-              audioCueService.speakCue('breathing.inhale.last', 'One last round. Breathe in.');
+              audioCueService.speakCue(
+                'breathing.inhale.last',
+                'One last round. Breathe in.',
+                undefined,
+                prefs.voiceVolume
+              );
               return;
             }
             if (phase === 'inhale' && totalCycles >= 4 && cycle === Math.ceil(totalCycles / 2)) {
               audioCueService.speakCue(
                 'breathing.encourage',
-                "You're doing really well. Keep following the rhythm."
+                "You're doing really well. Keep following the rhythm.",
+                undefined,
+                prefs.voiceVolume
               );
               return;
             }
 
             const cueId = isShort ? `breathing.${phase}.short` : `breathing.${phase}`;
             const fallback = (isShort ? shortCues : fullCues)[phase] || phase;
-            audioCueService.speakCue(cueId, fallback);
+            audioCueService.speakCue(cueId, fallback, undefined, prefs.voiceVolume);
             return;
           }
 
@@ -527,7 +562,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
               : phase === 'exercise' && step
               ? `rajio-taiso.${step.id}`
               : `session.${phase}`;
-          audioCueService.speakCue(cueId, cueMap[phase] || phase);
+          audioCueService.speakCue(cueId, cueMap[phase] || phase, undefined, prefs.voiceVolume);
         }
       }
     );

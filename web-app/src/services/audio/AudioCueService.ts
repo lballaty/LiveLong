@@ -104,12 +104,19 @@ class AudioCueService {
   /**
    * Play a pre-rendered openScriptAudio cue clip if present, otherwise fall back to speechSynthesis.
    */
-  public async speakCue(cueId: string, fallbackText: string, onEnded?: () => void): Promise<void> {
+  public async speakCue(
+    cueId: string,
+    fallbackText: string,
+    onEnded?: () => void,
+    volume = 0.9
+  ): Promise<void> {
+    const clampedVol = Math.max(0, Math.min(1, volume));
     try {
       const manifest = await this.loadManifest();
       const file = manifest?.cues?.[cueId];
       if (file && typeof Audio !== 'undefined') {
         const audio = new Audio(`/audio/cues/${file}`);
+        audio.volume = clampedVol;
         if (onEnded) {
           audio.addEventListener('ended', onEnded, { once: true });
         }
@@ -119,13 +126,13 @@ class AudioCueService {
     } catch {
       // Fall through to speechSynthesis
     }
-    this.speak(fallbackText, onEnded);
+    this.speak(fallbackText, onEnded, clampedVol);
   }
 
   /**
    * Speak a short guidance cue using Web Speech API when voice cues are enabled.
    */
-  public speak(text: string, onEnded?: () => void): void {
+  public speak(text: string, onEnded?: () => void, volume = 0.85): void {
     try {
       if (typeof window === 'undefined' || !('speechSynthesis' in window) || !text.trim()) {
         onEnded?.();
@@ -135,7 +142,7 @@ class AudioCueService {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.95;
       utterance.pitch = 1.0;
-      utterance.volume = 0.85;
+      utterance.volume = Math.max(0, Math.min(1, volume));
       if (onEnded) {
         utterance.onend = () => onEnded();
         utterance.onerror = () => onEnded();

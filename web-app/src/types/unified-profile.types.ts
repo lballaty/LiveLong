@@ -76,6 +76,9 @@ export interface PracticePreferences {
   views: ExerciseViewMode;
   soundEnabled: boolean;
   voiceCuesEnabled: boolean;
+  voiceVolume: number; // 0.0 - 1.0
+  musicMuted: boolean;
+  musicVolume: number; // 0.0 - 1.0
   vibrationEnabled: boolean;
 }
 
