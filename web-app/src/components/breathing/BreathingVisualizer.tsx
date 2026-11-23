@@ -228,7 +228,6 @@ export default function BreathingVisualizer({
   })();
 
   if (embedded) {
-    const visualStyle = pattern.visualStyle || 'circle';
     const loopPhases: Array<{ key: BreathingPhase; label: string; seconds: number; activeClass: string; barClass: string }> = [
       { key: 'inhale', label: 'Inhale', seconds: pattern.inhaleSeconds, activeClass: 'border-blue-500 bg-blue-50 text-blue-700', barClass: 'bg-blue-500' },
       ...(pattern.holdInSeconds ? [{ key: 'hold-in' as BreathingPhase, label: 'Hold', seconds: pattern.holdInSeconds, activeClass: 'border-purple-500 bg-purple-50 text-purple-700', barClass: 'bg-purple-500' }] : []),
@@ -242,36 +241,32 @@ export default function BreathingVisualizer({
       ? Math.min(100, Math.max(0, ((currentPhaseTotal - activeRemaining) / currentPhaseTotal) * 100))
       : 0;
 
+    // Target circle scale and transition duration paced to the active phase
+    const targetScale = !isActive
+      ? 0.72
+      : activePhase === 'inhale' || activePhase === 'hold-in'
+      ? 1.35
+      : 0.72;
+    const transitionSeconds =
+      !isActive || activePhase === 'hold-in' || activePhase === 'hold-out'
+        ? 0.4
+        : currentPhaseTotal;
+
     return (
       <div data-testid="breathing-visualizer" className="flex flex-col items-center py-2">
-        <div className="mb-4 flex justify-center items-center h-44">
-          {visualStyle === 'square' ? (
-            <div
-              className={`w-28 h-28 border-8 transition-all duration-1000 ease-in-out ${
-                activePhase === 'inhale' ? 'border-blue-400 bg-blue-100' :
-                activePhase === 'hold-in' ? 'border-purple-400 bg-purple-100' :
-                activePhase === 'exhale' ? 'border-green-400 bg-green-100' :
-                'border-orange-400 bg-orange-100'
-              }`}
-              style={{
-                transform: `scale(${activePhase === 'inhale' || activePhase === 'hold-in' ? 1.35 : 1})`,
-                transition: 'transform 1s ease-in-out, border-color 0.5s ease-in-out'
-              }}
-            />
-          ) : (
-            <div
-              className={`w-32 h-32 rounded-full border-8 transition-all duration-1000 ease-in-out ${
-                activePhase === 'inhale' ? 'border-blue-400 bg-blue-100' :
-                activePhase === 'hold-in' ? 'border-purple-400 bg-purple-100' :
-                activePhase === 'exhale' ? 'border-green-400 bg-green-100' :
-                'border-orange-400 bg-orange-100'
-              }`}
-              style={{
-                transform: `scale(${activePhase === 'inhale' || activePhase === 'hold-in' ? 1.35 : 1})`,
-                transition: 'transform 1s ease-in-out, border-color 0.5s ease-in-out'
-              }}
-            />
-          )}
+        <div className="mb-4 flex justify-center items-center h-48">
+          <div
+            className={`w-32 h-32 rounded-full border-8 ${
+              activePhase === 'inhale' ? 'border-blue-400 bg-blue-100' :
+              activePhase === 'hold-in' ? 'border-purple-400 bg-purple-100' :
+              activePhase === 'exhale' ? 'border-green-400 bg-green-100' :
+              'border-orange-400 bg-orange-100'
+            }`}
+            style={{
+              transform: `scale(${targetScale})`,
+              transition: `transform ${transitionSeconds}s linear, border-color 0.4s ease-in-out, background-color 0.4s ease-in-out`
+            }}
+          />
         </div>
         <div className={`text-3xl font-bold mb-1 transition-colors duration-500 ${activePhaseColor}`}>
           {activePhaseText}

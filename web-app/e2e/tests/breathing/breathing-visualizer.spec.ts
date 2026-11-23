@@ -77,17 +77,17 @@ test.describe('Breathing Visualizer', () => {
       await expect(visualizer).toContainText('Hold', { timeout: 6500 });
     });
 
-    test('should use square style for Box Breathing and circle style for Deep Breathing', async ({ page }) => {
+    test('should use smooth circle visualizer for Box Breathing and Deep Breathing', async ({ page }) => {
       await page.click('[data-testid="profile-box-breathing-profile"]');
-      const boxShape = page.locator('[data-testid="breathing-visualizer"] div.border-8').first();
-      await expect(boxShape).toBeVisible();
-      await expect(boxShape).not.toHaveClass(/rounded-full/);
+      const boxCircle = page.locator('[data-testid="breathing-visualizer"] div.border-8').first();
+      await expect(boxCircle).toBeVisible();
+      await expect(boxCircle).toHaveClass(/rounded-full/);
 
       await page.click('nav button:has-text("Routines")');
       await page.click('[data-testid="profile-deep-breathing-profile"]');
-      const circleShape = page.locator('[data-testid="breathing-visualizer"] div.border-8').first();
-      await expect(circleShape).toBeVisible();
-      await expect(circleShape).toHaveClass(/rounded-full/);
+      const deepCircle = page.locator('[data-testid="breathing-visualizer"] div.border-8').first();
+      await expect(deepCircle).toBeVisible();
+      await expect(deepCircle).toHaveClass(/rounded-full/);
     });
   });
 
