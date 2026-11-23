@@ -1,5 +1,5 @@
 // File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/exercises/ExerciseAnimationPlayer.tsx
-// Description: Full-stage React wrapper slot for the animation fleet's live SVG exercise-figures-runtime
+// Description: Full-stage React wrapper for exercise animations (live robot-figure POC + animation fleet host slot)
 // Author: Libor Ballaty <libor@arionetworks.com>
 // Created: 2026-11-21
 
@@ -36,6 +36,8 @@ interface ExerciseAnimationPlayerProps {
 /**
  * Full-stage host slot for `exercise-figures-runtime.js` + JSON packs
  * delivered by the `animation` fleet into `public/animations/`.
+ * Includes an animated robot-figure POC for all 6 Rajio Taiso movements so
+ * routines can be reviewed end-to-end with voice, music, and chimes.
  */
 export default function ExerciseAnimationPlayer({
   stepId,
@@ -62,6 +64,7 @@ export default function ExerciseAnimationPlayer({
     views === 'both' ? ['front', 'side'] : [views];
   const packLabel = animation?.pack || `rajio-taiso.${stepId}`;
   const isRestOrStatic = phase === 'rest' || phase === 'cooldown' || !isPlaying || reducedMotion;
+  const activeClass = isRestOrStatic ? '' : `anim-${stepId}`;
 
   return (
     <div
@@ -70,6 +73,64 @@ export default function ExerciseAnimationPlayer({
         phase === 'rest' || phase === 'cooldown' ? 'bg-amber-50/70' : 'bg-white'
       }`}
     >
+      <style>{`
+        @keyframes ll-stretch-arms {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(-28deg); }
+        }
+        @keyframes ll-stretch-arms-r {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(28deg); }
+        }
+        @keyframes ll-swing-cross-l {
+          0%, 100% { transform: rotate(25deg); }
+          50% { transform: rotate(-55deg); }
+        }
+        @keyframes ll-swing-cross-r {
+          0%, 100% { transform: rotate(-25deg); }
+          50% { transform: rotate(55deg); }
+        }
+        @keyframes ll-bounce {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(5px); }
+        }
+        @keyframes ll-side-bend {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-16deg); }
+          75% { transform: rotate(16deg); }
+        }
+        @keyframes ll-twist {
+          0%, 100% { transform: scaleX(1); }
+          25% { transform: scaleX(0.75) translateX(-4px); }
+          75% { transform: scaleX(0.75) translateX(4px); }
+        }
+        @keyframes ll-leg-l {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(24deg); }
+          50% { transform: rotate(0deg); }
+        }
+        @keyframes ll-leg-r {
+          0%, 50%, 100% { transform: rotate(0deg); }
+          75% { transform: rotate(-24deg); }
+        }
+        .ll-upper { transform-origin: 70px 94px; }
+        .ll-arm-l { transform-origin: 52px 54px; }
+        .ll-arm-r { transform-origin: 88px 54px; }
+        .ll-leg-l { transform-origin: 60px 94px; }
+        .ll-leg-r { transform-origin: 80px 94px; }
+        .anim-neck-arm-stretch .ll-arm-l { animation: ll-stretch-arms 3s ease-in-out infinite; }
+        .anim-neck-arm-stretch .ll-arm-r { animation: ll-stretch-arms-r 3s ease-in-out infinite; }
+        .anim-arm-swings .ll-arm-l { animation: ll-swing-cross-l 2s ease-in-out infinite; }
+        .anim-arm-swings .ll-arm-r { animation: ll-swing-cross-r 2s ease-in-out infinite; }
+        .anim-arm-swings .ll-body { animation: ll-bounce 1s ease-in-out infinite; }
+        .anim-chest-expansion .ll-arm-l { animation: ll-swing-cross-l 3.2s ease-in-out infinite; }
+        .anim-chest-expansion .ll-arm-r { animation: ll-swing-cross-r 3.2s ease-in-out infinite; }
+        .anim-side-bends .ll-upper { animation: ll-side-bend 3.4s ease-in-out infinite; }
+        .anim-trunk-twists .ll-upper { animation: ll-twist 2.8s ease-in-out infinite; }
+        .anim-leg-swings .ll-leg-l { animation: ll-leg-l 2.4s ease-in-out infinite; }
+        .anim-leg-swings .ll-leg-r { animation: ll-leg-r 2.4s ease-in-out infinite; }
+      `}</style>
+
       <div
         className={`w-full grid place-items-center gap-4 ${
           viewList.length === 2 ? 'grid-cols-2' : 'grid-cols-1'
@@ -79,48 +140,53 @@ export default function ExerciseAnimationPlayer({
           <div key={view} className="flex flex-col items-center justify-center">
             <svg
               viewBox="0 0 140 160"
-              className={`w-36 h-40 sm:w-48 sm:h-52 stroke-slate-900 ${
-                !isRestOrStatic ? 'animate-pulse' : ''
-              }`}
+              className={`w-36 h-40 sm:w-48 sm:h-52 stroke-slate-900 ${activeClass}`}
               fill="none"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-label={`${stepName} (${view} view, ${variant})`}
             >
-              <circle cx="70" cy="28" r="12" />
               {view === 'front' ? (
-                <>
-                  <path d="M52 54 Q70 46 88 54 L84 94 L56 94 Z" />
-                  <path
-                    d={
-                      isRestOrStatic
-                        ? 'M52 54 L40 90 M88 54 L100 90'
-                        : 'M52 54 Q30 34 38 18 M88 54 Q110 34 102 18'
-                    }
-                  />
+                <g className="ll-body">
+                  <g className="ll-upper">
+                    <circle cx="70" cy="28" r="12" />
+                    <path d="M52 54 Q70 46 88 54 L84 94 L56 94 Z" />
+                    <path className="ll-arm-l" d="M52 54 L36 86" />
+                    <path className="ll-arm-r" d="M88 54 L104 86" />
+                  </g>
                   {variant === 'chair' ? (
                     <>
-                      <path d="M60 94 L48 112 L48 144 M80 94 L92 112 L92 144" />
+                      <path className="ll-leg-l" d="M60 94 L48 112 L48 144" />
+                      <path className="ll-leg-r" d="M80 94 L92 112 L92 144" />
                       <path d="M42 108 H98" className="stroke-slate-400" />
                     </>
                   ) : (
-                    <path d="M60 94 L54 146 M80 94 L86 146" />
+                    <>
+                      <path className="ll-leg-l" d="M60 94 L54 146" />
+                      <path className="ll-leg-r" d="M80 94 L86 146" />
+                    </>
                   )}
-                </>
+                </g>
               ) : (
-                <>
-                  <path d="M62 50 L78 52 L76 94 L60 94 Z" />
-                  <path d={isRestOrStatic ? 'M70 54 L68 92' : 'M74 54 Q96 36 86 18'} />
+                <g className="ll-body">
+                  <g className="ll-upper">
+                    <circle cx="72" cy="28" r="12" />
+                    <path d="M62 50 L78 52 L76 94 L60 94 Z" />
+                    <path className="ll-arm-r" d="M74 54 L86 86" />
+                  </g>
                   {variant === 'chair' ? (
                     <>
-                      <path d="M68 94 L96 104 L96 144" />
+                      <path className="ll-leg-r" d="M68 94 L96 104 L96 144" />
                       <path d="M54 104 H86 M58 104 V144" className="stroke-slate-400" />
                     </>
                   ) : (
-                    <path d="M66 94 L62 146 M74 94 L80 146" />
+                    <>
+                      <path className="ll-leg-l" d="M66 94 L62 146" />
+                      <path className="ll-leg-r" d="M74 94 L80 146" />
+                    </>
                   )}
-                </>
+                </g>
               )}
             </svg>
             <span className="mt-1 text-[11px] uppercase tracking-wider text-slate-400">
