@@ -7,38 +7,49 @@ export interface MusicTrackOption {
   id: string;
   label: string;
   description: string;
+  src?: string;
   isCustom?: boolean;
   dataUrl?: string;
 }
 
 export const BUILTIN_MUSIC_TRACKS: MusicTrackOption[] = [
   { id: 'none', label: 'No Music', description: 'Chimes and voice cues only' },
-  { id: 'zen-drone', label: 'Zen Garden Pad', description: 'Warm harmonic ambient drone' },
-  { id: 'morning-bamboo', label: 'Morning Bamboo', description: 'Soft Japanese pentatonic notes' },
-  { id: 'ocean-waves', label: 'Ocean Breath', description: 'Gentle filtered wave wash' },
-  { id: 'gentle-rain', label: 'Soft Rain', description: 'Calm rainfall texture' },
+  {
+    id: 'morning-exercise',
+    label: 'Morning Exercise',
+    description: 'Uplifting warm pentatonic loop for movement',
+    src: '/audio/music/morning-exercise.mp3',
+  },
+  {
+    id: 'zen-garden',
+    label: 'Zen Garden',
+    description: 'Warm harmonic ambient pad',
+    src: '/audio/music/zen-garden.mp3',
+  },
+  {
+    id: 'calm-breath',
+    label: 'Calm Breath',
+    description: 'Slow resonant chords for breathwork',
+    src: '/audio/music/calm-breath.mp3',
+  },
+  {
+    id: 'focus-flow',
+    label: 'Focus Flow',
+    description: 'Soft steady lo-fi electric piano pulse',
+    src: '/audio/music/focus-flow.mp3',
+  },
 ];
 
 /**
- * Plays looping ambient background music (Web Audio API soundscapes or user-added audio files)
- * at a subtle level so transition chimes and voice cues remain clear.
+ * Plays looping background music (bundled MP3 loops or user-added audio files)
+ * with live volume and mute control independent of chimes and voice cues.
  */
 class BackgroundMusicService {
-  private ctx: AudioContext | null = null;
-  private masterGain: GainNode | null = null;
-  private activeNodes: AudioNode[] = [];
-  private intervalId: ReturnType<typeof setInterval> | null = null;
   private audioEl: HTMLAudioElement | null = null;
   private currentTrackId: string = 'none';
   private isPlaying = false;
   private volume = 0.25;
   private muted = false;
-
-  private getEffectiveGain(): number {
-    if (this.muted) return 0.0001;
-    // Scale 0..1 user slider to gentle ambient ceiling 0..0.35
-    return Math.max(0.0001, Math.min(0.35, this.volume * 0.35));
-  }
 
   public setVolume(volume: number): void {
     this.volume = Math.max(0, Math.min(1, volume));
@@ -54,28 +65,6 @@ class BackgroundMusicService {
     if (this.audioEl) {
       this.audioEl.volume = this.muted ? 0 : Math.max(0, Math.min(1, this.volume));
     }
-    if (this.masterGain && this.ctx) {
-      try {
-        this.masterGain.gain.setTargetAtTime(this.getEffectiveGain(), this.ctx.currentTime, 0.05);
-      } catch {
-        // Ignore
-      }
-    }
-  }
-
-  private getContext(): AudioContext | null {
-    if (typeof window === 'undefined') return null;
-    const AudioCtx =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return null;
-    if (!this.ctx) {
-      this.ctx = new AudioCtx();
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
-    }
-    return this.ctx;
   }
 
   public start(trackId: string, customTracks: MusicTrackOption[] = []): void {
@@ -89,30 +78,30 @@ class BackgroundMusicService {
 
     this.stop();
     this.currentTrackId = trackId;
-    this.isPlaying = true;
 
-    const custom = customTracks.find((t) => t.id === trackId && t.dataUrl);
-    if (custom?.dataUrl && typeof Audio !== 'undefined') {
-      try {
-        const audio = new Audio(custom.dataUrl);
-        audio.loop = true;
-        audio.volume = this.muted ? 0 : Math.max(0, Math.min(1, this.volume));
-        audio.play().catch(() => {});
-        this.audioEl = audio;
-        return;
-      } catch {
-        // Fall through if Audio playback fails
-      }
+    const track = [...BUILTIN_MUSIC_TRACKS, ...customTracks].find((t) => t.id === trackId);
+    const audioSrc = track?.dataUrl || track?.src;
+    if (!audioSrc || typeof Audio === 'undefined') {
+      this.isPlaying = false;
+      return;
     }
 
-    this.startAmbientSynth(trackId);
+    try {
+      const audio = new Audio(audioSrc);
+      audio.loop = true;
+      audio.volume = this.muted ? 0 : Math.max(0, Math.min(1, this.volume));
+      audio.play().catch(() => {});
+      this.audioEl = audio;
+      this.isPlaying = true;
+    } catch {
+      this.isPlaying = false;
+    }
   }
 
   public pause(): void {
     if (this.audioEl) {
       this.audioEl.pause();
     }
-    this.teardownSynth();
     this.isPlaying = false;
   }
 
@@ -131,109 +120,8 @@ class BackgroundMusicService {
       this.audioEl.currentTime = 0;
       this.audioEl = null;
     }
-    this.teardownSynth();
     this.isPlaying = false;
     this.currentTrackId = 'none';
-  }
-
-  private teardownSynth(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-    this.activeNodes.forEach((node) => {
-      try {
-        if ('stop' in node && typeof (node as OscillatorNode).stop === 'function') {
-          (node as OscillatorNode).stop();
-        }
-        node.disconnect();
-      } catch {
-        // Ignore already-stopped nodes
-      }
-    });
-    this.activeNodes = [];
-    if (this.masterGain) {
-      try {
-        this.masterGain.disconnect();
-      } catch {
-        // Ignore
-      }
-      this.masterGain = null;
-    }
-  }
-
-  private startAmbientSynth(trackId: string): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-
-      const master = ctx.createGain();
-      master.gain.setValueAtTime(0.001, ctx.currentTime);
-      master.gain.exponentialRampToValueAtTime(this.getEffectiveGain(), ctx.currentTime + 1.2);
-      master.connect(ctx.destination);
-      this.masterGain = master;
-
-      if (trackId === 'zen-drone') {
-        [130.81, 196.0, 261.63].forEach((freq) => {
-          const osc = ctx.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, ctx.currentTime);
-          const g = ctx.createGain();
-          g.gain.setValueAtTime(0.25, ctx.currentTime);
-          osc.connect(g);
-          g.connect(master);
-          osc.start();
-          this.activeNodes.push(osc, g);
-        });
-      } else if (trackId === 'morning-bamboo') {
-        // In-Sen Japanese pentatonic scale: D4, Eb4, G4, A4, C5
-        const scale = [293.66, 311.13, 392.0, 440.0, 523.25];
-        let step = 0;
-        const playNote = () => {
-          if (!this.masterGain || !this.ctx) return;
-          const now = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const g = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(scale[step % scale.length], now);
-          step++;
-          g.gain.setValueAtTime(0.001, now);
-          g.gain.exponentialRampToValueAtTime(0.35, now + 0.08);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
-          osc.connect(g);
-          g.connect(this.masterGain);
-          osc.start(now);
-          osc.stop(now + 2.5);
-        };
-        playNote();
-        this.intervalId = setInterval(playNote, 2600);
-      } else if (trackId === 'ocean-waves' || trackId === 'gentle-rain') {
-        const bufferSize = ctx.sampleRate * 2;
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        let lastOut = 0;
-        for (let i = 0; i < bufferSize; i++) {
-          const white = Math.random() * 2 - 1;
-          data[i] = (lastOut + 0.02 * white) / 1.02;
-          lastOut = data[i];
-          data[i] *= trackId === 'ocean-waves' ? 2.5 : 1.6;
-        }
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
-
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(trackId === 'ocean-waves' ? 420 : 1200, ctx.currentTime);
-
-        source.connect(filter);
-        filter.connect(master);
-        source.start();
-        this.activeNodes.push(source, filter);
-      }
-    } catch {
-      // Ignore Web Audio errors in unsupported environments
-    }
   }
 }
 

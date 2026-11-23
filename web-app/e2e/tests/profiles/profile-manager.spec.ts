@@ -25,7 +25,9 @@ test.describe('Profile Manager (Practices View)', () => {
       await expect(page.locator('[data-testid^="profile-simple-"]:has-text("Pomodoro")')).toBeVisible();
       await expect(page.locator('[data-testid^="profile-simple-"]:has-text("Deep Work")')).toBeVisible();
       await expect(page.locator('[data-testid^="profile-simple-"]:has-text("Quick Focus")')).toBeVisible();
-      await expect(page.locator('[data-testid^="profile-simple-"]:has-text("Exercise")')).toBeVisible();
+      await expect(
+        page.locator('[data-testid^="profile-simple-"]').filter({ has: page.locator('text=/^Exercise$/') })
+      ).toBeVisible();
       await expect(page.locator('[data-testid^="profile-simple-"]:has-text("Meditation")')).toBeVisible();
     });
 
@@ -57,7 +59,7 @@ test.describe('Profile Manager (Practices View)', () => {
       expect(await page.textContent('[data-testid="time-display"]')).toBe('01:30:00');
 
       await page.click('nav button:has-text("Routines")');
-      await page.locator('[data-testid^="profile-simple-"]:has-text("Exercise")').click();
+      await page.locator('[data-testid^="profile-simple-"]').filter({ has: page.locator('text=/^Exercise$/') }).click();
       expect(await page.textContent('[data-testid="time-display"]')).toBe('00:30');
     });
 
