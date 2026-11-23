@@ -91,19 +91,36 @@ export default function SettingsView() {
         </div>
 
         <div className="pt-4 border-t border-gray-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold text-gray-800">Audio Chimes</div>
-              <div className="text-xs text-gray-500">
-                Synthesized Web Audio tones on step/phase transitions and completion
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Audio Chimes</div>
+                <div className="text-xs text-gray-500">
+                  Synthesized Web Audio tones on step/phase transitions and completion
+                </div>
               </div>
+              <input
+                type="checkbox"
+                checked={preferences.soundEnabled}
+                onChange={(e) => updatePreferences({ soundEnabled: e.target.checked })}
+                className="h-4 w-4 accent-blue-500"
+              />
             </div>
-            <input
-              type="checkbox"
-              checked={preferences.soundEnabled}
-              onChange={(e) => updatePreferences({ soundEnabled: e.target.checked })}
-              className="h-4 w-4 accent-blue-500"
-            />
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500 w-24">Chime Volume</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(preferences.chimeVolume * 100)}
+                onChange={(e) => updatePreferences({ chimeVolume: Number(e.target.value) / 100 })}
+                className="flex-1 accent-blue-500"
+                aria-label="Chime volume"
+              />
+              <span className="text-xs text-gray-600 w-10 text-right tabular-nums">
+                {Math.round(preferences.chimeVolume * 100)}%
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2">

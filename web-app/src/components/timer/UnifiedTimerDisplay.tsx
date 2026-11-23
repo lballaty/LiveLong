@@ -188,9 +188,35 @@ export default function UnifiedTimerDisplay() {
   const renderAudioMixer = () => (
     <div
       data-testid="audio-channel-mixer"
-      className="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"
+      className="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          data-testid="toggle-chime-mute"
+          onClick={() => updatePreferences({ soundEnabled: !preferences.soundEnabled })}
+          className={`px-2 py-1 rounded border font-medium shrink-0 ${
+            preferences.soundEnabled
+              ? 'bg-amber-50 border-amber-200 text-amber-700'
+              : 'bg-slate-100 border-slate-200 text-slate-500'
+          }`}
+          aria-label={preferences.soundEnabled ? 'Mute chimes' : 'Unmute chimes'}
+        >
+          {preferences.soundEnabled ? '🔔 Chimes' : '🔕 Chimes'}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={Math.round(preferences.chimeVolume * 100)}
+          onChange={(e) => updatePreferences({ chimeVolume: Number(e.target.value) / 100 })}
+          disabled={!preferences.soundEnabled}
+          className="w-full accent-amber-600 disabled:opacity-40"
+          aria-label="Session chime volume"
+        />
+      </div>
+
+      <div className="flex items-center gap-1.5">
         <button
           type="button"
           data-testid="toggle-voice-mute"

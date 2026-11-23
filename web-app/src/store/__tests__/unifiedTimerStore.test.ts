@@ -45,6 +45,7 @@ const resetStore = () => {
       variant: 'standing',
       views: 'front',
       soundEnabled: true,
+      chimeVolume: 0.7,
       voiceCuesEnabled: false,
       voiceVolume: 0.9,
       musicMuted: false,
@@ -272,7 +273,7 @@ describe('useUnifiedTimerStore', () => {
 
       useUnifiedTimerStore.getState().startTimer();
       expect(audioCueService.unlock).toHaveBeenCalled();
-      expect(audioCueService.playChime).toHaveBeenCalledWith('start');
+      expect(audioCueService.playChime).toHaveBeenCalledWith('start', 0.7);
       expect(audioCueService.speakCue).toHaveBeenCalled();
       expect(useUnifiedTimerStore.getState().sessionStartedAt).toBeInstanceOf(Date);
       expect(useUnifiedTimerStore.getState().timerState?.status).toBe('running');
@@ -323,7 +324,7 @@ describe('useUnifiedTimerStore', () => {
       // Work (1s) -> 0s -> Break
       jest.advanceTimersByTime(2000);
       expect(onPhaseChange).toHaveBeenCalledWith('break');
-      expect(audioCueService.playChime).toHaveBeenCalledWith('rest');
+      expect(audioCueService.playChime).toHaveBeenCalledWith('rest', 0.7);
       expect(audioCueService.speakCue).toHaveBeenCalledWith('session.break', 'Break time.', undefined, 0.9);
 
       // Break (1s) -> 0s -> Complete
@@ -333,7 +334,7 @@ describe('useUnifiedTimerStore', () => {
       }
 
       expect(onTimerComplete).toHaveBeenCalledTimes(1);
-      expect(audioCueService.playChime).toHaveBeenCalledWith('complete');
+      expect(audioCueService.playChime).toHaveBeenCalledWith('complete', 0.7);
       expect(audioCueService.speakCue).toHaveBeenCalledWith(
         'session.complete',
         "That's the end of your session. Take a moment to notice how you feel. Well done.",

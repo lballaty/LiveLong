@@ -73,7 +73,7 @@ class AudioCueService {
   /**
    * Play a gentle synthesized chime for session/phase transitions.
    */
-  public playChime(kind: ChimeKind): void {
+  public playChime(kind: ChimeKind, volume = 0.7): void {
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -81,6 +81,8 @@ class AudioCueService {
         ctx.resume().catch(() => {});
       }
 
+      const clampedVol = Math.max(0, Math.min(1, volume));
+      const peakGain = Math.max(0.001, clampedVol * 0.2);
       const now = ctx.currentTime;
       const notes: Record<ChimeKind, number[]> = {
         start: [528],
@@ -99,7 +101,7 @@ class AudioCueService {
         osc.frequency.setValueAtTime(freq, startAt);
 
         gain.gain.setValueAtTime(0.001, startAt);
-        gain.gain.exponentialRampToValueAtTime(0.14, startAt + 0.02);
+        gain.gain.exponentialRampToValueAtTime(peakGain, startAt + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
 
         osc.connect(gain);

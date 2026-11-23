@@ -45,6 +45,7 @@ const DEFAULT_PREFERENCES: PracticePreferences = {
   variant: 'standing',
   views: 'front',
   soundEnabled: true,
+  chimeVolume: 0.7,
   voiceCuesEnabled: false,
   voiceVolume: 0.9,
   musicMuted: false,
@@ -423,7 +424,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     }
 
     if (preferences.soundEnabled) {
-      audioCueService.playChime('start');
+      audioCueService.playChime('start', preferences.chimeVolume);
     }
     if (preferences.voiceCuesEnabled) {
       if (activeProfile.type === 'breathing') {
@@ -461,7 +462,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         onTimerComplete?.();
 
         if (prefs.soundEnabled) {
-          audioCueService.playChime('complete');
+          audioCueService.playChime('complete', prefs.chimeVolume);
         }
         if (prefs.voiceCuesEnabled) {
           audioCueService.speakCue(
@@ -504,7 +505,10 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         onPhaseChange?.(phase);
 
         if (prefs.soundEnabled) {
-          audioCueService.playChime(phase === 'rest' || phase === 'break' ? 'rest' : 'phase');
+          audioCueService.playChime(
+            phase === 'rest' || phase === 'break' ? 'rest' : 'phase',
+            prefs.chimeVolume
+          );
         }
         if (prefs.voiceCuesEnabled) {
           if (prof?.type === 'breathing' && timerState?.breathingState) {
