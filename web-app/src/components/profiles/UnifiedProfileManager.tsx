@@ -20,6 +20,7 @@ import {
 import { audioCueService } from '@/services/audio/AudioCueService';
 import RoutineEditorModal from './RoutineEditorModal';
 import SessionComposerModal from './SessionComposerModal';
+import RoutineAudioModal from './RoutineAudioModal';
 
 interface ProfileCardProps {
   profile: UnifiedProfile;
@@ -30,6 +31,7 @@ interface ProfileCardProps {
   onMusicChange: (trackId: string) => void;
   onPreviewMusic?: () => void;
   onPreviewChime?: () => void;
+  onOpenAudioConfig?: () => void;
   onSelect: () => void;
   onEdit?: () => void;
   onDuplicate?: () => void;
@@ -45,6 +47,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onMusicChange,
   onPreviewMusic,
   onPreviewChime,
+  onOpenAudioConfig,
   onSelect,
   onEdit,
   onDuplicate,
@@ -196,6 +199,18 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             aria-label="Preview transition chime"
           >
             🔔
+          </button>
+        )}
+        {onOpenAudioConfig && (
+          <button
+            type="button"
+            data-testid={`audio-config-${profile.id}`}
+            onClick={onOpenAudioConfig}
+            className="px-2 py-1 text-xs rounded border border-gray-200 bg-gray-50 hover:bg-gray-100 shrink-0"
+            title="Configure audio & volumes"
+            aria-label="Configure audio and volumes"
+          >
+            🎛️
           </button>
         )}
       </div>
@@ -365,6 +380,7 @@ interface UnifiedProfileManagerProps {
 
 export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfileManagerProps = {}) {
   const [previewingCardTrack, setPreviewingCardTrack] = useState<string | null>(null);
+  const [audioConfigProfile, setAudioConfigProfile] = useState<UnifiedProfile | null>(null);
   const {
     profiles,
     customProfiles,
@@ -383,6 +399,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     updateSessionPlan,
     deleteSessionPlan,
     startSessionPlan,
+    updatePreferences,
     setProfileMusic,
     addCustomMusicTrack,
   } = useUnifiedTimerStore();
@@ -603,6 +620,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                   )
                 }
                 onPreviewChime={handlePreviewChime}
+                onOpenAudioConfig={() => setAudioConfigProfile(profile)}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -644,6 +662,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                   )
                 }
                 onPreviewChime={handlePreviewChime}
+                onOpenAudioConfig={() => setAudioConfigProfile(profile)}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -685,6 +704,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                   )
                 }
                 onPreviewChime={handlePreviewChime}
+                onOpenAudioConfig={() => setAudioConfigProfile(profile)}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -853,6 +873,19 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
               createSessionPlan(data);
             }
           }}
+        />
+      )}
+      {audioConfigProfile && (
+        <RoutineAudioModal
+          profile={audioConfigProfile}
+          selectedMusicId={
+            profileMusicMap[audioConfigProfile.id] || audioConfigProfile.musicTrackId || 'none'
+          }
+          musicOptions={allMusicOptions}
+          preferences={preferences}
+          onMusicChange={(trackId) => setProfileMusic(audioConfigProfile.id, trackId)}
+          onUpdatePreferences={updatePreferences}
+          onClose={() => setAudioConfigProfile(null)}
         />
       )}
     </div>

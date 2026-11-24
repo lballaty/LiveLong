@@ -13,7 +13,6 @@ import ExerciseAnimationPlayer from '@/components/exercises/ExerciseAnimationPla
 import ProgressView from '@/components/progress/ProgressView';
 import SettingsView from '@/components/settings/SettingsView';
 import { BreathingPattern } from '@/types/profile.types';
-import { backgroundMusicService } from '@/services/audio/BackgroundMusicService';
 
 type ActiveTab = 'practice' | 'practices' | 'progress' | 'settings';
 
@@ -36,7 +35,6 @@ export default function UnifiedTimerDisplay() {
     jumpToStep,
     nextStep: goToNextStep,
     prevStep: goToPrevStep,
-    previewStepCue,
     initializeProfiles,
   } = useUnifiedTimerStore();
 
@@ -195,86 +193,48 @@ export default function UnifiedTimerDisplay() {
   const renderAudioMixer = () => (
     <div
       data-testid="audio-channel-mixer"
-      className="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"
+      className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs"
     >
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          data-testid="toggle-chime-mute"
-          onClick={() => updatePreferences({ soundEnabled: !preferences.soundEnabled })}
-          className={`px-2 py-1 rounded border font-medium shrink-0 ${
-            preferences.soundEnabled
-              ? 'bg-amber-50 border-amber-200 text-amber-700'
-              : 'bg-slate-100 border-slate-200 text-slate-500'
-          }`}
-          aria-label={preferences.soundEnabled ? 'Mute chimes' : 'Unmute chimes'}
-        >
-          {preferences.soundEnabled ? '🔔 Chimes' : '🔕 Chimes'}
-        </button>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(preferences.chimeVolume * 100)}
-          onChange={(e) => updatePreferences({ chimeVolume: Number(e.target.value) / 100 })}
-          disabled={!preferences.soundEnabled}
-          className="w-full accent-amber-600 disabled:opacity-40"
-          aria-label="Session chime volume"
-        />
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          data-testid="toggle-voice-mute"
-          onClick={() => updatePreferences({ voiceCuesEnabled: !preferences.voiceCuesEnabled })}
-          className={`px-2 py-1 rounded border font-medium shrink-0 ${
-            preferences.voiceCuesEnabled
-              ? 'bg-blue-50 border-blue-200 text-blue-700'
-              : 'bg-slate-100 border-slate-200 text-slate-500'
-          }`}
-          aria-label={preferences.voiceCuesEnabled ? 'Mute script voice' : 'Unmute script voice'}
-        >
-          {preferences.voiceCuesEnabled ? '🔊 Script' : '🔇 Script'}
-        </button>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(preferences.voiceVolume * 100)}
-          onChange={(e) => updatePreferences({ voiceVolume: Number(e.target.value) / 100 })}
-          disabled={!preferences.voiceCuesEnabled}
-          className="w-full accent-blue-600 disabled:opacity-40"
-          aria-label="Session script volume"
-        />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          data-testid="toggle-music-mute"
-          onClick={() => updatePreferences({ musicMuted: !preferences.musicMuted })}
-          disabled={activeMusicTrackId === 'none'}
-          className={`px-2 py-1 rounded border font-medium shrink-0 disabled:opacity-40 ${
-            !preferences.musicMuted && activeMusicTrackId !== 'none'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-              : 'bg-slate-100 border-slate-200 text-slate-500'
-          }`}
-          aria-label={preferences.musicMuted ? 'Unmute background music' : 'Mute background music'}
-        >
-          {preferences.musicMuted || activeMusicTrackId === 'none' ? '🔇 Music' : '🎵 Music'}
-        </button>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(preferences.musicVolume * 100)}
-          onChange={(e) => updatePreferences({ musicVolume: Number(e.target.value) / 100 })}
-          disabled={preferences.musicMuted || activeMusicTrackId === 'none'}
-          className="w-full accent-emerald-600 disabled:opacity-40"
-          aria-label="Session music volume"
-        />
-      </div>
+      <button
+        type="button"
+        data-testid="toggle-chime-mute"
+        onClick={() => updatePreferences({ soundEnabled: !preferences.soundEnabled })}
+        className={`px-2 py-1 rounded-md border font-medium ${
+          preferences.soundEnabled
+            ? 'bg-amber-50 border-amber-200 text-amber-700'
+            : 'bg-slate-100 border-slate-200 text-slate-500'
+        }`}
+        aria-label={preferences.soundEnabled ? 'Mute chimes' : 'Unmute chimes'}
+      >
+        {preferences.soundEnabled ? '🔔 Chimes' : '🔕 Chimes'}
+      </button>
+      <button
+        type="button"
+        data-testid="toggle-voice-mute"
+        onClick={() => updatePreferences({ voiceCuesEnabled: !preferences.voiceCuesEnabled })}
+        className={`px-2 py-1 rounded-md border font-medium ${
+          preferences.voiceCuesEnabled
+            ? 'bg-blue-50 border-blue-200 text-blue-700'
+            : 'bg-slate-100 border-slate-200 text-slate-500'
+        }`}
+        aria-label={preferences.voiceCuesEnabled ? 'Mute script voice' : 'Unmute script voice'}
+      >
+        {preferences.voiceCuesEnabled ? '🔊 Script' : '🔇 Script'}
+      </button>
+      <button
+        type="button"
+        data-testid="toggle-music-mute"
+        onClick={() => updatePreferences({ musicMuted: !preferences.musicMuted })}
+        disabled={activeMusicTrackId === 'none'}
+        className={`px-2 py-1 rounded-md border font-medium disabled:opacity-40 ${
+          !preferences.musicMuted && activeMusicTrackId !== 'none'
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+            : 'bg-slate-100 border-slate-200 text-slate-500'
+        }`}
+        aria-label={preferences.musicMuted ? 'Unmute background music' : 'Mute background music'}
+      >
+        {preferences.musicMuted || activeMusicTrackId === 'none' ? '🔇 Music' : '🎵 Music'}
+      </button>
     </div>
   );
 
@@ -587,7 +547,7 @@ export default function UnifiedTimerDisplay() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-1.5 mb-2.5">
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
                     <button
                       type="button"
                       data-testid="review-prev-step"
@@ -597,31 +557,6 @@ export default function UnifiedTimerDisplay() {
                     >
                       ◀ Prev Step
                     </button>
-                    <button
-                      type="button"
-                      data-testid="review-preview-cue"
-                      onClick={() => previewStepCue(currentStepIndex)}
-                      className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100"
-                    >
-                      🔊 Preview Cue &amp; Chime
-                    </button>
-                    {timerState?.status === 'idle' && activeMusicTrackId !== 'none' && (
-                      <button
-                        type="button"
-                        data-testid="review-preview-music"
-                        onClick={() => {
-                          const { customMusicTracks } = useUnifiedTimerStore.getState();
-                          backgroundMusicService.previewToggle(
-                            activeMusicTrackId,
-                            customMusicTracks,
-                            preferences.musicVolume
-                          );
-                        }}
-                        className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100"
-                      >
-                        🎵 Preview Music
-                      </button>
-                    )}
                     <button
                       type="button"
                       data-testid="review-next-step"
