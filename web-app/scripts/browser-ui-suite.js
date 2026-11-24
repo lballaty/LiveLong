@@ -158,6 +158,26 @@ async () => {
   await clickBtnText('[data-testid="settings-view"] button', 'Front');
   await clickBtnText('[data-testid="settings-view"] button', 'Standing');
 
+  // Save Current as Defaults -> change sliders -> Reset All to Saved Defaults -> Restore Factory Defaults
+  const getChimeSlider = () => document.querySelector('[data-testid="settings-view"] input[aria-label="Chime volume"]');
+  setInputVal(getChimeSlider(), '40');
+  await wait(80);
+  document.querySelector('[data-testid="save-defaults-button"]')?.click();
+  await wait(80);
+  setInputVal(getChimeSlider(), '90');
+  await wait(80);
+  document.querySelector('[data-testid="reset-defaults-button"]')?.click();
+  await wait(80);
+  const restoredSavedChime = getChimeSlider()?.value;
+  document.querySelector('[data-testid="reset-factory-button"]')?.click();
+  await wait(80);
+  const restoredFactoryChime = getChimeSlider()?.value;
+  assert(
+    '2.7 Settings: Save as Defaults, Reset to Saved Defaults, and Restore Factory Defaults',
+    restoredSavedChime === '40' && restoredFactoryChime === '70',
+    `saved=${restoredSavedChime} factory=${restoredFactoryChime}`
+  );
+
   // --- 3. ROUTINES VIEW: FILTERS, REORDER, AUDIO MODAL, CLONE, CREATE SERIES, CREATE BREATHING, CREATE SIMPLE, COMPOSE SESSION ---
   await clickNav('Routines');
   await clickBtnText('button', 'Exercises');

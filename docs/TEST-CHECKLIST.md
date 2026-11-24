@@ -11,7 +11,7 @@
 | Suite | Runner | Scope | Latest Result |
 |---|---|---|---|
 | Unit & Component Tests | `npx jest --ci --maxWorkers=2` | Engines, stores, repositories, audio services, RTL modals/pickers/settings | **12 / 12 suites, 82 / 82 passed** |
-| Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, full Settings, Rajio Taiso steps, Desktop (`1280×800`) + Mobile (`390×844`) | **40 / 40 passed** |
+| Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, full Settings, Rajio Taiso steps, Desktop (`1280×800`) + Mobile (`390×844`) | **41 / 41 passed** |
 | Live-Browser User Journeys | Chrome via `chrome-devtools-mcp` ([browser-user-journeys.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-user-journeys.js)) | 8 multi-step end-to-end user journeys + full browser reload persistence | **15 / 15 passed (12 run + 3 post-reload)** |
 
 ---
@@ -43,6 +43,7 @@
 | **2.3** | Settings Cast Live Preview | Select `f30-slim` in Cast `<select>` → wait `220ms` → Settings inline preview SVG `aria-label` changes to `Woman, about 30`. | ✅ Passed |
 | **2.4–2.5** | Settings Voice, Sliders & Test Cue | Click **Man**, click **Woman**, click **Test Audio Cue**; set Chime/Voice/Music sliders to `55`, `80`, `30` → `%` labels display `55%`, `80%`, `30%`. | ✅ Passed |
 | **2.6** | Settings View Mode → Session | Click **Front + Side** and **Chair-Based** → switch to **Session** → 2 `.exercise-figures svg` elements render; restore `robot-r1`, **Front**, **Standing**. | ✅ Passed |
+| **2.7** | Save & Reset Defaults | Set Chime slider to `40` → click **Save Current as Defaults** → set Chime slider to `90` → click **Reset All to Saved Defaults** (slider returns to `40`) → click **Restore Factory Defaults** (slider returns to `70`). | ✅ Passed |
 | **3.1–3.3** | Routines Category Filters | Click **Exercises** → hides `Focus & Meditation Timers`; click **Breathing** → shows `Breathing Exercises`; click **Focus Timers** → shows `Focus & Meditation Timers`; click **All**. | ✅ Passed |
 | **3.4** | Card Reordering | Record first card `h3` → click `Move routine later (→)` on Rajio Taiso → first card `h3` changes → click `Move routine earlier (←)` → first card `h3` restores. | ✅ Passed |
 | **3.5–3.6** | Card Music Preview & Audio Modal | Set Rajio Taiso music `<select>` to `morning-exercise` → click `▶` → button text becomes `⏹` → click `⏹` → returns to `▶`; click `🎛️` → `RoutineAudioModal` opens with 3 sliders → close. | ✅ Passed |

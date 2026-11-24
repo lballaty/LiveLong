@@ -6,6 +6,8 @@ import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
 import { audioCueService } from '@/services/audio/AudioCueService';
 
 const mockUpdatePreferences = jest.fn();
+const mockSaveAsDefaults = jest.fn();
+const mockResetAllPreferences = jest.fn();
 
 jest.mock('@/components/exercises/ExerciseAnimationPlayer', () => ({
   __esModule: true,
@@ -46,7 +48,10 @@ describe('SettingsView', () => {
         musicVolume: 0.25,
         vibrationEnabled: true,
       },
+      hasSavedDefaults: true,
       updatePreferences: mockUpdatePreferences,
+      saveAsDefaults: mockSaveAsDefaults,
+      resetAllPreferences: mockResetAllPreferences,
     } as any);
   });
 
@@ -102,5 +107,14 @@ describe('SettingsView', () => {
     expect(audioCueService.unlock).toHaveBeenCalled();
     expect(audioCueService.playChime).toHaveBeenCalledWith('complete');
     expect(audioCueService.speak).toHaveBeenCalledWith('Audio guidance is ready.');
+
+    fireEvent.click(screen.getByTestId('save-defaults-button'));
+    expect(mockSaveAsDefaults).toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('reset-defaults-button'));
+    expect(mockResetAllPreferences).toHaveBeenCalledWith(false);
+
+    fireEvent.click(screen.getByTestId('reset-factory-button'));
+    expect(mockResetAllPreferences).toHaveBeenCalledWith(true);
   });
 });

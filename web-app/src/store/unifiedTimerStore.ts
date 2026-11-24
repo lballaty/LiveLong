@@ -33,6 +33,7 @@ const PROFILE_MUSIC_STORAGE_KEY = 'livelong_profile_music';
 const CUSTOM_MUSIC_STORAGE_KEY = 'livelong_custom_music';
 const SESSION_PLANS_STORAGE_KEY = 'livelong_session_plans';
 const PROFILE_ORDER_STORAGE_KEY = 'livelong_profile_order';
+const USER_DEFAULT_PREFS_KEY = 'livelong_user_default_preferences';
 
 function loadStoredJson<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -102,6 +103,7 @@ interface UnifiedTimerStore {
 
   // Preferences & Progress
   preferences: PracticePreferences;
+  hasSavedDefaults: boolean;
   profileMusicMap: Record<string, string>;
   customMusicTracks: MusicTrackOption[];
   stats: SessionStatistics | null;
@@ -121,6 +123,8 @@ interface UnifiedTimerStore {
   startSessionPlan: (planId: string) => void;
   stopSessionPlan: () => void;
   updatePreferences: (updates: Partial<PracticePreferences>) => void;
+  saveAsDefaults: () => void;
+  resetAllPreferences: (toFactory?: boolean) => void;
   setProfileMusic: (profileId: string, trackId: string) => void;
   addCustomMusicTrack: (track: MusicTrackOption) => void;
   loadProgress: () => Promise<void>;
@@ -165,6 +169,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   activeSessionPlan: null,
   activeSessionIndex: 0,
   preferences: DEFAULT_PREFERENCES,
+  hasSavedDefaults: false,
   profileMusicMap: {},
   customMusicTracks: [],
   stats: null,
@@ -225,6 +230,9 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
     const storedSessionPlans = loadStoredJson<SessionPlan[]>(SESSION_PLANS_STORAGE_KEY, []);
     const storedProfileOrder = loadStoredJson<string[]>(PROFILE_ORDER_STORAGE_KEY, []);
+    const hasSavedDefaults = Boolean(
+      loadStoredJson<Partial<PracticePreferences> | null>(USER_DEFAULT_PREFS_KEY, null)
+    );
     const defaultActive = allProfiles[0];
     const engine = defaultActive ? new UnifiedTimerEngine(defaultActive) : null;
 
@@ -234,6 +242,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       profileOrder: storedProfileOrder,
       sessionPlans: storedSessionPlans,
       preferences: storedPrefs,
+      hasSavedDefaults,
       profileMusicMap: storedProfileMusic,
       customMusicTracks: storedCustomMusic,
       activeProfile: defaultActive || null,
@@ -474,6 +483,64 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       }
     }
     set({ preferences: next });
+  },
+
+  saveAsDefaults: () => {
+    const current = get().preferences;
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(USER_DEFAULT_PREFS_KEY, JSON.stringify(current));
+      } catch {
+        // Ignore
+      }
+    }
+    set({ hasSavedDefaults: true });
+  },
+
+  resetAllPreferences: (toFactory = false) => {
+    let target: PracticePreferences = { ...DEFAULT_PREFERENCES };
+    let nextHasSaved = get().hasSavedDefaults;
+
+    if (toFactory) {
+      nextHasSaved = false;
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem(USER_DEFAULT_PREFS_KEY);
+          window.localStorage.removeItem(PROFILE_MUSIC_STORAGE_KEY);
+        } catch {
+          // Ignore
+        }
+      }
+    } else if (typeof window !== 'undefined') {
+      const saved = loadStoredJson<Partial<PracticePreferences> | null>(
+        USER_DEFAULT_PREFS_KEY,
+        null
+      );
+      if (saved) {
+        target = { ...DEFAULT_PREFERENCES, ...saved };
+        nextHasSaved = true;
+      }
+    }
+
+    backgroundMusicService.setVolume(target.musicVolume);
+    backgroundMusicService.setMuted(target.musicMuted);
+    if (!target.voiceCuesEnabled) {
+      audioCueService.stopSpeech();
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(target));
+      } catch {
+        // Ignore
+      }
+    }
+
+    set({
+      preferences: target,
+      hasSavedDefaults: nextHasSaved,
+      ...(toFactory ? { profileMusicMap: {} } : {}),
+    });
   },
 
   setProfileMusic: (profileId: string, trackId: string) => {

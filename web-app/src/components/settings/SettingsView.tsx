@@ -5,7 +5,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
 import ExerciseAnimationPlayer, { CAST_LABELS } from '@/components/exercises/ExerciseAnimationPlayer';
 import {
@@ -17,7 +17,14 @@ import {
 import { audioCueService } from '@/services/audio/AudioCueService';
 
 export default function SettingsView() {
-  const { preferences, updatePreferences } = useUnifiedTimerStore();
+  const {
+    preferences,
+    hasSavedDefaults,
+    updatePreferences,
+    saveAsDefaults,
+    resetAllPreferences,
+  } = useUnifiedTimerStore();
+  const [defaultsSavedMsg, setDefaultsSavedMsg] = useState(false);
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4" data-testid="settings-view">
@@ -226,7 +233,7 @@ export default function SettingsView() {
             />
           </div>
 
-          <div className="pt-2">
+          <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -240,6 +247,36 @@ export default function SettingsView() {
             >
               Test Audio Cue
             </button>
+            <button
+              type="button"
+              data-testid="save-defaults-button"
+              onClick={() => {
+                saveAsDefaults();
+                setDefaultsSavedMsg(true);
+                setTimeout(() => setDefaultsSavedMsg(false), 2000);
+              }}
+              className="px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100"
+            >
+              {defaultsSavedMsg ? '✓ Saved as Defaults' : 'Save Current as Defaults'}
+            </button>
+            <button
+              type="button"
+              data-testid="reset-defaults-button"
+              onClick={() => resetAllPreferences(false)}
+              className="px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200"
+            >
+              {hasSavedDefaults ? 'Reset All to Saved Defaults' : 'Reset All to Defaults'}
+            </button>
+            {hasSavedDefaults && (
+              <button
+                type="button"
+                data-testid="reset-factory-button"
+                onClick={() => resetAllPreferences(true)}
+                className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+              >
+                Restore Factory Defaults
+              </button>
+            )}
           </div>
         </div>
 
