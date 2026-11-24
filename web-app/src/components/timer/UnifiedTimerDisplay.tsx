@@ -13,6 +13,7 @@ import ExerciseAnimationPlayer from '@/components/exercises/ExerciseAnimationPla
 import ProgressView from '@/components/progress/ProgressView';
 import SettingsView from '@/components/settings/SettingsView';
 import { BreathingPattern } from '@/types/profile.types';
+import { RoutineIcon } from '@/components/profiles/IconPicker';
 
 type ActiveTab = 'practice' | 'practices' | 'progress' | 'settings';
 
@@ -369,8 +370,9 @@ export default function UnifiedTimerDisplay() {
             <div className="px-4 sm:px-6 py-2.5 bg-slate-50 border-b border-slate-200">
               <div className="flex justify-between items-center text-xs text-slate-500 mb-1.5">
                 <span>
-                  <strong className="text-slate-800">
-                    {activeProfile.icon} {activeProfile.name}
+                  <strong className="text-slate-800 inline-flex items-center gap-1.5">
+                    <RoutineIcon icon={activeProfile.icon} className="text-sm" imgClassName="w-4 h-4 object-contain rounded" />
+                    <span>{activeProfile.name}</span>
                   </strong>{' '}
                   · Step {currentStepIndex + 1} of {steps.length}
                 </span>
@@ -611,7 +613,9 @@ export default function UnifiedTimerDisplay() {
             <div className="w-full max-w-md">
               {activeProfile && (
                 <div className="text-center mb-6">
-                  <div className="text-4xl mb-2">{activeProfile.icon}</div>
+                  <div className="mb-2 flex justify-center">
+                    <RoutineIcon icon={activeProfile.icon} className="text-4xl" imgClassName="w-12 h-12 object-contain rounded-lg" />
+                  </div>
                   <h2 className="text-2xl font-bold text-slate-800">{activeProfile.name}</h2>
                   <p className="text-slate-600 text-sm">{activeProfile.description}</p>
                 </div>

@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { SessionPlan, SessionPlanItem, UnifiedProfile } from '@/types/unified-profile.types';
+import IconPicker, { formatIconForSelect } from './IconPicker';
 
 interface SessionComposerModalProps {
   plan?: SessionPlan;
@@ -91,7 +92,7 @@ export default function SessionComposerModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-3">
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Session Name
               </label>
@@ -103,19 +104,12 @@ export default function SessionComposerModal({
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>
-              <select
+            <div className="sm:col-span-3">
+              <IconPicker
                 value={icon}
-                onChange={(e) => setIcon(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
-              >
-                {['🗓️', '🌅', '🧘', '⚡', '🌿', '🎯'].map((ic) => (
-                  <option key={ic} value={ic}>
-                    {ic}
-                  </option>
-                ))}
-              </select>
+                onChange={setIcon}
+                presets={['🗓️', '🌅', '🧘', '⚡', '🌿', '🎯', '🏃', '🌟']}
+              />
             </div>
           </div>
 
@@ -149,7 +143,7 @@ export default function SessionComposerModal({
                   <option value="">+ Add Routine...</option>
                   {availableProfiles.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.icon} {p.name}
+                      {formatIconForSelect(p.icon)} {p.name}
                     </option>
                   ))}
                 </select>

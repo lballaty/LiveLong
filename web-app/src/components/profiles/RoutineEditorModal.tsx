@@ -20,6 +20,7 @@ import {
   backgroundMusicService,
 } from '@/services/audio/BackgroundMusicService';
 import { audioCueService } from '@/services/audio/AudioCueService';
+import IconPicker from './IconPicker';
 
 interface RoutineEditorModalProps {
   profile?: UnifiedProfile;
@@ -334,23 +335,7 @@ export default function RoutineEditorModal({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>
-            <div className="flex gap-1.5 flex-wrap">
-              {ICONS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setIcon(emoji)}
-                  className={`text-xl p-1.5 rounded-lg ${
-                    icon === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-slate-100'
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
+          <IconPicker value={icon} onChange={setIcon} />
 
           {routineType === 'simple' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg">

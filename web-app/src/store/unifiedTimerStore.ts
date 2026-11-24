@@ -32,6 +32,7 @@ const CUSTOM_PROFILES_STORAGE_KEY = 'livelong_custom_profiles';
 const PROFILE_MUSIC_STORAGE_KEY = 'livelong_profile_music';
 const CUSTOM_MUSIC_STORAGE_KEY = 'livelong_custom_music';
 const SESSION_PLANS_STORAGE_KEY = 'livelong_session_plans';
+const PROFILE_ORDER_STORAGE_KEY = 'livelong_profile_order';
 
 function loadStoredJson<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -86,6 +87,7 @@ interface UnifiedTimerStore {
   profiles: UnifiedProfile[];
   activeProfile: UnifiedProfile | null;
   customProfiles: UnifiedProfile[];
+  profileOrder: string[];
 
   // Timer
   timerEngine: UnifiedTimerEngine | null;
@@ -112,6 +114,7 @@ interface UnifiedTimerStore {
   duplicateProfile: (profileId: string) => UnifiedProfile | null;
   updateProfile: (profileId: string, updates: Partial<UnifiedProfile>) => void;
   deleteCustomProfile: (profileId: string) => void;
+  moveProfileOrder: (profileId: string, direction: -1 | 1, scopeIds?: string[]) => void;
   createSessionPlan: (plan: Omit<SessionPlan, 'id' | 'createdAt' | 'updatedAt'>) => SessionPlan;
   updateSessionPlan: (planId: string, updates: Partial<SessionPlan>) => void;
   deleteSessionPlan: (planId: string) => void;
@@ -153,6 +156,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   profiles: [],
   activeProfile: null,
   customProfiles: [],
+  profileOrder: [],
   timerEngine: null,
   timerState: null,
   sessionStartedAt: null,
@@ -220,12 +224,14 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     );
     const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
     const storedSessionPlans = loadStoredJson<SessionPlan[]>(SESSION_PLANS_STORAGE_KEY, []);
+    const storedProfileOrder = loadStoredJson<string[]>(PROFILE_ORDER_STORAGE_KEY, []);
     const defaultActive = allProfiles[0];
     const engine = defaultActive ? new UnifiedTimerEngine(defaultActive) : null;
 
     set({
       profiles: allProfiles,
       customProfiles: storedCustom,
+      profileOrder: storedProfileOrder,
       sessionPlans: storedSessionPlans,
       preferences: storedPrefs,
       profileMusicMap: storedProfileMusic,
@@ -343,6 +349,33 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       }
     }
     set({ customProfiles: next });
+  },
+
+  moveProfileOrder: (profileId: string, direction: -1 | 1, scopeIds?: string[]) => {
+    const allIds = [...get().profiles, ...get().customProfiles].map((p) => p.id);
+    const current = [...get().profileOrder];
+    allIds.forEach((id) => {
+      if (!current.includes(id)) current.push(id);
+    });
+    const visibleIds = scopeIds && scopeIds.length > 0 ? scopeIds : current;
+    const orderedVisible = current.filter((id) => visibleIds.includes(id));
+    const idx = orderedVisible.indexOf(profileId);
+    const targetIdx = idx + direction;
+    if (idx < 0 || targetIdx < 0 || targetIdx >= orderedVisible.length) return;
+    const neighborId = orderedVisible[targetIdx];
+    const posA = current.indexOf(profileId);
+    const posB = current.indexOf(neighborId);
+    if (posA < 0 || posB < 0) return;
+    [current[posA], current[posB]] = [current[posB], current[posA]];
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(PROFILE_ORDER_STORAGE_KEY, JSON.stringify(current));
+      } catch {
+        // Ignore
+      }
+    }
+    set({ profileOrder: current });
   },
 
   duplicateProfile: (profileId: string) => {

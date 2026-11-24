@@ -21,6 +21,7 @@ import { audioCueService } from '@/services/audio/AudioCueService';
 import RoutineEditorModal from './RoutineEditorModal';
 import SessionComposerModal from './SessionComposerModal';
 import RoutineAudioModal from './RoutineAudioModal';
+import IconPicker, { RoutineIcon } from './IconPicker';
 
 interface ProfileCardProps {
   profile: UnifiedProfile;
@@ -32,6 +33,8 @@ interface ProfileCardProps {
   onPreviewMusic?: () => void;
   onPreviewChime?: () => void;
   onOpenAudioConfig?: () => void;
+  onMoveEarlier?: () => void;
+  onMoveLater?: () => void;
   onSelect: () => void;
   onEdit?: () => void;
   onDuplicate?: () => void;
@@ -48,6 +51,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onPreviewMusic,
   onPreviewChime,
   onOpenAudioConfig,
+  onMoveEarlier,
+  onMoveLater,
   onSelect,
   onEdit,
   onDuplicate,
@@ -90,7 +95,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl">{profile.icon}</span>
+            <RoutineIcon icon={profile.icon} className="text-2xl" imgClassName="w-7 h-7 object-contain rounded" />
             <h3 className="font-semibold text-gray-800">{profile.name}</h3>
           </div>
           <p className="text-sm text-gray-600 mb-2">{profile.description}</p>
@@ -110,6 +115,34 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           </div>
         </div>
         <div className="flex gap-1">
+          {onMoveEarlier && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMoveEarlier();
+              }}
+              className="p-1 text-slate-500 hover:bg-slate-100 rounded text-xs"
+              aria-label="Move routine earlier"
+              title="Move earlier"
+            >
+              ←
+            </button>
+          )}
+          {onMoveLater && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMoveLater();
+              }}
+              className="p-1 text-slate-500 hover:bg-slate-100 rounded text-xs"
+              aria-label="Move routine later"
+              title="Move later"
+            >
+              →
+            </button>
+          )}
           {onEdit && (profile.type === 'simple' || profile.isCustom) && (
             <button
               onClick={(e) => {
@@ -332,25 +365,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Icon
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                {['⏱️', '📚', '💻', '🎯', '🔥', '⚡', '🌟', '🚀'].map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, icon: emoji })}
-                    className={`text-2xl p-2 rounded ${
-                      formData.icon === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-100'
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <IconPicker
+              value={formData.icon}
+              onChange={(ic) => setFormData({ ...formData, icon: ic })}
+              presets={['⏱️', '📚', '💻', '🎯', '🔥', '⚡', '🌟', '🚀']}
+            />
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
@@ -384,6 +403,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
   const {
     profiles,
     customProfiles,
+    profileOrder,
     activeProfile,
     sessionPlans,
     preferences,
@@ -395,6 +415,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     duplicateProfile,
     updateProfile,
     deleteCustomProfile,
+    moveProfileOrder,
     createSessionPlan,
     updateSessionPlan,
     deleteSessionPlan,
@@ -453,7 +474,14 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     initializeProfiles();
   }, [initializeProfiles]);
 
-  const allProfiles = [...profiles, ...customProfiles];
+  const allProfiles = [...profiles, ...customProfiles].sort((a, b) => {
+    const idxA = profileOrder.indexOf(a.id);
+    const idxB = profileOrder.indexOf(b.id);
+    if (idxA === -1 && idxB === -1) return 0;
+    if (idxA === -1) return 1;
+    if (idxB === -1) return -1;
+    return idxA - idxB;
+  });
   const filteredProfiles = filterType === 'all'
     ? allProfiles
     : allProfiles.filter(p => p.type === filterType);
@@ -548,7 +576,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{plan.icon}</span>
+                      <RoutineIcon icon={plan.icon} className="text-2xl" imgClassName="w-7 h-7 object-contain rounded" />
                       <h4 className="font-semibold text-slate-900">{plan.name}</h4>
                     </div>
                     <div className="flex gap-1">
@@ -599,7 +627,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Japanese Longevity Exercises</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {seriesProfiles.map((profile) => (
+            {seriesProfiles.map((profile, idx) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}
@@ -607,6 +635,26 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
                 isPreviewingMusic={previewingCardTrack === profile.id}
+                onMoveEarlier={
+                  idx > 0
+                    ? () =>
+                        moveProfileOrder(
+                          profile.id,
+                          -1,
+                          seriesProfiles.map((p) => p.id)
+                        )
+                    : undefined
+                }
+                onMoveLater={
+                  idx < seriesProfiles.length - 1
+                    ? () =>
+                        moveProfileOrder(
+                          profile.id,
+                          1,
+                          seriesProfiles.map((p) => p.id)
+                        )
+                    : undefined
+                }
                 onMusicChange={(trackId) => {
                   setProfileMusic(profile.id, trackId);
                   if (previewingCardTrack === profile.id) {
@@ -641,7 +689,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Breathing Exercises</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {breathingProfiles.map((profile) => (
+            {breathingProfiles.map((profile, idx) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}
@@ -649,6 +697,26 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
                 isPreviewingMusic={previewingCardTrack === profile.id}
+                onMoveEarlier={
+                  idx > 0
+                    ? () =>
+                        moveProfileOrder(
+                          profile.id,
+                          -1,
+                          breathingProfiles.map((p) => p.id)
+                        )
+                    : undefined
+                }
+                onMoveLater={
+                  idx < breathingProfiles.length - 1
+                    ? () =>
+                        moveProfileOrder(
+                          profile.id,
+                          1,
+                          breathingProfiles.map((p) => p.id)
+                        )
+                    : undefined
+                }
                 onMusicChange={(trackId) => {
                   setProfileMusic(profile.id, trackId);
                   if (previewingCardTrack === profile.id) {
@@ -683,7 +751,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Focus & Meditation Timers</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {simpleProfiles.map((profile) => (
+            {simpleProfiles.map((profile, idx) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}
@@ -691,6 +759,26 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
                 isPreviewingMusic={previewingCardTrack === profile.id}
+                onMoveEarlier={
+                  idx > 0
+                    ? () =>
+                        moveProfileOrder(
+                          profile.id,
+                          -1,
+                          simpleProfiles.map((p) => p.id)
+                        )
+                    : undefined
+                }
+                onMoveLater={
+                  idx < simpleProfiles.length - 1
+                    ? () =>
+                        moveProfileOrder(
+                          profile.id,
+                          1,
+                          simpleProfiles.map((p) => p.id)
+                        )
+                    : undefined
+                }
                 onMusicChange={(trackId) => {
                   setProfileMusic(profile.id, trackId);
                   if (previewingCardTrack === profile.id) {
