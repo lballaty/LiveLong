@@ -45,7 +45,7 @@ function loadStoredJson<T>(key: string, fallback: T): T {
 }
 
 const DEFAULT_PREFERENCES: PracticePreferences = {
-  characterId: 'm25-athletic',
+  characterId: 'robot-r1',
   variant: 'standing',
   views: 'front',
   soundEnabled: true,
