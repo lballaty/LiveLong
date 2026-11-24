@@ -32,7 +32,11 @@ Continue iterating until all TODO items are complete or you need clarification.
 - **Project**: LiveLong ⊹ (longevity practice timer: focus, breathing, and exercise series)
 - **Active app**: `web-app/`, an offline-first Progressive Web App
 - **Stack**: Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4, Zustand, IndexedDB via `idb`, `next-pwa`
-- **Tests**: Jest + React Testing Library + `fake-indexeddb` (unit), Playwright (E2E, desktop and mobile)
+- **Tests**: Jest + React Testing Library + `fake-indexeddb` (unit/component), plus live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`) run in the actual Chrome browser on this device (`docs/TEST-CHECKLIST.md`).
+- **External Fleet Bundle Dependencies**:
+  - **`animation` repo** (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/animation`): supplies `exercise-figures-runtime.js` (`web-app/src/lib/animations/`) + exercise/character JSON packs (`web-app/public/animations/`). Inbound: `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/_inbound-from-animation.md`; reply: `~/.ai-dev-dotfiles/.coordination/fleets/animation/mailbox/_inbound-from-livelong.md`.
+  - **`openScriptAudio` repo** (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`): supplies voice guidance cue packs (`web-app/public/audio/cues/<voiceId>/manifest.json` + `.mp3` clips). Inbound: `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/_inbound-from-openscriptaudio.md`; reply: `~/.ai-dev-dotfiles/.coordination/fleets/openscriptaudio/mailbox/_inbound-from-livelong.md`.
+  - **Controller rule**: Validate, integrate, and test new bundle deliveries automatically; report bundle defects directly to the owning fleet lead and notify the operator when ready for testing.
 - **Backend**: none. All data is local to the browser.
 - **Created**: 2025-09-30
 
