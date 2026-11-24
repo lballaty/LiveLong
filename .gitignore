@@ -69,3 +69,4 @@ chroma_data/
 
 # OS
 Thumbs.db
+.claude/settings.local.json
