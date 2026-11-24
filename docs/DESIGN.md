@@ -5,7 +5,7 @@
 ### System Architecture
 LiveLong ⊹ is a frontend-first Progressive Web App (PWA) located in `web-app/`, built with **Next.js 14 (App Router)**, **React 18**, **TypeScript 5**, and **Tailwind CSS 3.4**. It uses **IndexedDB** (via `idb`) and `localStorage` for offline-capable persistence, **Zustand** for state management, and `next-pwa` / Web Workers for offline caching and background timing without requiring a backend API.
 
-> **Source-of-Truth Shift:** This repository previously contained a `TestRepo` Node.js/Supabase bootstrap (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) and a Flutter prototype (`focus_productivity_timer/`). Both are **superseded** by `web-app/`.
+> **Source-of-Truth Shift:** This repository previously contained a `TestRepo` Node.js/Supabase bootstrap (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) and a Flutter prototype (`focus_productivity_timer/`). Both are **superseded** by `web-app/`. The Flutter prototype is **retained** (operator decision, 2026-11-24) as the starting point for a possible future native Flutter build; it is not maintained alongside `web-app/`.
 
 ### Design Principles
 - **Offline-First**: Core timer, breathing, and longevity series work without network connectivity.

@@ -27,7 +27,8 @@ If you are in the `livelong` fleet, read your inbox at `~/.ai-dev-dotfiles/.coor
 - **Active app:** `web-app/`, an offline-first Progressive Web App with no backend.
 - **Stack:** Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4, Zustand, IndexedDB via `idb`, `next-pwa`.
 - **Tests:** Jest + React Testing Library + `fake-indexeddb` (unit), Playwright (E2E, desktop and mobile).
-- **Superseded, do not build on:** the `TestRepo` scaffold (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) and the Flutter prototype (`focus_productivity_timer/`).
+- **Superseded, do not build on:** the `TestRepo` scaffold (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`).
+- **Kept for later:** the Flutter prototype (`focus_productivity_timer/`) is retained as the starting point for a possible future native Flutter build. It is not the active app; do not change it unless the task is that Flutter build.
 
 Build on the `Unified*` implementation (`UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, `UnifiedProfileManager`). Older parallel engines, stores, and displays still exist; `docs/DESIGN.md` → *Known Architectural Consolidation Gap* lists them.
 

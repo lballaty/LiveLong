@@ -4,7 +4,8 @@
 
 > **Source-of-Truth Note:** `docs/TODO.md` is the single canonical tracker for this repository.
 > - `web-app/TODO.md` is a historical sprint log from 2025-09-30 and is **superseded** by this file.
-> - `focus_productivity_timer/` (Flutter prototype) and root `TestRepo` bootstrap files (`package.json`, `src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) are **superseded** by `web-app/`.
+> - Root `TestRepo` bootstrap files (`package.json`, `src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) are **superseded** by `web-app/`.
+> - `focus_productivity_timer/` (Flutter prototype) is superseded as the active app but **retained** for a possible future native Flutter build (operator decision, 2026-11-24).
 
 ---
 
@@ -59,8 +60,9 @@
 - [ ] Run `npm run test:e2e` against `web-app/` and record pass/fail results
 
 ### 5. Repo Hygiene & Docs (`open`)
-- [ ] Update root `CLAUDE.md` and `GEMINI.md` (still reference `TestRepo`, `pytest`, `Supabase`, `ChromaDB`, `Redis`)
-- [ ] Decide whether to archive/remove legacy `TestRepo` root directories (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) and `focus_productivity_timer/`
+- [x] Update root `CLAUDE.md`, `.claude/CLAUDE.md`, and `GEMINI.md` to the `web-app/` PWA (`da3589e`, `a5c05a4`); untrack `.claude/settings.local.json` (`bb2ce08`)
+- [x] Decide `focus_productivity_timer/`: **keep** for a possible future native Flutter build (operator decision, 2026-11-24)
+- [ ] Decide whether to archive/remove legacy `TestRepo` root directories (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`)
 - [ ] Clean up untracked scratch/generated files in repo root (`plans/plan-reconciliation.yaml` still references old `TestRepo` path)
 
 ---

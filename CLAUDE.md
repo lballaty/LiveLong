@@ -36,7 +36,11 @@ Continue iterating until all TODO items are complete or you need clarification.
 - **Backend**: none. All data is local to the browser.
 - **Created**: 2025-09-30
 
-**Superseded, do not build on:** the original `TestRepo` scaffold (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`) and the Flutter prototype (`focus_productivity_timer/`). `docs/DESIGN.md` is the canonical architecture record, including the open consolidation gap (parallel timer engines, stores, and displays in `web-app/src/`).
+**Superseded, do not build on:** the original `TestRepo` scaffold (`src/`, `tests/`, `cache/`, `cloud/`, `database/`, `vectordb/`).
+
+**Kept for later:** the Flutter prototype (`focus_productivity_timer/`) is retained as the starting point for a possible future native Flutter build. It is not the active app; do not change it unless the task is that Flutter build.
+
+`docs/DESIGN.md` is the canonical architecture record, including the open consolidation gap (parallel timer engines, stores, and displays in `web-app/src/`).
 
 ---
 

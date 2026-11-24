@@ -3,7 +3,7 @@
 ## Project Overview
 LiveLong is an offline-first Progressive Web App for longevity practice: focus timers, guided breathing, and exercise series (Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen). The app lives in `web-app/` and runs entirely in the browser with no backend.
 
-The earlier Flutter prototype (`focus_productivity_timer/`) and the `TestRepo` Node/Supabase scaffold are **superseded**. Do not follow Flutter, SQLite, or Supabase patterns from them. `docs/DESIGN.md` is the canonical architecture record.
+The `TestRepo` Node/Supabase scaffold is **superseded**. The earlier Flutter prototype (`focus_productivity_timer/`) is **kept** as the starting point for a possible future native Flutter build, but it is not the active app. Do not apply Flutter, SQLite, or Supabase patterns to `web-app/`, and do not change the Flutter prototype unless the task is that Flutter build. `docs/DESIGN.md` is the canonical architecture record.
 
 ## Tech Stack (ENFORCED)
 
