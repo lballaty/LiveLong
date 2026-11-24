@@ -1,0 +1,12 @@
+plan_file: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/plans/plan-2026-11-23-routine-session-editor-and-review.yaml
+updated_at: "2026-11-23T23:03:00Z"
+steps:
+  reserve-shared-files: succeeded
+  update-docs-and-trackers-initial: succeeded
+  extend-types-and-routine-data: succeeded
+  store-session-queue-and-review-controls: succeeded
+  routine-and-session-editor-ui: succeeded
+  external-asset-loader-hooks: succeeded
+  verify-tests-and-e2e: succeeded
+  sync-docs-and-trackers-final: succeeded
+  commit-and-release-locks: succeeded

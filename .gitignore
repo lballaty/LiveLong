@@ -70,3 +70,11 @@ chroma_data/
 # OS
 Thumbs.db
 .claude/settings.local.json
+
+# graphify output (regenerable)
+graphify-out/
+.graphifyprofiles.json
+
+# Links to shared project-config port registry
+port-registry.json
+PORT-RESERVATIONS.md
