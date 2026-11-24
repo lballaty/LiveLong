@@ -1,0 +1,201 @@
+{
+  "kind": "bundle-manifest",
+  "formatVersion": 1,
+  "bundle": "rajio-taiso",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "note": "DRAFT — Exported on operator direction (2026-11-23) ahead of the full drawing review (plan gate g-review-all), so LiveLong can start integrating. Drawings, timing and pack contents may still change before 1.0.0.",
+  "createdAt": "2026-11-23",
+  "source": {
+    "repo": "animation",
+    "commit": "1570f2c92a02408eeed033eff4d7d4ac965f5bf0",
+    "dirty": false
+  },
+  "runtime": {
+    "file": "runtime/exercise-figures-runtime.js",
+    "types": "runtime/exercise-figures-runtime.d.ts",
+    "version": "0.1.0-draft.1"
+  },
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "defaultCharacter": "robot-r1",
+  "exercises": [
+    {
+      "id": "rajio-taiso.neck-arm-stretch",
+      "version": "0.1.0-draft.1",
+      "file": "exercises/rajio-taiso.neck-arm-stretch.json",
+      "livelongStepId": "neck-arm-stretch",
+      "title": "Neck and arm stretches",
+      "variants": [
+        "standing"
+      ],
+      "views": [
+        "front",
+        "side"
+      ]
+    },
+    {
+      "id": "rajio-taiso.chest-expansion",
+      "version": "0.1.0-draft.1",
+      "file": "exercises/rajio-taiso.chest-expansion.json",
+      "livelongStepId": "chest-expansion",
+      "title": "Chest expansion",
+      "variants": [
+        "standing"
+      ],
+      "views": [
+        "front",
+        "side"
+      ]
+    },
+    {
+      "id": "rajio-taiso.side-bends",
+      "version": "0.1.0-draft.1",
+      "file": "exercises/rajio-taiso.side-bends.json",
+      "livelongStepId": "side-bends",
+      "title": "Side bends (Rajio Taiso)",
+      "variants": [
+        "standing"
+      ],
+      "views": [
+        "front",
+        "side"
+      ]
+    },
+    {
+      "id": "rajio-taiso.trunk-twists",
+      "version": "0.1.0-draft.1",
+      "file": "exercises/rajio-taiso.trunk-twists.json",
+      "livelongStepId": "trunk-twists",
+      "title": "Trunk twists",
+      "variants": [
+        "standing"
+      ],
+      "views": [
+        "front",
+        "side"
+      ]
+    }
+  ],
+  "characters": [
+    {
+      "id": "robot-r1",
+      "version": "0.1.0-draft.1",
+      "file": "characters/robot-r1.json",
+      "label": "Robot (R1)",
+      "approval": "pending-review"
+    },
+    {
+      "id": "m25-athletic",
+      "version": "0.1.0-draft.1",
+      "file": "characters/m25-athletic.json",
+      "label": "Man, about 25",
+      "approval": "approved"
+    },
+    {
+      "id": "f30-slim",
+      "version": "0.1.0-draft.1",
+      "file": "characters/f30-slim.json",
+      "label": "Woman, about 30",
+      "approval": "approved"
+    },
+    {
+      "id": "f72-stooped",
+      "version": "0.1.0-draft.1",
+      "file": "characters/f72-stooped.json",
+      "label": "Woman, about 72",
+      "approval": "approved"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "rajio-taiso.arm-swings",
+      "reason": "LiveLong switched arm-swings to the official Radio Taiso No. 1 form (arms across the front and out to the sides, knee bends, heel rise) on 2026-11-22; the current build is the earlier forward/back form. Rebuilding it is the next animation work item."
+    },
+    {
+      "id": "rajio-taiso.leg-swings",
+      "reason": "Not built yet: it needs the \"holding a chair\" support mode."
+    },
+    {
+      "id": "daily.squat",
+      "reason": "Not a LiveLong Rajio Taiso step (it is the animation repo's prototype exercise)."
+    }
+  ],
+  "limitations": [
+    "Standing variants only. No chair variant is built for any exercise yet; a player asked for variant \"chair\" draws standing and reports player.variant === \"standing\" (f72-stooped has chairByDefault: true).",
+    "robot-r1 is the default character but has not passed its own drawing review (approval: \"pending-review\"); m25-athletic, f30-slim and f72-stooped are approved.",
+    "Prerelease version: 0.1.0-draft.1 does not satisfy a \"^1\" range. Reference the exact version (animation.version: \"0.1.0-draft.1\") while the bundle is a draft.",
+    "The runtime draws only the appearance options in its catalogue (APPEARANCE_CATALOGUE); a new hairstyle or clothing style needs a runtime update, not just a pack.",
+    "WebKit (Safari, iOS) draws the ink-wobble filter visibly blurred (measured in headless WebKit 2287 on macOS, 2026-11-23; Chromium draws it sharp). Recommended: pass inkWobble: false on Safari/iOS. The runtime default stays on pending an operator decision.",
+    "Frame rate was measured in desktop headless engines, not on an iPhone or iPad. One player (front + side, the app's case) holds 60 fps in WebKit for every exercise x character with ink on and off (179-182 frames in 3 s). The 16-player preview grid does not (WebKit 21 fps with ink, 30 without; Chromium 45): it is a review page, not how the app uses the runtime."
+  ],
+  "files": {
+    "CHANGELOG.md": {
+      "sha256": "ca3f0e193fb8e9f0d95fd05c2f886184756e312722b113ec3ea0c31593539745",
+      "bytes": 3372
+    },
+    "LICENSE-line-art": {
+      "sha256": "d240fdf615421a2615dd1c8799874c3a108a1af135df7e31d9f132344b548687",
+      "bytes": 1530
+    },
+    "characters/f30-slim.json": {
+      "sha256": "001326c2de688462f70c2c50dc6c9dd17c019c2f83f98cf0d400530247355427",
+      "bytes": 589
+    },
+    "characters/f72-stooped.json": {
+      "sha256": "cdb54550874645e54b996e96087fe26e9ba3149de908785ec0a78a03aaa73bd4",
+      "bytes": 718
+    },
+    "characters/m25-athletic.json": {
+      "sha256": "8cd834b2fa0d7ad7e54aba3ec2c1963eaea5058b743628a93a82d1b6d9ea6be6",
+      "bytes": 588
+    },
+    "characters/robot-r1.json": {
+      "sha256": "fca46d08c572bc2977a90c00b43292a86ca311a26a7dd79c41ab3f5c21c462ea",
+      "bytes": 560
+    },
+    "exercises/rajio-taiso.chest-expansion.json": {
+      "sha256": "79346d6238e95963fb2454cc422244e617cc62ce3eb6b002574bf6a4ef98fdc5",
+      "bytes": 2097
+    },
+    "exercises/rajio-taiso.neck-arm-stretch.json": {
+      "sha256": "75f2db4f8536a4d745d1a80014806d5178d8df3b4c59e24dd60baaf2f00dcb00",
+      "bytes": 3569
+    },
+    "exercises/rajio-taiso.side-bends.json": {
+      "sha256": "166ceb181c246d3cc7c2c0d062574a04e27cc1882f9793939a3021b993339dfd",
+      "bytes": 1759
+    },
+    "exercises/rajio-taiso.trunk-twists.json": {
+      "sha256": "bf2baa3ba9f0f09d6947160197f9fd0e98bcc99d9e14afe6872ab0e23fbf3876",
+      "bytes": 2541
+    },
+    "preview.html": {
+      "sha256": "0def03178f3c275d25a389c50ace40340ff94486b8190978ea6b85b47c3033f6",
+      "bytes": 8416
+    },
+    "runtime/exercise-figures-runtime.d.ts": {
+      "sha256": "b4dc96a5860bff6e9ccfb95beb9bb5ef29e0789e702444a559a9b95f1784ff15",
+      "bytes": 9074
+    },
+    "runtime/exercise-figures-runtime.js": {
+      "sha256": "f80ee937e3e5ec4f857869802e1c67609c42f773cf02e5b6d09e9c9ffea903c1",
+      "bytes": 97504
+    },
+    "schema/bundle-manifest.schema.json": {
+      "sha256": "b9a7e3ea28e042fc333972fb9e4fdf000f4d454e8de38fd769fb320bb09f0434",
+      "bytes": 4180
+    },
+    "schema/character-pack.schema.json": {
+      "sha256": "d2011ca879493d65dfe477cd8b1b818894267a8fd680c00ac0523dca51472396",
+      "bytes": 3990
+    },
+    "schema/exercise-pack.schema.json": {
+      "sha256": "1bf0c5dd92c93a8971b51d64f243b6626d81238af25f4cdd033fc78ae40c5edc",
+      "bytes": 4552
+    },
+    "validate-bundle.mjs": {
+      "sha256": "aa0bef114bf4365d82d7b6356db06547494f654d6ff38552701cde72fd412463",
+      "bytes": 15812
+    }
+  }
+}

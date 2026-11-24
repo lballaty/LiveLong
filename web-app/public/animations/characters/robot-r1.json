@@ -1,0 +1,25 @@
+{
+  "kind": "character-pack",
+  "formatVersion": 1,
+  "id": "robot-r1",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "label": "Robot (R1)",
+  "approval": "pending-review",
+  "approvalNote": "Operator's chosen draft character (2026-11-23); its own review gate is still open.",
+  "body": {
+    "sex": "none",
+    "ageYears": 0,
+    "height": 95,
+    "build": "slim",
+    "kyphosis": 0,
+    "rom": {},
+    "pace": 1,
+    "chairByDefault": false
+  },
+  "appearance": {
+    "kind": "robot",
+    "visor": "band"
+  }
+}

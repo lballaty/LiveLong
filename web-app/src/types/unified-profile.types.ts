@@ -60,6 +60,7 @@ export interface UnifiedProfile {
 }
 
 export type CastCharacterId =
+  | 'robot-r1'
   | 'm25-athletic'
   | 'f30-slim'
   | 'm50-heavier'

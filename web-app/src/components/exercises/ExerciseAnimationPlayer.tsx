@@ -5,15 +5,22 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   CastCharacterId,
   ExerciseVariant,
   ExerciseViewMode,
   StepAnimationRef,
 } from '@/types/unified-profile.types';
+import {
+  CharacterPack,
+  ExerciseFiguresPlayer,
+  ExercisePack,
+  createExercisePlayer,
+} from '@/lib/animations/exercise-figures-runtime';
 
 export const CAST_LABELS: Record<CastCharacterId, string> = {
+  'robot-r1': 'Robot R1 (Draft Default)',
   'm25-athletic': 'Man ~25 (Athletic)',
   'f30-slim': 'Woman ~30 (Slim)',
   'm50-heavier': 'Man ~50 (Heavier)',
@@ -21,6 +28,13 @@ export const CAST_LABELS: Record<CastCharacterId, string> = {
   'f72-stooped': 'Woman ~72 (Gentle Stoop)',
   'm75-slim': 'Man ~75 (Slim)',
 };
+
+const BUNDLED_CHARACTERS = new Set<string>([
+  'robot-r1',
+  'm25-athletic',
+  'f30-slim',
+  'f72-stooped',
+]);
 
 interface ExerciseAnimationPlayerProps {
   stepId: string;
@@ -51,6 +65,8 @@ export default function ExerciseAnimationPlayer({
 }: ExerciseAnimationPlayerProps) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasExternalPack, setHasExternalPack] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const playerRef = useRef<ExerciseFiguresPlayer | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
@@ -64,23 +80,71 @@ export default function ExerciseAnimationPlayer({
   const viewList: Array<'front' | 'side'> =
     views === 'both' ? ['front', 'side'] : [views];
   const packLabel = animation?.pack || `rajio-taiso.${stepId}`;
+  const resolvedCharacter = BUNDLED_CHARACTERS.has(characterId) ? characterId : 'robot-r1';
+  const isRestOrStatic = phase === 'rest' || phase === 'cooldown' || !isPlaying || reducedMotion;
+  const activeClass = isRestOrStatic ? '' : `anim-${stepId}`;
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof fetch === 'undefined') return;
     let cancelled = false;
-    fetch(`/animations/${packLabel}/manifest.json`, { method: 'HEAD' })
-      .then((res) => {
-        if (!cancelled) setHasExternalPack(res.ok);
-      })
-      .catch(() => {
+
+    const loadAndMount = async () => {
+      try {
+        const [exRes, charRes] = await Promise.all([
+          fetch(`/animations/exercises/${packLabel}.json`),
+          fetch(`/animations/characters/${resolvedCharacter}.json`),
+        ]);
+        if (!exRes.ok || !charRes.ok) {
+          if (!cancelled) setHasExternalPack(false);
+          return;
+        }
+        const [exercisePack, characterPack] = (await Promise.all([
+          exRes.json(),
+          charRes.json(),
+        ])) as [ExercisePack, CharacterPack];
+        if (cancelled || !containerRef.current) return;
+
+        playerRef.current?.destroy();
+        containerRef.current.innerHTML = '';
+        const player = createExercisePlayer({
+          exercisePack,
+          characterPack,
+          variant,
+          views: viewList,
+          inkWobble: false,
+        });
+        player.mount(containerRef.current);
+        playerRef.current = player;
+        setHasExternalPack(true);
+        if (isRestOrStatic) {
+          player.staticPose();
+        } else {
+          player.play();
+        }
+      } catch {
         if (!cancelled) setHasExternalPack(false);
-      });
+      }
+    };
+
+    loadAndMount();
+
     return () => {
       cancelled = true;
+      playerRef.current?.destroy();
+      playerRef.current = null;
     };
-  }, [packLabel]);
-  const isRestOrStatic = phase === 'rest' || phase === 'cooldown' || !isPlaying || reducedMotion;
-  const activeClass = isRestOrStatic ? '' : `anim-${stepId}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [packLabel, resolvedCharacter, variant, views]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (isRestOrStatic) {
+      player.staticPose();
+    } else {
+      player.play();
+    }
+  }, [isRestOrStatic]);
 
   return (
     <div
@@ -149,6 +213,14 @@ export default function ExerciseAnimationPlayer({
       `}</style>
 
       <div
+        ref={containerRef}
+        className={`w-full flex items-center justify-center [&_.exercise-figures]:flex [&_.exercise-figures]:gap-4 [&_.exercise-figures]:justify-center [&_svg]:max-h-52 ${
+          hasExternalPack ? '' : 'hidden'
+        }`}
+      />
+
+      {!hasExternalPack && (
+      <div
         className={`w-full grid place-items-center gap-4 ${
           viewList.length === 2 ? 'grid-cols-2' : 'grid-cols-1'
         }`}
@@ -212,6 +284,7 @@ export default function ExerciseAnimationPlayer({
           </div>
         ))}
       </div>
+      )}
 
       <div className="w-full flex flex-wrap justify-between items-center gap-2 mt-4 text-[11px] text-slate-400">
         <span>

@@ -1,0 +1,154 @@
+{
+  "kind": "exercise-pack",
+  "formatVersion": 1,
+  "id": "rajio-taiso.neck-arm-stretch",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "series": "rajio-taiso",
+  "step": "neck-arm-stretch",
+  "livelongStepId": "neck-arm-stretch",
+  "title": "Neck and arm stretches",
+  "views": [
+    "front",
+    "side"
+  ],
+  "tempoBpm": 48,
+  "cycleBeats": 18,
+  "mirror": false,
+  "variants": {
+    "standing": {
+      "support": "standing",
+      "rest": {
+        "shoulderL.abd": 6,
+        "shoulderR.abd": 6,
+        "shoulderL.flex": 0,
+        "shoulderR.flex": 0,
+        "elbowL.flex": 6,
+        "elbowR.flex": 6,
+        "forearmL.pron": 75,
+        "forearmR.pron": 75,
+        "neck.rot": 0,
+        "neck.flex": 0
+      },
+      "staticBeat": 3,
+      "keyframes": [
+        {
+          "beat": 0,
+          "label": "rest",
+          "pose": {}
+        },
+        {
+          "beat": 1.5,
+          "label": "arms rising in front",
+          "pose": {
+            "shoulderL.flex": {
+              "rom": 0.475
+            },
+            "shoulderR.flex": {
+              "rom": 0.475
+            },
+            "shoulderL.abd": 3,
+            "shoulderR.abd": 3,
+            "elbowL.flex": 3,
+            "elbowR.flex": 3,
+            "neck.flex": -4,
+            "forearmL.pron": 0,
+            "forearmR.pron": 0
+          }
+        },
+        {
+          "beat": 3,
+          "label": "arms overhead",
+          "pose": {
+            "shoulderL.flex": {
+              "rom": 0.95
+            },
+            "shoulderR.flex": {
+              "rom": 0.95
+            },
+            "shoulderL.abd": 0,
+            "shoulderR.abd": 0,
+            "elbowL.flex": 0,
+            "elbowR.flex": 0,
+            "neck.flex": -8,
+            "forearmL.pron": 80,
+            "forearmR.pron": 80
+          }
+        },
+        {
+          "beat": 4.6,
+          "label": "arms out to the sides",
+          "pose": {
+            "shoulderL.abd": 90,
+            "shoulderR.abd": 90,
+            "neck.flex": 0,
+            "forearmL.pron": -80,
+            "forearmR.pron": -80
+          }
+        },
+        {
+          "beat": 4.62,
+          "label": "arms out (representation switch)",
+          "ease": "hold",
+          "pose": {
+            "shoulderL.flex": 0,
+            "shoulderR.flex": 0,
+            "forearmL.pron": 80,
+            "forearmR.pron": 80
+          }
+        },
+        {
+          "beat": 6,
+          "label": "arms down at the sides",
+          "pose": {
+            "shoulderL.abd": 6,
+            "shoulderR.abd": 6,
+            "shoulderL.flex": 0,
+            "shoulderR.flex": 0,
+            "elbowL.flex": 6,
+            "elbowR.flex": 6,
+            "forearmL.pron": 75,
+            "forearmR.pron": 75,
+            "neck.flex": 0
+          }
+        },
+        {
+          "beat": 8,
+          "label": "head turned left",
+          "pose": {
+            "neck.rot": {
+              "rom": 0.8
+            }
+          }
+        },
+        {
+          "beat": 10,
+          "label": "head turned left, hold",
+          "pose": {}
+        },
+        {
+          "beat": 12,
+          "label": "head centred",
+          "pose": {
+            "neck.rot": 0
+          }
+        },
+        {
+          "beat": 14,
+          "label": "head turned right",
+          "pose": {
+            "neck.rot": {
+              "rom": -0.8
+            }
+          }
+        },
+        {
+          "beat": 16,
+          "label": "head turned right, hold",
+          "pose": {}
+        }
+      ]
+    }
+  }
+}

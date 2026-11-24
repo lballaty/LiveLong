@@ -1,0 +1,28 @@
+{
+  "kind": "character-pack",
+  "formatVersion": 1,
+  "id": "m25-athletic",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "label": "Man, about 25",
+  "approval": "approved",
+  "approvalNote": "Approved at gate g1 (2026-11-21).",
+  "body": {
+    "sex": "male",
+    "ageYears": 25,
+    "height": 95,
+    "build": "athletic",
+    "kyphosis": 0,
+    "rom": {},
+    "pace": 1,
+    "chairByDefault": false
+  },
+  "appearance": {
+    "hair": "short",
+    "glasses": false,
+    "top": "tshirt",
+    "bottom": "shorts",
+    "shoes": "sneakers"
+  }
+}

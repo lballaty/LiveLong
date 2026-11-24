@@ -1,0 +1,89 @@
+{
+  "kind": "exercise-pack",
+  "formatVersion": 1,
+  "id": "rajio-taiso.chest-expansion",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "series": "rajio-taiso",
+  "step": "chest-expansion",
+  "livelongStepId": "chest-expansion",
+  "title": "Chest expansion",
+  "views": [
+    "front",
+    "side"
+  ],
+  "tempoBpm": 44,
+  "cycleBeats": 4,
+  "mirror": false,
+  "variants": {
+    "standing": {
+      "support": "standing",
+      "stance": "shoulder",
+      "rest": {
+        "shoulderL.abd": 6,
+        "shoulderR.abd": 6,
+        "shoulderL.flex": 0,
+        "shoulderR.flex": 0,
+        "elbowL.flex": 6,
+        "elbowR.flex": 6,
+        "forearmL.pron": 75,
+        "forearmR.pron": 75,
+        "thoracic.flex": 0,
+        "neck.flex": 0
+      },
+      "staticBeat": 2,
+      "keyframes": [
+        {
+          "beat": 0,
+          "label": "arms crossed low",
+          "pose": {
+            "shoulderL.flex": 25,
+            "shoulderR.flex": 25,
+            "shoulderL.abd": -15,
+            "shoulderR.abd": -15,
+            "thoracic.flex": 0,
+            "neck.flex": 0,
+            "forearmL.pron": 75,
+            "forearmR.pron": 75
+          }
+        },
+        {
+          "beat": 1,
+          "label": "arms swinging out",
+          "pose": {
+            "shoulderL.flex": 10,
+            "shoulderR.flex": 10,
+            "shoulderL.abd": 40,
+            "shoulderR.abd": 40,
+            "forearmL.pron": 30,
+            "forearmR.pron": 30
+          }
+        },
+        {
+          "beat": 2,
+          "label": "chest open",
+          "pose": {
+            "shoulderL.flex": -10,
+            "shoulderR.flex": -10,
+            "shoulderL.abd": {
+              "rom": 0.72
+            },
+            "shoulderR.abd": {
+              "rom": 0.72
+            },
+            "thoracic.flex": -8,
+            "neck.flex": -8,
+            "forearmL.pron": -80,
+            "forearmR.pron": -80
+          }
+        },
+        {
+          "beat": 3,
+          "label": "chest open, hold",
+          "pose": {}
+        }
+      ]
+    }
+  }
+}

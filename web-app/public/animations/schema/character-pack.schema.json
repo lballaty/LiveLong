@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:animation:schema:character-pack:1",
+  "title": "Character pack",
+  "description": "One cast member as data only: body settings (the runtime derives proportions, posture and range of motion from them) and appearance choices from the runtime's drawing catalogue. A new hairstyle or clothing style is drawing code, so it needs a runtime update, not just a pack.",
+  "type": "object",
+  "required": ["kind", "formatVersion", "id", "version", "status", "minRuntimeVersion", "label", "approval", "body", "appearance"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "character-pack" },
+    "formatVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "version": { "$ref": "#/$defs/semver" },
+    "status": { "enum": ["draft", "released"] },
+    "minRuntimeVersion": { "$ref": "#/$defs/semver" },
+    "label": { "type": "string", "minLength": 1 },
+    "approval": { "enum": ["approved", "pending-review"], "description": "Whether the operator approved this character's drawing at its gate" },
+    "approvalNote": { "type": "string" },
+    "body": {
+      "type": "object",
+      "required": ["sex", "ageYears", "height", "build", "kyphosis", "rom", "pace", "chairByDefault"],
+      "additionalProperties": false,
+      "properties": {
+        "sex": { "enum": ["male", "female", "none"] },
+        "ageYears": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0, "description": "Standing height in figure units; the reference figure is 95" },
+        "build": { "enum": ["athletic", "slim", "average", "heavier", "fuller"] },
+        "kyphosis": { "type": "number", "minimum": 0, "maximum": 40, "description": "Extra thoracic flexion in degrees carried in every pose" },
+        "rom": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pelvis": { "$ref": "#/$defs/romScale" },
+            "spine": { "$ref": "#/$defs/romScale" },
+            "neck": { "$ref": "#/$defs/romScale" },
+            "shoulder": { "$ref": "#/$defs/romScale" },
+            "elbow": { "$ref": "#/$defs/romScale" },
+            "wrist": { "$ref": "#/$defs/romScale" },
+            "hip": { "$ref": "#/$defs/romScale" },
+            "knee": { "$ref": "#/$defs/romScale" },
+            "ankle": { "$ref": "#/$defs/romScale" }
+          }
+        },
+        "pace": { "type": "number", "exclusiveMinimum": 0, "maximum": 2, "description": "Tempo multiplier; 1 = the exercise's own tempo" },
+        "chairByDefault": { "type": "boolean" }
+      }
+    },
+    "appearance": {
+      "oneOf": [
+        { "$ref": "#/$defs/humanAppearance" },
+        { "$ref": "#/$defs/robotAppearance" }
+      ]
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "romScale": { "type": "number", "exclusiveMinimum": 0, "maximum": 1.5 },
+    "humanAppearance": {
+      "type": "object",
+      "required": ["hair", "glasses", "top", "bottom", "shoes"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "human" },
+        "hair": { "enum": ["short", "ponytail", "receding", "bob", "bun", "thinning"] },
+        "glasses": { "type": "boolean" },
+        "top": { "enum": ["tshirt", "tank", "longsleeve", "cardigan", "sweater"] },
+        "bottom": { "enum": ["shorts", "leggings", "joggers", "pants", "slacks", "trousers"] },
+        "shoes": { "enum": ["sneakers"] }
+      }
+    },
+    "robotAppearance": {
+      "type": "object",
+      "required": ["kind", "visor"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "robot" },
+        "visor": { "enum": ["band"] }
+      }
+    }
+  }
+}

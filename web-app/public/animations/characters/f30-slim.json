@@ -1,0 +1,28 @@
+{
+  "kind": "character-pack",
+  "formatVersion": 1,
+  "id": "f30-slim",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "label": "Woman, about 30",
+  "approval": "approved",
+  "approvalNote": "Approved at gate g2 (2026-11-21).",
+  "body": {
+    "sex": "female",
+    "ageYears": 30,
+    "height": 88.4,
+    "build": "slim",
+    "kyphosis": 0,
+    "rom": {},
+    "pace": 1,
+    "chairByDefault": false
+  },
+  "appearance": {
+    "hair": "ponytail",
+    "glasses": false,
+    "top": "tank",
+    "bottom": "leggings",
+    "shoes": "sneakers"
+  }
+}

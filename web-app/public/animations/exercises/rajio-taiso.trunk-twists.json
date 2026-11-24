@@ -1,0 +1,107 @@
+{
+  "kind": "exercise-pack",
+  "formatVersion": 1,
+  "id": "rajio-taiso.trunk-twists",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "series": "rajio-taiso",
+  "step": "trunk-twists",
+  "livelongStepId": "trunk-twists",
+  "title": "Trunk twists",
+  "views": [
+    "front",
+    "side"
+  ],
+  "tempoBpm": 56,
+  "cycleBeats": 4,
+  "mirror": false,
+  "variants": {
+    "standing": {
+      "support": "standing",
+      "rest": {
+        "shoulderL.abd": 6,
+        "shoulderR.abd": 6,
+        "shoulderL.flex": 0,
+        "shoulderR.flex": 0,
+        "elbowL.flex": 6,
+        "elbowR.flex": 6,
+        "forearmL.pron": 75,
+        "forearmR.pron": 75,
+        "spine.twist": 0,
+        "neck.rot": 0
+      },
+      "staticBeat": 1,
+      "keyframes": [
+        {
+          "beat": 0,
+          "label": "facing front",
+          "pose": {
+            "shoulderL.abd": 6,
+            "shoulderR.abd": 6,
+            "shoulderL.flex": 0,
+            "shoulderR.flex": 0,
+            "elbowL.flex": 6,
+            "elbowR.flex": 6,
+            "forearmL.pron": 75,
+            "forearmR.pron": 75,
+            "spine.twist": 0,
+            "neck.rot": 0
+          }
+        },
+        {
+          "beat": 1,
+          "label": "twist left",
+          "pose": {
+            "spine.twist": {
+              "rom": 0.85
+            },
+            "neck.rot": {
+              "rom": 0.6
+            },
+            "shoulderR.flex": 55,
+            "shoulderR.abd": -20,
+            "elbowR.flex": 25,
+            "shoulderL.flex": -25,
+            "shoulderL.abd": 25,
+            "elbowL.flex": 50
+          }
+        },
+        {
+          "beat": 2,
+          "label": "passing front",
+          "pose": {
+            "shoulderL.abd": 6,
+            "shoulderR.abd": 6,
+            "shoulderL.flex": 0,
+            "shoulderR.flex": 0,
+            "elbowL.flex": 6,
+            "elbowR.flex": 6,
+            "forearmL.pron": 75,
+            "forearmR.pron": 75,
+            "spine.twist": 0,
+            "neck.rot": 0
+          }
+        },
+        {
+          "beat": 3,
+          "label": "twist right",
+          "pose": {
+            "spine.twist": {
+              "rom": -0.85
+            },
+            "neck.rot": {
+              "rom": -0.6
+            },
+            "shoulderL.flex": 55,
+            "shoulderL.abd": -20,
+            "elbowL.flex": 25,
+            "shoulderR.flex": -25,
+            "shoulderR.abd": 25,
+            "elbowR.flex": 50
+          }
+        }
+      ]
+    }
+  }
+}

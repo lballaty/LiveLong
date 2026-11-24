@@ -1,0 +1,35 @@
+{
+  "kind": "character-pack",
+  "formatVersion": 1,
+  "id": "f72-stooped",
+  "version": "0.1.0-draft.1",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.1",
+  "label": "Woman, about 72",
+  "approval": "approved",
+  "approvalNote": "Approved at gate g2 (2026-11-21).",
+  "body": {
+    "sex": "female",
+    "ageYears": 72,
+    "height": 85.5,
+    "build": "average",
+    "kyphosis": 18,
+    "rom": {
+      "spine": 0.65,
+      "shoulder": 0.8,
+      "hip": 0.7,
+      "knee": 0.8,
+      "ankle": 0.8,
+      "neck": 0.7
+    },
+    "pace": 0.85,
+    "chairByDefault": true
+  },
+  "appearance": {
+    "hair": "bun",
+    "glasses": true,
+    "top": "cardigan",
+    "bottom": "slacks",
+    "shoes": "sneakers"
+  }
+}

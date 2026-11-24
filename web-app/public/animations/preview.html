@@ -1,0 +1,168 @@
+<!doctype html>
+<!--
+  File: preview.html (bundle preview; source scripts/preview.html in the animation repo, copied by scripts/export.ts)
+  Description: Plays every exercise x character of this bundle, front and side views, using only the files in this
+    folder (runtime/, exercises/, characters/, manifest.json). Serve the folder over HTTP (browsers block fetch()
+    from file://), e.g. `python3 -m http.server 8000` inside it. URL options: ?exercise=<id> ?character=<id>
+    ?ink=0 (no ink-wobble filter) ?still=1 (reduced-motion still pose) ?duration=<seconds> (step length).
+  Author: Libor Ballaty <liborballaty@gmail.com>, with Claude Opus 5.5 (animation-lead-038475, draft export)
+  Created: 2026-11-23
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exercise figures — bundle preview</title>
+<style>
+  :root { font-family: system-ui, -apple-system, sans-serif; color: #1c1c1c; background: #fff; }
+  body { margin: 16px; }
+  h1 { font-size: 1.25rem; margin: 0 0 6px; }
+  .draft { background: #fff3cd; border: 1px solid #e0b100; padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-size: .9rem; }
+  .draft strong { letter-spacing: .05em; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 10px 0; font-size: .9rem; }
+  .controls input[type=number] { width: 5em; }
+  table { border-collapse: collapse; }
+  th, td { border: 1px solid #ddd; padding: 4px; vertical-align: top; }
+  th { font-weight: 600; font-size: .8rem; text-align: left; background: #fafafa; }
+  th small { display: block; font-weight: 400; color: #666; }
+  td { width: 300px; }
+  .exercise-figures { display: flex; gap: 2px; }
+  .exercise-card { flex: 1 1 0; min-width: 0; }
+  .exercise-card svg { display: block; width: 100%; height: auto; }
+  .views { display: flex; font-size: .7rem; color: #888; }
+  .views span { flex: 1; text-align: center; }
+  details { margin: 10px 0; font-size: .85rem; }
+  #error { color: #a00; font-weight: 600; }
+  .single td { width: 640px; }
+</style>
+</head>
+<body>
+<h1>Exercise figures — <span id="title">bundle preview</span></h1>
+<div class="draft" id="draft" hidden></div>
+<div class="controls">
+  <button id="play" type="button">Pause</button>
+  <button id="restart" type="button">Restart</button>
+  <label><input id="ink" type="checkbox" checked> Ink wobble</label>
+  <label><input id="still" type="checkbox"> Reduced motion (still pose)</label>
+  <label>Step length <input id="duration" type="number" min="0" step="1" placeholder="loop"> s</label>
+  <span id="meta"></span>
+</div>
+<div id="error" role="alert"></div>
+<div id="grid"></div>
+<details><summary>Excluded from this bundle, and known limits</summary><ul id="excluded"></ul><ul id="limits"></ul></details>
+
+<script type="module">
+import { createExercisePlayer, RUNTIME_VERSION } from './runtime/exercise-figures-runtime.js';
+
+const q = new URLSearchParams(location.search);
+const $ = (id) => document.getElementById(id);
+const state = {
+  ink: q.get('ink') !== '0',
+  still: q.get('still') === '1' || matchMedia('(prefers-reduced-motion: reduce)').matches,
+  duration: q.has('duration') ? Number(q.get('duration')) : undefined,
+  playing: true,
+};
+const preview = { ready: false, players: [], manifest: null, errors: [] };
+window.__preview = preview;
+
+async function load(rel) {
+  const res = await fetch(`./${rel}`);
+  if (!res.ok) throw new Error(`${rel}: HTTP ${res.status}`);
+  return res.json();
+}
+
+function li(parent, html) { const el = document.createElement('li'); el.innerHTML = html; parent.appendChild(el); }
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function build(manifest, exercises, characters) {
+  for (const { player } of preview.players) player.destroy();
+  preview.players = [];
+  const grid = $('grid');
+  grid.replaceChildren();
+  const table = document.createElement('table');
+  if (exercises.length === 1 && characters.length === 1) table.className = 'single';
+  const head = table.insertRow();
+  head.appendChild(document.createElement('th'));
+  for (const e of exercises) {
+    const th = document.createElement('th');
+    th.innerHTML = `${esc(e.title)}<small>${esc(e.id)} · LiveLong step <code>${esc(e.livelongStepId ?? '—')}</code></small>`;
+    head.appendChild(th);
+  }
+  for (const c of characters) {
+    const row = table.insertRow();
+    const th = document.createElement('th');
+    const isDefault = c.id === manifest.defaultCharacter;
+    th.innerHTML = `${esc(c.label)}${isDefault ? ' (default)' : ''}<small>${esc(c.id)} · ${esc(c.approval)}</small>`;
+    row.appendChild(th);
+    for (const e of exercises) {
+      const td = row.insertCell();
+      const views = document.createElement('div');
+      views.className = 'views';
+      views.innerHTML = e.views.map((v) => `<span>${v}</span>`).join('');
+      td.appendChild(views);
+      const player = createExercisePlayer({ exercisePack: e, characterPack: c, inkWobble: state.ink, durationSeconds: state.duration });
+      player.mount(td);
+      if (state.still) player.staticPose(); else if (state.playing) player.play();
+      preview.players.push({ exercise: e.id, character: c.id, player });
+    }
+  }
+  grid.appendChild(table);
+}
+
+try {
+  const manifest = await load('manifest.json');
+  preview.manifest = manifest;
+  const only = (list, key) => (q.has(key) ? list.filter((x) => x.id === q.get(key)) : list);
+  const exercises = await Promise.all(only(manifest.exercises, 'exercise').map((e) => load(e.file)));
+  const characters = await Promise.all(only(manifest.characters, 'character').map((c) => load(c.file)));
+  characters.sort((a, b) => (b.id === manifest.defaultCharacter) - (a.id === manifest.defaultCharacter));
+
+  $('title').textContent = `${manifest.bundle} ${manifest.version}`;
+  $('meta').textContent = `runtime ${RUNTIME_VERSION} · ${exercises.length} exercises × ${characters.length} characters`;
+  if (manifest.status === 'draft') {
+    $('draft').hidden = false;
+    const note = manifest.note ?? 'Draft bundle.';
+    $('draft').innerHTML = /^DRAFT\b/.test(note) ? esc(note).replace(/^DRAFT/, '<strong>DRAFT</strong>') : `<strong>DRAFT</strong> — ${esc(note)}`;
+  }
+  for (const x of manifest.excluded) li($('excluded'), `<strong>Excluded</strong> <code>${esc(x.id)}</code>: ${esc(x.reason)}`);
+  for (const l of manifest.limitations) li($('limits'), esc(l));
+  $('ink').checked = state.ink;
+  $('still').checked = state.still;
+  if (state.duration !== undefined) $('duration').value = String(state.duration);
+
+  const rebuild = () => build(manifest, exercises, characters);
+  rebuild();
+  const syncPlay = () => { $('play').textContent = state.playing && !state.still ? 'Pause' : 'Play'; };
+  syncPlay();
+  $('play').addEventListener('click', () => {
+    state.playing = !(state.playing && !state.still);
+    if (state.playing) { state.still = false; $('still').checked = false; }
+    for (const { player } of preview.players) state.playing ? player.play() : player.pause();
+    syncPlay();
+  });
+  $('restart').addEventListener('click', () => {
+    state.still = false; state.playing = true; $('still').checked = false;
+    for (const { player } of preview.players) { player.seek(0); player.play(); }
+    syncPlay();
+  });
+  $('ink').addEventListener('change', () => { state.ink = $('ink').checked; rebuild(); });
+  $('still').addEventListener('change', () => {
+    state.still = $('still').checked;
+    for (const { player } of preview.players) state.still ? player.staticPose() : (state.playing && player.play());
+    syncPlay();
+  });
+  $('duration').addEventListener('change', () => {
+    const v = $('duration').value.trim();
+    state.duration = v === '' ? undefined : Number(v);
+    for (const { player } of preview.players) { player.setDuration(state.duration); player.seek(0); if (!state.still && state.playing) player.play(); }
+  });
+  preview.ready = true;
+} catch (e) {
+  preview.errors.push(String(e));
+  const hint = location.protocol === 'file:' ? ' Serve this folder over HTTP (for example `python3 -m http.server` inside it); browsers block fetch() from file://.' : '';
+  $('error').textContent = `Preview failed: ${e.code ? `[${e.code}] ` : ''}${e.message}.${hint}`;
+  console.error('[exercise-figures preview]', e.code ?? 'PREVIEW_ERROR', e.message, e.details ?? {});
+}
+</script>
+</body>
+</html>

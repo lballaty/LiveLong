@@ -34,7 +34,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       durationMinutes: 1,
       restDurationMinutes: 0.25, // 15 seconds
       instructions: 'Slowly rotate neck, stretch arms up and out',
-      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '^1' }
+      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '0.1.0-draft.1' }
     },
     {
       id: 'arm-swings',
@@ -52,7 +52,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       durationMinutes: 1,
       restDurationMinutes: 0.25,
       instructions: 'Bring arms back to open chest, breathe deeply',
-      animation: { pack: 'rajio-taiso.chest-expansion', version: '^1' }
+      animation: { pack: 'rajio-taiso.chest-expansion', version: '0.1.0-draft.1' }
     },
     {
       id: 'side-bends',
@@ -61,7 +61,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       durationMinutes: 1,
       restDurationMinutes: 0.25,
       instructions: 'Bend to each side, reach arm overhead',
-      animation: { pack: 'rajio-taiso.side-bends', version: '^1' }
+      animation: { pack: 'rajio-taiso.side-bends', version: '0.1.0-draft.1' }
     },
     {
       id: 'trunk-twists',
@@ -70,7 +70,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       durationMinutes: 1,
       restDurationMinutes: 0.25,
       instructions: 'Rotate torso left and right with arms extended',
-      animation: { pack: 'rajio-taiso.trunk-twists', version: '^1' }
+      animation: { pack: 'rajio-taiso.trunk-twists', version: '0.1.0-draft.1' }
     },
     {
       id: 'leg-swings',

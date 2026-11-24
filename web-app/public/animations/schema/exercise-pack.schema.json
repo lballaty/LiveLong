@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:animation:schema:exercise-pack:1",
+  "title": "Exercise pack",
+  "description": "One exercise-type variation as data only: timing, front/side views, standing (and later chair) choreography as keyframes on rig DOFs and whole-body channels. Values are degrees, figure units, or {rom: fraction} of the character's own range. Read by the exercise-figures runtime; never executed.",
+  "type": "object",
+  "required": ["kind", "formatVersion", "id", "version", "status", "minRuntimeVersion", "series", "step", "title", "views", "tempoBpm", "cycleBeats", "mirror", "variants"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "exercise-pack" },
+    "formatVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*\\.[a-z0-9]+(-[a-z0-9]+)*$", "description": "<series>.<step>, e.g. rajio-taiso.side-bends" },
+    "version": { "$ref": "#/$defs/semver" },
+    "status": { "enum": ["draft", "released"] },
+    "minRuntimeVersion": { "$ref": "#/$defs/semver" },
+    "series": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "step": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "livelongStepId": { "type": "string", "minLength": 1, "description": "The LiveLong step id this pack animates" },
+    "title": { "type": "string", "minLength": 1 },
+    "views": { "type": "array", "items": { "enum": ["front", "side"] }, "minItems": 1, "uniqueItems": true },
+    "tempoBpm": { "type": "number", "exclusiveMinimum": 0 },
+    "cycleBeats": { "type": "number", "exclusiveMinimum": 0 },
+    "mirror": { "type": "boolean", "description": "Odd cycles swap left and right" },
+    "variants": {
+      "type": "object",
+      "required": ["standing"],
+      "additionalProperties": false,
+      "properties": {
+        "standing": { "$ref": "#/$defs/variant" },
+        "chair": { "$ref": "#/$defs/variant" }
+      }
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "variant": {
+      "type": "object",
+      "required": ["support", "rest", "keyframes"],
+      "additionalProperties": false,
+      "properties": {
+        "support": { "enum": ["standing", "single-leg", "chair"] },
+        "stance": { "enum": ["together", "natural", "hip", "shoulder", "wide", "extra-wide"] },
+        "rest": { "$ref": "#/$defs/pose" },
+        "keyframes": { "type": "array", "items": { "$ref": "#/$defs/keyframe" } },
+        "staticBeat": { "type": "number", "minimum": 0, "description": "Beat shown when motion is reduced" }
+      }
+    },
+    "keyframe": {
+      "type": "object",
+      "required": ["beat", "pose"],
+      "additionalProperties": false,
+      "properties": {
+        "beat": { "type": "number", "minimum": 0 },
+        "label": { "type": "string" },
+        "pose": { "$ref": "#/$defs/pose" },
+        "ease": { "enum": ["smooth", "minJerk", "linear", "hold"] }
+      }
+    },
+    "pose": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/poseKey" },
+      "additionalProperties": { "$ref": "#/$defs/target" }
+    },
+    "target": {
+      "oneOf": [
+        { "type": "number" },
+        { "type": "object", "required": ["rom"], "additionalProperties": false, "properties": { "rom": { "type": "number", "minimum": -1.5, "maximum": 1.5 } } }
+      ]
+    },
+    "poseKey": {
+      "enum": [
+        "pelvis.tilt", "pelvis.obliquity", "pelvis.yaw",
+        "lumbar.flex", "lumbar.lat", "lumbar.twist",
+        "thoracic.flex", "thoracic.lat", "thoracic.twist",
+        "neck.flex", "neck.lat", "neck.rot", "head.nod",
+        "shoulderL.flex", "shoulderL.abd", "shoulderL.rot", "shoulderR.flex", "shoulderR.abd", "shoulderR.rot",
+        "elbowL.flex", "elbowR.flex", "forearmL.pron", "forearmR.pron",
+        "wristL.flex", "wristL.dev", "wristR.flex", "wristR.dev",
+        "hipL.flex", "hipL.abd", "hipL.rot", "hipR.flex", "hipR.abd", "hipR.rot",
+        "kneeL.flex", "kneeR.flex",
+        "ankleL.dorsi", "ankleL.inv", "ankleR.dorsi", "ankleR.inv",
+        "footL.pitch", "footL.yaw", "footR.pitch", "footR.yaw", "toeL.ext", "toeR.ext",
+        "pelvis.x", "pelvis.y", "pelvis.z",
+        "stance.width", "footL.x", "footL.z", "footR.x", "footR.z",
+        "trunk.lean", "spine.lat", "spine.twist", "leg.shin", "leg.thigh"
+      ]
+    }
+  }
+}
