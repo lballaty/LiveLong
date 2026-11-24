@@ -16,7 +16,10 @@ test.describe('LiveLong Practice & Timer Functionality', () => {
     const timeDisplay = await page.textContent('[data-testid="time-display"]');
     expect(timeDisplay).toBe('00:30');
 
-    await expect(page.locator('[data-testid="exercise-animation-player"]')).toBeVisible();
+    const player = page.locator('[data-testid="exercise-animation-player"]');
+    await expect(player).toBeVisible();
+    await expect(player).toHaveAttribute('data-animation-source', 'external');
+    await expect(player.locator('.exercise-figures svg').first()).toBeVisible();
     const startButton = page.locator('[data-testid="start-focus-button"]');
     await expect(startButton).toBeVisible();
     await expect(startButton).toBeEnabled();

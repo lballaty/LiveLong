@@ -214,7 +214,7 @@ export default function ExerciseAnimationPlayer({
 
       <div
         ref={containerRef}
-        className={`w-full flex items-center justify-center [&_.exercise-figures]:flex [&_.exercise-figures]:gap-4 [&_.exercise-figures]:justify-center [&_svg]:max-h-52 ${
+        className={`w-full flex items-center justify-center [&_.exercise-figures]:flex [&_.exercise-figures]:flex-wrap [&_.exercise-figures]:gap-4 [&_.exercise-figures]:justify-center [&_svg]:w-40 [&_svg]:h-48 sm:[&_svg]:w-48 sm:[&_svg]:h-56 ${
           hasExternalPack ? '' : 'hidden'
         }`}
       />
