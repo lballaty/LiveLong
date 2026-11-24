@@ -10,8 +10,8 @@
 
 | Suite | Runner | Scope | Latest Verified Result |
 |---|---|---|---|
-| Unit & Component Tests | `npx jest --ci --maxWorkers=2` | Engines, stores, repositories, audio services, RTL modals/pickers | **11 / 11 suites, 80 / 80 passed** |
-| Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, controls, Rajio Taiso steps, responsive Desktop (`1280×800`) + Mobile (`390×844`) | **37 / 37 Desktop + 37 / 37 Mobile passed** |
+| Unit & Component Tests | `npx jest --ci --maxWorkers=2` | Engines, stores, repositories, audio services, RTL modals/pickers/settings | **12 / 12 suites, 82 / 82 passed** |
+| Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, full Settings, Rajio Taiso steps, responsive Desktop (`1280×800`) + Mobile (`390×844`) | **40 / 40 passed** |
 | Live-Browser User Journeys | Chrome via `chrome-devtools-mcp` ([browser-user-journeys.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-user-journeys.js)) | 8 multi-step end-to-end user journeys + full reload persistence | **15 / 15 passed (12 run + 3 post-reload)** |
 
 ---
@@ -39,7 +39,7 @@
 | **Session HUD** | Decluttered running view | `0` volume sliders in HUD; 3 compact mute pills (`Chimes`, `Script`, `Music`) + ARIA toggle | `browser-ui-suite.js` (`1.2`–`1.4`) | ✅ Passed |
 | **Session HUD** | Live animation & playback controls | `Start` animates SVG; `Pause` / `Resume` / `Stop` button states | `browser-ui-suite.js` (`1.5`–`1.8`) | ✅ Passed |
 | **Rajio Taiso** | All 6 steps + fallback boundary | Steps `1, 3, 4, 5` = `external`; Steps `2, 6` = `robot-poc`; `Prev Step` returns to 1 | `browser-ui-suite.js` (`1.9.1`–`1.10`) | ✅ Passed |
-| **Settings** | Audio sliders, bundle docs & `Front + Side` | 3 audio sliders, drop-in bundle info, `Front + Side` renders `2` SVGs | `browser-ui-suite.js` (`2.1`–`2.3`) | ✅ Passed |
+| **Settings** | Cast, posture, views, voices, volumes, toggles & live preview | 3 audio sliders, 4 toggles (Chimes, Script, Music, Haptic), Cast selector → live preview, `Woman`/`Man` voice, `Test Audio Cue`, `%` readouts, `Front`/`Side`/`Front + Side`, `Standing`/`Chair-Based` | `browser-ui-suite.js` (`2.1`–`2.6`) + [SettingsView.test.tsx](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/settings/__tests__/SettingsView.test.tsx) | ✅ Passed |
 | **Routines** | Category filters | `Exercises`, `Breathing`, `Focus Timers`, `All` isolate matching sections | `browser-ui-suite.js` (`3.1`–`3.3`) | ✅ Passed |
 | **Routines** | Card reordering | `←` / `→` buttons swap and restore card order | `browser-ui-suite.js` (`3.4`) | ✅ Passed |
 | **Routines** | Music & Chime preview + Audio modal | Music select + `▶` / `⏹` preview toggle + `🎛️` `RoutineAudioModal` (`3` sliders) | `browser-ui-suite.js` (`3.5`–`3.6`) | ✅ Passed |
@@ -53,6 +53,7 @@
 
 | Layer | File | What Is Tested | Status |
 |---|---|---|---|
+| **Settings View** | [SettingsView.test.tsx](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/settings/__tests__/SettingsView.test.tsx) | Cast selector, `Standing`/`Chair-Based`, `Front`/`Side`/`Front + Side`, live preview sync, all 4 checkboxes, `Woman`/`Man` voice, 3 volume sliders, `Test Audio Cue` | ✅ Passed |
 | **Icon Picker & Renderer** | [IconPicker.test.tsx](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/profiles/__tests__/IconPicker.test.tsx) | Preset emoji selection, `+ Import Icon` trigger, `data:image/` `<img>` rendering, `<select>` label formatting | ✅ Passed |
 | **Routine Audio Modal** | [RoutineAudioModal.test.tsx](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/profiles/__tests__/RoutineAudioModal.test.tsx) | Music preview toggle, chime test, voice cue test, volume slider updates, stops music on close | ✅ Passed |
 | **Routine Editor Modal** | [RoutineEditorModal.test.tsx](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/src/components/profiles/__tests__/RoutineEditorModal.test.tsx) | Creating custom `Exercise Series` (+ adding steps) and switching to `Breathing Routine` tab | ✅ Passed |

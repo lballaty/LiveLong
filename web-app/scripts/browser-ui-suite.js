@@ -113,23 +113,49 @@ async () => {
   }
   assert('1.10 Session: Prev Step returns to step 1', document.querySelector('h2')?.textContent?.includes('1. Neck and Arm Stretches'));
 
-  // --- 2. SETTINGS VIEW: CAST, VARIANT, VIEWS (BOTH = 2 SVGS), VOICES, BUNDLE DOCS ---
+  // --- 2. SETTINGS VIEW: CAST, VARIANT, VIEWS (BOTH = 2 SVGS), VOICES, AUDIO TOGGLES & SLIDERS, BUNDLE DOCS ---
   await clickNav('Settings');
   const settings = document.querySelector('[data-testid="settings-view"]');
-  assert('2.1 Settings: View renders with 3 audio sliders', Boolean(settings && settings.querySelectorAll('input[type="range"]').length >= 3));
+  const settingsSliders = settings ? Array.from(settings.querySelectorAll('input[type="range"]')) : [];
+  const settingsCheckboxes = settings ? Array.from(settings.querySelectorAll('input[type="checkbox"]')) : [];
+  assert('2.1 Settings: View renders with 3 audio sliders and 4 toggles', settingsSliders.length === 3 && settingsCheckboxes.length === 4);
   assert('2.2 Settings: Drop-in bundle status section visible', Boolean(settings?.textContent?.includes('Drop-In Voice & Animation Bundles')));
 
-  // Switch to Both views & Chair variant, verify 2 SVGs render in Session
+  // Cast selector updates live figure preview inside Settings
+  const castSelect = settings?.querySelector('select');
+  setInputVal(castSelect, 'f30-slim');
+  await wait(220);
+  const previewAria = settings?.querySelector('.exercise-figures svg')?.getAttribute('aria-label') || '';
+  assert('2.3 Settings: Cast selector updates live figure preview', previewAria.includes('Woman, about 30'), previewAria);
+
+  // Voice Woman/Man toggle + Test Audio Cue button
+  await clickBtnText('[data-testid="settings-view"] button', 'Man');
+  await clickBtnText('[data-testid="settings-view"] button', 'Woman');
+  const testCueBtn = await clickBtnText('[data-testid="settings-view"] button', 'Test Audio Cue');
+  assert('2.4 Settings: Voice selector and Test Audio Cue button interactive', Boolean(testCueBtn));
+
+  // Audio & Haptic checkboxes + sliders update percentages
+  setInputVal(settings?.querySelector('input[aria-label="Chime volume"]'), '55');
+  setInputVal(settings?.querySelector('input[aria-label="Voice volume"]'), '80');
+  setInputVal(settings?.querySelector('input[aria-label="Music volume"]'), '30');
+  await wait(80);
+  assert(
+    '2.5 Settings: Volume sliders update percentage readouts',
+    Boolean(settings?.textContent?.includes('55%') && settings?.textContent?.includes('80%') && settings?.textContent?.includes('30%'))
+  );
+
+  // Switch to Front + Side & Chair-Based variant, verify 2 SVGs render in Session
   await clickBtnText('[data-testid="settings-view"] button', 'Front + Side');
-  await clickBtnText('[data-testid="settings-view"] button', 'Chair');
+  await clickBtnText('[data-testid="settings-view"] button', 'Chair-Based');
   await clickNav('Session');
   await wait(250);
   const bothCount = document.querySelectorAll('.exercise-figures svg').length;
-  assert('2.3 Settings -> Session: Front + Side renders 2 SVGs', bothCount === 2, `count=${bothCount}`);
+  assert('2.6 Settings -> Session: Front + Side renders 2 SVGs', bothCount === 2, `count=${bothCount}`);
 
-  // Switch back to Front + Standing
+  // Switch back to Robot R1 + Front + Standing
   await clickNav('Settings');
-  await clickBtnText('[data-testid="settings-view"] button', 'Front Only');
+  setInputVal(document.querySelector('[data-testid="settings-view"] select'), 'robot-r1');
+  await clickBtnText('[data-testid="settings-view"] button', 'Front');
   await clickBtnText('[data-testid="settings-view"] button', 'Standing');
 
   // --- 3. ROUTINES VIEW: FILTERS, REORDER, AUDIO MODAL, CLONE, CREATE SERIES, CREATE BREATHING, CREATE SIMPLE, COMPOSE SESSION ---

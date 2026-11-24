@@ -111,7 +111,7 @@ async () => {
   setVal(castSelect, 'f30-slim');
   await wait(100);
   await clickBtnText('[data-testid="settings-view"] button', 'Front + Side');
-  await clickBtnText('[data-testid="settings-view"] button', 'Chair');
+  await clickBtnText('[data-testid="settings-view"] button', 'Chair-Based');
   await clickNav('Session');
   await wait(250);
   const f30Svgs = Array.from(document.querySelectorAll('.exercise-figures svg'));
@@ -123,7 +123,7 @@ async () => {
   // Restore defaults
   await clickNav('Settings');
   setVal(document.querySelector('[data-testid="settings-view"] select'), 'robot-r1');
-  await clickBtnText('[data-testid="settings-view"] button', 'Front Only');
+  await clickBtnText('[data-testid="settings-view"] button', 'Front');
   await clickBtnText('[data-testid="settings-view"] button', 'Standing');
 
   // --- JOURNEY 3: Author Custom Exercise Series & Run It ---
