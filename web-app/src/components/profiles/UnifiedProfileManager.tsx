@@ -12,7 +12,12 @@ import {
   SessionPlan,
   createSimpleProfile,
 } from '@/types/unified-profile.types';
-import { BUILTIN_MUSIC_TRACKS, MusicTrackOption } from '@/services/audio/BackgroundMusicService';
+import {
+  BUILTIN_MUSIC_TRACKS,
+  MusicTrackOption,
+  backgroundMusicService,
+} from '@/services/audio/BackgroundMusicService';
+import { audioCueService } from '@/services/audio/AudioCueService';
 import RoutineEditorModal from './RoutineEditorModal';
 import SessionComposerModal from './SessionComposerModal';
 
@@ -21,7 +26,10 @@ interface ProfileCardProps {
   isActive: boolean;
   selectedMusicId: string;
   musicOptions: MusicTrackOption[];
+  isPreviewingMusic?: boolean;
   onMusicChange: (trackId: string) => void;
+  onPreviewMusic?: () => void;
+  onPreviewChime?: () => void;
   onSelect: () => void;
   onEdit?: () => void;
   onDuplicate?: () => void;
@@ -33,7 +41,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   isActive,
   selectedMusicId,
   musicOptions,
+  isPreviewingMusic = false,
   onMusicChange,
+  onPreviewMusic,
+  onPreviewChime,
   onSelect,
   onEdit,
   onDuplicate,
@@ -143,18 +154,18 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
       )}
       <div
-        className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between gap-2"
+        className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between gap-1.5"
         onClick={(e) => e.stopPropagation()}
       >
         <label className="text-xs text-gray-500 shrink-0" htmlFor={`music-${profile.id}`}>
-          🎵 Music
+          🎵
         </label>
         <select
           id={`music-${profile.id}`}
           data-testid={`music-select-${profile.id}`}
           value={selectedMusicId}
           onChange={(e) => onMusicChange(e.target.value)}
-          className="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700 max-w-[180px]"
+          className="flex-1 min-w-0 text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700"
         >
           {musicOptions.map((track) => (
             <option key={track.id} value={track.id}>
@@ -162,6 +173,31 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             </option>
           ))}
         </select>
+        {onPreviewMusic && (
+          <button
+            type="button"
+            data-testid={`preview-music-${profile.id}`}
+            disabled={selectedMusicId === 'none'}
+            onClick={onPreviewMusic}
+            className="px-2 py-1 text-xs rounded border border-gray-200 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 shrink-0"
+            title={isPreviewingMusic ? 'Stop music preview' : 'Preview selected music'}
+            aria-label={isPreviewingMusic ? 'Stop music preview' : 'Preview selected music'}
+          >
+            {isPreviewingMusic ? '⏹' : '▶'}
+          </button>
+        )}
+        {onPreviewChime && (
+          <button
+            type="button"
+            data-testid={`preview-chime-${profile.id}`}
+            onClick={onPreviewChime}
+            className="px-2 py-1 text-xs rounded border border-gray-200 bg-gray-50 hover:bg-gray-100 shrink-0"
+            title="Preview transition chime"
+            aria-label="Preview transition chime"
+          >
+            🔔
+          </button>
+        )}
       </div>
     </div>
   );
@@ -328,11 +364,13 @@ interface UnifiedProfileManagerProps {
 }
 
 export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfileManagerProps = {}) {
+  const [previewingCardTrack, setPreviewingCardTrack] = useState<string | null>(null);
   const {
     profiles,
     customProfiles,
     activeProfile,
     sessionPlans,
+    preferences,
     profileMusicMap,
     customMusicTracks,
     initializeProfiles,
@@ -356,6 +394,20 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const allMusicOptions = [...BUILTIN_MUSIC_TRACKS, ...customMusicTracks];
+
+  const handlePreviewMusic = (profileId: string, trackId: string) => {
+    const playing = backgroundMusicService.previewToggle(
+      trackId,
+      customMusicTracks,
+      preferences.musicVolume
+    );
+    setPreviewingCardTrack(playing ? profileId : null);
+  };
+
+  const handlePreviewChime = () => {
+    audioCueService.unlock();
+    audioCueService.playChime('phase', preferences.chimeVolume);
+  };
 
   const handleAddAudioFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -537,7 +589,20 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 isActive={activeProfile?.id === profile.id}
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
-                onMusicChange={(trackId) => setProfileMusic(profile.id, trackId)}
+                isPreviewingMusic={previewingCardTrack === profile.id}
+                onMusicChange={(trackId) => {
+                  setProfileMusic(profile.id, trackId);
+                  if (previewingCardTrack === profile.id) {
+                    handlePreviewMusic(profile.id, trackId);
+                  }
+                }}
+                onPreviewMusic={() =>
+                  handlePreviewMusic(
+                    profile.id,
+                    profileMusicMap[profile.id] || profile.musicTrackId || 'none'
+                  )
+                }
+                onPreviewChime={handlePreviewChime}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -565,7 +630,20 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 isActive={activeProfile?.id === profile.id}
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
-                onMusicChange={(trackId) => setProfileMusic(profile.id, trackId)}
+                isPreviewingMusic={previewingCardTrack === profile.id}
+                onMusicChange={(trackId) => {
+                  setProfileMusic(profile.id, trackId);
+                  if (previewingCardTrack === profile.id) {
+                    handlePreviewMusic(profile.id, trackId);
+                  }
+                }}
+                onPreviewMusic={() =>
+                  handlePreviewMusic(
+                    profile.id,
+                    profileMusicMap[profile.id] || profile.musicTrackId || 'none'
+                  )
+                }
+                onPreviewChime={handlePreviewChime}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);
@@ -593,7 +671,20 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 isActive={activeProfile?.id === profile.id}
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
-                onMusicChange={(trackId) => setProfileMusic(profile.id, trackId)}
+                isPreviewingMusic={previewingCardTrack === profile.id}
+                onMusicChange={(trackId) => {
+                  setProfileMusic(profile.id, trackId);
+                  if (previewingCardTrack === profile.id) {
+                    handlePreviewMusic(profile.id, trackId);
+                  }
+                }}
+                onPreviewMusic={() =>
+                  handlePreviewMusic(
+                    profile.id,
+                    profileMusicMap[profile.id] || profile.musicTrackId || 'none'
+                  )
+                }
+                onPreviewChime={handlePreviewChime}
                 onSelect={() => {
                   selectProfile(profile.id);
                   onProfileSelect?.(profile);

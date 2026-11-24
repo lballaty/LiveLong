@@ -13,6 +13,7 @@ import ExerciseAnimationPlayer from '@/components/exercises/ExerciseAnimationPla
 import ProgressView from '@/components/progress/ProgressView';
 import SettingsView from '@/components/settings/SettingsView';
 import { BreathingPattern } from '@/types/profile.types';
+import { backgroundMusicService } from '@/services/audio/BackgroundMusicService';
 
 type ActiveTab = 'practice' | 'practices' | 'progress' | 'settings';
 
@@ -602,8 +603,25 @@ export default function UnifiedTimerDisplay() {
                       onClick={() => previewStepCue(currentStepIndex)}
                       className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100"
                     >
-                      🔊 Preview Cue
+                      🔊 Preview Cue &amp; Chime
                     </button>
+                    {timerState?.status === 'idle' && activeMusicTrackId !== 'none' && (
+                      <button
+                        type="button"
+                        data-testid="review-preview-music"
+                        onClick={() => {
+                          const { customMusicTracks } = useUnifiedTimerStore.getState();
+                          backgroundMusicService.previewToggle(
+                            activeMusicTrackId,
+                            customMusicTracks,
+                            preferences.musicVolume
+                          );
+                        }}
+                        className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100"
+                      >
+                        🎵 Preview Music
+                      </button>
+                    )}
                     <button
                       type="button"
                       data-testid="review-next-step"

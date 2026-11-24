@@ -150,6 +150,32 @@ class BackgroundMusicService {
     this.isPlaying = false;
     this.currentTrackId = 'none';
   }
+
+  public getCurrentTrackId(): string {
+    return this.currentTrackId;
+  }
+
+  public getIsPlaying(): boolean {
+    return this.isPlaying;
+  }
+
+  public previewToggle(trackId: string, customTracks: MusicTrackOption[] = [], volume?: number): boolean {
+    const resolvedId = normalizeMusicTrackId(trackId);
+    if (!resolvedId || resolvedId === 'none') {
+      this.stop();
+      return false;
+    }
+    if (this.isPlaying && this.currentTrackId === resolvedId) {
+      this.stop();
+      return false;
+    }
+    if (volume !== undefined) {
+      this.setVolume(volume);
+    }
+    this.setMuted(false);
+    this.start(resolvedId, customTracks);
+    return true;
+  }
 }
 
 export const backgroundMusicService = new BackgroundMusicService();
