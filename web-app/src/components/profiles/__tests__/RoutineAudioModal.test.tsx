@@ -74,6 +74,23 @@ describe('RoutineAudioModal', () => {
     fireEvent.change(screen.getByLabelText('Routine chime volume'), { target: { value: '50' } });
     expect(onUpdatePreferences).toHaveBeenCalledWith({ chimeVolume: 0.5 });
 
+    fireEvent.change(screen.getByLabelText('Routine music volume'), { target: { value: '40' } });
+    expect(onUpdatePreferences).toHaveBeenCalledWith({ musicVolume: 0.4 });
+
+    fireEvent.change(screen.getByLabelText('Routine voice volume'), { target: { value: '80' } });
+    expect(onUpdatePreferences).toHaveBeenCalledWith({ voiceVolume: 0.8 });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[1]);
+    fireEvent.click(checkboxes[2]);
+
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'none' } });
+    expect(onMusicChange).toHaveBeenCalledWith('none');
+
+    fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'man' } });
+    expect(onUpdatePreferences).toHaveBeenCalledWith({ voiceId: 'man' });
+
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(backgroundMusicService.stop).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();

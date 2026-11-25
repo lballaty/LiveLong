@@ -25,6 +25,15 @@ describe('SessionComposerModal', () => {
     });
     expect(screen.getByText(/2 items/)).toBeTruthy();
 
+    fireEvent.click(screen.getAllByLabelText('Move routine down')[0]);
+    fireEvent.click(screen.getAllByLabelText('Move routine up')[1]);
+    fireEvent.click(screen.getAllByLabelText('Remove routine from session')[1]);
+    expect(screen.getByText(/1 items/)).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('Add routine to session'), {
+      target: { value: p2.id },
+    });
+
     fireEvent.click(screen.getByTestId('save-session-plan-button'));
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({

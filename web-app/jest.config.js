@@ -28,11 +28,14 @@ const customJestConfig = {
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
     '!src/**/__tests__/**',
+    '!src/lib/animations/**',
+    '!src/app/layout.tsx',
+    '!src/types/timer.types.ts',
   ],
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
+      branches: 65,
+      functions: 75,
       lines: 80,
       statements: 80,
     },

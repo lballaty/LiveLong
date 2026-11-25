@@ -10,7 +10,7 @@
 
 | Suite | Runner | Scope | Latest Result |
 |---|---|---|---|
-| Unit & Component Tests | `npx jest --ci --maxWorkers=2` | Engines, stores, repositories, audio services, RTL modals/pickers/settings | **12 / 12 suites, 82 / 82 passed** |
+| Unit & Component Tests | `npm run test:ci` (`jest --ci --coverage --maxWorkers=2`) | Engines, stores, repositories, audio services, data modules, RTL modals/pickers/settings/views | **20 / 20 suites, 102 / 102 passed (80.2% stmts, 82.48% lines)** |
 | Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, full Settings, Rajio Taiso steps, Desktop (`1280×800`) + Mobile (`390×844`) | **41 / 41 passed** |
 | Live-Browser User Journeys | Chrome via `chrome-devtools-mcp` ([browser-user-journeys.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-user-journeys.js)) | 8 multi-step end-to-end user journeys + full browser reload persistence | **15 / 15 passed (12 run + 3 post-reload)** |
 

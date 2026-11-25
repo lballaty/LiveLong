@@ -409,5 +409,30 @@ describe('useUnifiedTimerStore', () => {
       useUnifiedTimerStore.getState().deleteSessionPlan(plan.id);
       expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(0);
     });
+
+    it('saves user defaults, resets to saved defaults, and restores factory defaults', () => {
+      useUnifiedTimerStore.getState().initializeProfiles();
+      useUnifiedTimerStore.getState().updatePreferences({ chimeVolume: 0.4, musicVolume: 0.5 });
+      useUnifiedTimerStore.getState().saveAsDefaults();
+      expect(useUnifiedTimerStore.getState().hasSavedDefaults).toBe(true);
+
+      useUnifiedTimerStore.getState().updatePreferences({ chimeVolume: 0.9, musicMuted: true });
+      useUnifiedTimerStore.getState().resetAllPreferences(false);
+      expect(useUnifiedTimerStore.getState().preferences.chimeVolume).toBe(0.4);
+      expect(useUnifiedTimerStore.getState().preferences.musicMuted).toBe(false);
+
+      useUnifiedTimerStore.getState().resetAllPreferences(true);
+      expect(useUnifiedTimerStore.getState().hasSavedDefaults).toBe(false);
+      expect(useUnifiedTimerStore.getState().preferences.chimeVolume).toBe(0.7);
+      expect(useUnifiedTimerStore.getState().preferences.characterId).toBe('robot-r1');
+    });
+
+    it('reorders profile cards and persists order to localStorage', () => {
+      useUnifiedTimerStore.getState().initializeProfiles();
+      const ids = useUnifiedTimerStore.getState().profiles.slice(0, 2).map((p) => p.id);
+      useUnifiedTimerStore.getState().moveProfileOrder(ids[0], 1, ids);
+      const order = useUnifiedTimerStore.getState().profileOrder;
+      expect(order.indexOf(ids[1])).toBeLessThan(order.indexOf(ids[0]));
+    });
   });
 });

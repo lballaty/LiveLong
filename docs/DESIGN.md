@@ -32,12 +32,8 @@ LiveLong ⊹ is a frontend-first Progressive Web App (PWA) located in `web-app/`
 - **Longevity Exercise Series**: `web-app/src/data/japanese-exercise-series.ts` (Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen).
 - **Background Worker**: `web-app/public/timer-worker.js` and `BackgroundTimerWorkerService.ts` to mitigate browser background throttling.
 
-### Known Architectural Consolidation Gap (Open)
-Multiple parallel implementations currently coexist in `web-app/src/`, causing type drift (14 `tsc` errors) and duplicate state paths:
-- **Engines**: `TimerEngine.ts`, `FocusTimerEngine.ts`, `UnifiedTimerEngine.ts`
-- **Stores**: `timerStore.ts`, `focusTimerStore.ts`, `unifiedTimerStore.ts`, `useTimerStore.ts`
-- **Timer Displays**: `components/TimerDisplay.tsx`, `components/timer/TimerDisplay.tsx`, `components/timer/FocusTimerDisplay.tsx`, `components/timer/UnifiedTimerDisplay.tsx`
-- **Profile Managers**: `ProfileManager.tsx`, `UnifiedProfileManager.tsx`
+### Consolidation Status (Closed 2026-11-25)
+The earlier parallel engines/stores/displays (`TimerEngine.ts`, `FocusTimerEngine.ts`, `timerStore.ts`, `focusTimerStore.ts`, `components/TimerDisplay.tsx`, `components/timer/TimerDisplay.tsx`, `FocusTimerDisplay.tsx`, `ProfileManager.tsx`) have been removed. All active UI and timer logic runs through `UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, and `UnifiedProfileManager`.
 
 ## 3. Data Flow
 

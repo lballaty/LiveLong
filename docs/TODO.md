@@ -39,25 +39,40 @@
 
 ---
 
+## 🔗 Cross-Fleet Bundle Integration (`animation` & `openScriptAudio`)
+
+### `animation` Repo (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/animation`)
+- [x] Integrate `rajio-taiso-0.1.0-draft.1` (`exercise-figures-runtime.js` + `neck-arm-stretch`, `chest-expansion`, `side-bends`, `trunk-twists`, characters `robot-r1` default, `m25-athletic`, `f30-slim`, `f72-stooped`)
+- [ ] (`waiting on upstream`) Integrate next `rajio-taiso` draft with sideways `arm-swings`, `leg-swings`, `chair` variants, and remaining 3 cast members (`m50-heavier`, `f50-fuller`, `m75-slim`)
+- [ ] (`waiting on upstream`) Integrate remaining series animation packs (`tai-chi-morning-series`, `shinrin-yoku-series`)
+
+### `openScriptAudio` Repo (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`)
+- [x] Implement `/audio/cues/<voiceId>/manifest.json` loader, `variants` + `@n` non-repeating selection, `Woman`/`Man` voice toggle, and 3-channel mixer
+- [ ] (`waiting on upstream`) Integrate 13-cue Box Breathing `woman` & `man` voice packs once upstream TTS licensing check completes
+- [ ] (`waiting on upstream`) Integrate Rajio Taiso and remaining longevity series voice cue packs
+
+---
+
 ## 🔧 Open Remediation & Verification Gaps (Priority Order)
 
-### 1. Fix Build & Type Safety (`open`)
-- [ ] Resolve all 14 TypeScript errors in `web-app/src/` so `npm run type-check` passes
-- [ ] Resolve all 18 ESLint errors (and address 6 hook dependency warnings) so `npm run lint` passes
-- [ ] Verify `npm run build` (`next build`) succeeds cleanly
+### 1. Build & Type Safety (`closed`)
+- [x] Resolve all TypeScript errors in `web-app/src/` (`npm run type-check` passes cleanly)
+- [x] Resolve all ESLint errors (`npm run lint` passes with 0 errors)
+- [x] Verify `npm run build` (`next build`) succeeds cleanly
 
-### 2. Fix Failing Unit Tests & Coverage (`open`)
-- [ ] Fix `Date` vs ISO string serialization/comparison failures in `ProfileRepository.test.ts` and `SessionRepository.test.ts`
-- [ ] Consolidate or test active `UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, and `UnifiedProfileManager` (note: `d347225` added `useTimer.ts`, `useTimerStore.ts`, and `components/TimerDisplay.tsx` with tests, which are not wired into `src/app/page.tsx`)
-- [ ] Meet the configured 80% Jest coverage threshold in `web-app/jest.config.js`
+### 2. Unit Tests & Coverage (`closed`)
+- [x] Fix `Date` vs ISO string serialization/comparison in `ProfileRepository.test.ts` and `SessionRepository.test.ts`
+- [x] Add Jest + RTL tests for `UnifiedTimerEngine`, `unifiedTimerStore`, `AudioCueService`, `BackgroundMusicService`, `SettingsView`, `ProgressView`, `BreathingVisualizer`, `ExerciseAnimationPlayer`, `UnifiedTimerDisplay`, `UnifiedProfileManager`, `RoutineEditorModal`, `SessionComposerModal`, `RoutineAudioModal`, `IconPicker`, and `app/page.tsx`
+- [x] `npm --prefix web-app run test:ci` passes with coverage thresholds met (**20/20 suites, 102/102 tests; 80.2% statements, 82.48% lines**)
 
-### 3. Consolidate Parallel Implementations (`open`)
-- [ ] Remove or archive unused legacy engines (`TimerEngine.ts`, `FocusTimerEngine.ts`), stores (`timerStore.ts`, `focusTimerStore.ts`, `useTimerStore.ts`), and components (`components/TimerDisplay.tsx`, `components/timer/TimerDisplay.tsx`, `FocusTimerDisplay.tsx`, `ProfileManager.tsx`) once `Unified*` is verified
+### 3. Consolidate Parallel Implementations (`closed`)
+- [x] Legacy engines (`TimerEngine.ts`, `FocusTimerEngine.ts`), stores (`timerStore.ts`, `focusTimerStore.ts`), unused PWA/storage/worker dead files (`PWAStatusIndicator.tsx`, `useServiceWorker.ts`, `useSessionPersistence.ts`, `ServiceWorkerRegistration.ts`, `SessionPersistenceService.ts`, `BackgroundTimerWorkerService.ts`), and components (`TimerDisplay.tsx`, `FocusTimerDisplay.tsx`, `ProfileManager.tsx`) removed; `DESIGN.md` updated
 
-### 4. PWA Assets & E2E Verification (`partially closed`)
-- [ ] Generate and add `/icon-192.png` and `/icon-512.png` to `web-app/public/` (referenced by `manifest.json`)
-- [ ] Reconcile duplicate service worker files (`public/service-worker.js` vs `public/sw.js`)
-- [ ] Run `npm run test:e2e` against `web-app/` and record pass/fail results
+### 4. PWA Assets & E2E Verification (`closed`)
+- [x] Generate `/icon-192.png`, `/icon-192x192.png`, and `/icon-512.png` in `web-app/public/`
+- [x] Reconcile duplicate service worker files: removed legacy `public/service-worker.js` in favor of `next-pwa` `public/sw.js` and added `buildExcludes: [/app-build-manifest\.json$/]` in `web-app/next.config.js` so SW precache/activation succeeds
+- [x] Run live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`, tracked in `docs/TEST-CHECKLIST.md`)
+- [x] Verify production build (`npm --prefix web-app run build`), `/sw.js` activation, and offline PWA reload in Chrome (`41/41` UI checks + offline reload verified)
 
 ### 5. Repo Hygiene & Docs (`open`)
 - [x] Update root `CLAUDE.md`, `.claude/CLAUDE.md`, and `GEMINI.md` to the `web-app/` PWA (`da3589e`, `a5c05a4`); untrack `.claude/settings.local.json` (`bb2ce08`)

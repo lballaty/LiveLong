@@ -21,4 +21,28 @@ describe('IconPicker & RoutineIcon', () => {
     expect(formatIconForSelect(dataUrl)).toBe('🖼️');
     expect(formatIconForSelect('📻')).toBe('📻');
   });
+
+  it('reads uploaded image file via FileReader and calls onChange with data URL', () => {
+    const onChange = jest.fn();
+    const mockReadAsDataURL = jest.fn();
+    let onloadFn: (() => void) | null = null;
+    (global as unknown as { FileReader: jest.Mock }).FileReader = jest.fn(() => ({
+      result: 'data:image/svg+xml;base64,PHN2Zz4=',
+      set onload(fn: () => void) {
+        onloadFn = fn;
+      },
+      readAsDataURL: (...args: unknown[]) => {
+        mockReadAsDataURL(...args);
+        onloadFn?.();
+      },
+    }));
+
+    render(<IconPicker value="⏱️" onChange={onChange} />);
+    const input = screen.getByTestId('icon-import-input') as HTMLInputElement;
+    const file = new File(['<svg/>'], 'icon.svg', { type: 'image/svg+xml' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(mockReadAsDataURL).toHaveBeenCalledWith(file);
+    expect(onChange).toHaveBeenCalledWith('data:image/svg+xml;base64,PHN2Zz4=');
+  });
 });
