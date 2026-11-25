@@ -40,7 +40,7 @@ Continue iterating until all TODO items are complete or you need clarification.
 - **Backend**: none. All data is local to the browser.
 - **Created**: 2025-09-30
 
-**Superseded, do not build on:** the remaining `TestRepo` scaffold (`src/`, `tests/`, root `package.json`).
+**Removed:** the original `TestRepo` scaffold is gone (2026-11-25). There is no root `package.json`; all app code and npm scripts are in `web-app/`.
 
 **Kept for later:** the Flutter prototype (`focus_productivity_timer/`) is retained as the starting point for a possible future native Flutter build. It is not the active app; do not change it unless the task is that Flutter build.
 

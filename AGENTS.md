@@ -25,7 +25,7 @@ If you are in the `livelong` fleet, read your inbox at `~/.ai-dev-dotfiles/.coor
 - **Active app:** `web-app/`, an offline-first Progressive Web App with no backend.
 - **Stack:** Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4, Zustand, IndexedDB via `idb`, `next-pwa`.
 - **Architecture:** Build on the `Unified*` implementation (`UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, `UnifiedProfileManager`). See `docs/DESIGN.md` for canonical architecture.
-- **Superseded, do not build on:** the remaining `TestRepo` scaffold (`src/`, `tests/`, root `package.json`).
+- **Removed:** the original `TestRepo` scaffold is gone (2026-11-25). There is no root `package.json`; all app code and npm scripts are in `web-app/`.
 - **Kept for later:** `focus_productivity_timer/` (Flutter prototype) is retained for a possible future native Flutter build. It is not the active app; do not change it unless the task is that Flutter build.
 
 ---

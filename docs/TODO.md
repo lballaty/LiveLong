@@ -4,7 +4,7 @@
 
 > **Source-of-Truth Note:** `docs/TODO.md` is the single canonical tracker for this repository.
 > - `web-app/TODO.md` is a historical sprint log from 2025-09-30 and is **superseded** by this file.
-> - Remaining root `TestRepo` bootstrap files (`package.json`, `src/`, `tests/`) are **superseded** by `web-app/`. The empty `cache/`, `cloud/`, `database/`, `vectordb/` folders were removed on 2026-11-24.
+> - The root `TestRepo` bootstrap has been fully removed: empty `cache/`, `cloud/`, `database/`, `vectordb/` on 2026-11-24; `src/`, `tests/`, root `package.json` and `package-lock.json` on 2026-11-25 (`b866bf3`). All app code is in `web-app/`.
 > - `focus_productivity_timer/` (Flutter prototype) is superseded as the active app but **retained** for a possible future native Flutter build (operator decision, 2026-11-24).
 
 ---
@@ -63,7 +63,8 @@
 - [x] Update root `CLAUDE.md`, `.claude/CLAUDE.md`, and `GEMINI.md` to the `web-app/` PWA (`da3589e`, `a5c05a4`); untrack `.claude/settings.local.json` (`bb2ce08`)
 - [x] Decide `focus_productivity_timer/`: **keep** for a possible future native Flutter build (operator decision, 2026-11-24)
 - [x] Remove empty `TestRepo` template folders `cache/`, `cloud/`, `database/`, `vectordb/` (2026-11-24)
-- [ ] Decide whether to remove the remaining `TestRepo` scaffold: `src/index.js` and `tests/unit/index.test.js` (placeholder code; the rest of both folders is empty subfolders) and root `package.json` (`"name": "TestRepo"`)
+- [x] Remove the remaining `TestRepo` scaffold: `src/`, `tests/`, root `package.json`, `package-lock.json` (`b866bf3`, 2026-11-25)
+- [ ] Optional: delete the root `node_modules/` (installed from the removed root `package.json`; gitignored), then re-run `web-app` tests to confirm nothing resolved from it
 - [x] Clean up untracked scratch/generated files in repo root: old plans deleted; `graphify-out/`, `.graphifyprofiles.json`, port-registry links gitignored (`85abdc8`)
 
 ---
