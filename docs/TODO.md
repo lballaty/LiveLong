@@ -74,12 +74,12 @@
 - [x] Run live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`, tracked in `docs/TEST-CHECKLIST.md`)
 - [x] Verify production build (`npm --prefix web-app run build`), `/sw.js` activation, and offline PWA reload in Chrome (`41/41` UI checks + offline reload verified)
 
-### 5. Repo Hygiene & Docs (`open`)
+### 5. Repo Hygiene & Docs (`closed`)
 - [x] Update root `CLAUDE.md`, `.claude/CLAUDE.md`, and `GEMINI.md` to the `web-app/` PWA (`da3589e`, `a5c05a4`); untrack `.claude/settings.local.json` (`bb2ce08`)
 - [x] Decide `focus_productivity_timer/`: **keep** for a possible future native Flutter build (operator decision, 2026-11-24)
 - [x] Remove empty `TestRepo` template folders `cache/`, `cloud/`, `database/`, `vectordb/` (2026-11-24)
 - [x] Remove the remaining `TestRepo` scaffold: `src/`, `tests/`, root `package.json`, `package-lock.json` (`b866bf3`, 2026-11-25)
-- [ ] Optional: delete the root `node_modules/` (installed from the removed root `package.json`; gitignored), then re-run `web-app` tests to confirm nothing resolved from it
+- [x] Delete the root `node_modules/` (installed from the removed root `package.json`; gitignored), and re-run `web-app` checks (`type-check`, `lint`, `test:ci`) confirming nothing resolved from it (2026-11-25)
 - [x] Clean up untracked scratch/generated files in repo root: old plans deleted; `graphify-out/`, `.graphifyprofiles.json`, port-registry links gitignored (`85abdc8`)
 
 ---
