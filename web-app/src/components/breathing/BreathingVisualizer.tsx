@@ -398,7 +398,7 @@ export default function BreathingVisualizer({
         <div className="flex justify-center gap-4">
           <button
             onClick={handlePause}
-            className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+            className="px-6 py-2 bg-yellow-500 text-slate-900 rounded-lg hover:bg-yellow-400 transition-colors"
           >
             {isPaused ? 'Resume' : 'Pause'}
           </button>

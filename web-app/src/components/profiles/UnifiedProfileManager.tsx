@@ -393,7 +393,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+              className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
             >
               Create Profile
             </button>
@@ -545,7 +545,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
             </button>
             <button
               onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               + Create Custom Timer
             </button>
@@ -564,7 +564,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
               onClick={() => setFilterType(id)}
               className={`px-3 py-1 rounded-md transition-colors ${
                 filterType === id
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -940,7 +940,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
                 >
                   Save Changes
                 </button>

@@ -63,7 +63,7 @@ export default function SettingsView() {
                 onClick={() => updatePreferences({ variant })}
                 className={`px-4 py-2 rounded-lg text-sm font-medium border ${
                   preferences.variant === variant
-                    ? 'bg-blue-500 text-white border-blue-500'
+                    ? 'bg-blue-600 text-white border-blue-600'
                     : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
                 }`}
               >
@@ -89,7 +89,7 @@ export default function SettingsView() {
                 onClick={() => updatePreferences({ views: opt.id })}
                 className={`px-4 py-2 rounded-lg text-sm font-medium border ${
                   preferences.views === opt.id
-                    ? 'bg-blue-500 text-white border-blue-500'
+                    ? 'bg-blue-600 text-white border-blue-600'
                     : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
                 }`}
               >
@@ -162,7 +162,7 @@ export default function SettingsView() {
                     onClick={() => updatePreferences({ voiceId: v.id })}
                     className={`px-3 py-1 rounded-md text-xs font-medium border ${
                       preferences.voiceId === v.id
-                        ? 'bg-blue-500 text-white border-blue-500'
+                        ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
                     }`}
                   >
