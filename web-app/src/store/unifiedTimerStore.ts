@@ -16,6 +16,7 @@ import {
 } from '@/types/unified-profile.types';
 import { UnifiedTimerEngine } from '@/services/timer/UnifiedTimerEngine';
 import { JAPANESE_EXERCISE_SERIES } from '@/data/japanese-exercise-series';
+import { resolveSeriesStep } from '@/data/exercise-library';
 import { getAllBreathingProfiles } from '@/data/breathing-profiles';
 import { audioCueService } from '@/services/audio/AudioCueService';
 import {
@@ -86,6 +87,20 @@ function buildDefaultSessionPlans(profiles: UnifiedProfile[]): SessionPlan[] {
       description: 'Wim Hof power breathing followed by full-body Rajio Taiso calisthenics',
       icon: '🔥',
       targets: ['wim-hof-breathing-profile', 'rajio-taiso-series'],
+    },
+    {
+      id: 'default-session-desk-focus',
+      name: 'Desk Reset & Focus',
+      description: 'Posture mobility reset, Box Breathing, and a 25-minute Pomodoro sprint',
+      icon: '🪑',
+      targets: ['desk-reset-series', 'box-breathing-profile', 'Pomodoro'],
+    },
+    {
+      id: 'default-session-core-calm',
+      name: 'Core AMRAP & Zen Cooldown',
+      description: 'Timed sit-ups & plank circuit followed by Zazen seated stillness',
+      icon: '💪',
+      targets: ['core-amrap-series', 'zazen-sitting-series'],
     },
   ];
 
@@ -244,22 +259,31 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       createSimpleProfile('Meditation', '10-minute mindfulness', 10, 2, '#8b5cf6', '🧘'),
     ];
 
-    const exerciseProfiles = Object.values(JAPANESE_EXERCISE_SERIES).map((series) =>
-      convertExerciseSeriesToUnified(series)
-    );
+    const exerciseProfiles = Object.values(JAPANESE_EXERCISE_SERIES).map((series) => {
+      const unified = convertExerciseSeriesToUnified(series);
+      if (unified.seriesConfig) {
+        unified.seriesConfig.steps = unified.seriesConfig.steps.map(resolveSeriesStep);
+      }
+      return unified;
+    });
 
-    if (exerciseProfiles[0]) {
-      exerciseProfiles[0].icon = '📻';
-      exerciseProfiles[0].color = '#dc2626';
-    }
-    if (exerciseProfiles[1]) {
-      exerciseProfiles[1].icon = '☯️';
-      exerciseProfiles[1].color = '#0891b2';
-    }
-    if (exerciseProfiles[2]) {
-      exerciseProfiles[2].icon = '🌲';
-      exerciseProfiles[2].color = '#059669';
-    }
+    const seriesMeta: Record<string, { icon: string; color: string }> = {
+      'rajio-taiso-series': { icon: '📻', color: '#dc2626' },
+      'tai-chi-morning-series': { icon: '☯️', color: '#0891b2' },
+      'shinrin-yoku-series': { icon: '🌲', color: '#059669' },
+      'ikigai-reflection-series': { icon: '🧭', color: '#d97706' },
+      'zazen-sitting-series': { icon: '🪷', color: '#6366f1' },
+      'desk-reset-series': { icon: '🪑', color: '#0284c7' },
+      'core-amrap-series': { icon: '💪', color: '#e11d48' },
+    };
+
+    exerciseProfiles.forEach((profile) => {
+      const meta = seriesMeta[profile.id];
+      if (meta) {
+        profile.icon = meta.icon;
+        profile.color = meta.color;
+      }
+    });
 
     const breathingProfiles = getAllBreathingProfiles()
       .map((profile) => {

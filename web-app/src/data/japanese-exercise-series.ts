@@ -29,6 +29,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
   steps: [
     {
       id: 'neck-arm-stretch',
+      exerciseId: 'neck-arm-stretch',
       name: 'Neck and Arm Stretches',
       description: 'Gentle neck rotations and arm stretches',
       durationMinutes: 1,
@@ -38,6 +39,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
     },
     {
       id: 'arm-swings',
+      exerciseId: 'arm-swings',
       name: 'Arm Swings',
       description: 'Radio Taiso movement 2 — cross-body arm swings with knee bounce',
       durationMinutes: 1,
@@ -47,6 +49,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
     },
     {
       id: 'chest-expansion',
+      exerciseId: 'chest-expansion',
       name: 'Chest Expansion',
       description: 'Open chest and expand lungs',
       durationMinutes: 1,
@@ -56,6 +59,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
     },
     {
       id: 'side-bends',
+      exerciseId: 'side-bends',
       name: 'Side Bends',
       description: 'Lateral trunk flexibility',
       durationMinutes: 1,
@@ -65,6 +69,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
     },
     {
       id: 'trunk-twists',
+      exerciseId: 'trunk-twists',
       name: 'Trunk Twists',
       description: 'Spinal rotation movements',
       durationMinutes: 1,
@@ -74,6 +79,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
     },
     {
       id: 'leg-swings',
+      exerciseId: 'leg-swings',
       name: 'Leg Swings',
       description: 'Dynamic leg movements',
       durationMinutes: 1,
@@ -214,12 +220,199 @@ export const SHINRIN_YOKU_SERIES: ExerciseSeries = {
 };
 
 /**
- * Collection of all Japanese exercise series
+ * Ikigai Reflection Series
+ * Purpose, strength, and daily intention prompts
+ */
+export const IKIGAI_REFLECTION_SERIES: ExerciseSeries = {
+  id: 'ikigai-reflection-series',
+  name: 'Ikigai Purpose Reflection',
+  description: 'Guided reflection on energy, strengths, gratitude, and daily intention',
+  warmupDurationMinutes: 0.5,
+  cooldownDurationMinutes: 0.5,
+  steps: [
+    {
+      id: 'ikigai-breath-settle',
+      exerciseId: 'mindful-breathing',
+      name: 'Settle & Breathe',
+      description: 'Quiet the mind before reflecting',
+      durationMinutes: 1.5,
+      restDurationMinutes: 0.25,
+    },
+    {
+      id: 'ikigai-purpose',
+      exerciseId: 'ikigai-purpose-prompts',
+      name: 'Purpose & Intention',
+      description: 'Reflect on what energizes you and choose one meaningful action',
+      durationMinutes: 3,
+      restDurationMinutes: 0.25,
+    },
+    {
+      id: 'ikigai-gratitude',
+      exerciseId: 'gratitude-reflection',
+      name: 'Gratitude Closing',
+      description: 'Close with quiet appreciation',
+      durationMinutes: 2,
+      restDurationMinutes: 0,
+    },
+  ],
+  get totalDurationMinutes() {
+    return calculateTotalDuration(this.steps, this.warmupDurationMinutes, this.cooldownDurationMinutes);
+  },
+};
+
+/**
+ * Zazen Sitting Meditation Series
+ * Upright Zen posture and breath-counting stillness
+ */
+export const ZAZEN_SITTING_SERIES: ExerciseSeries = {
+  id: 'zazen-sitting-series',
+  name: 'Zazen Seated Stillness',
+  description: 'Traditional Zen posture alignment, breath counting, and silent sitting',
+  warmupDurationMinutes: 0.5,
+  cooldownDurationMinutes: 0.5,
+  steps: [
+    {
+      id: 'zazen-posture',
+      exerciseId: 'zazen-posture-breath',
+      name: 'Posture & Breath Counting',
+      description: 'Settle upright and count exhales 1 to 10',
+      durationMinutes: 5,
+      restDurationMinutes: 0,
+    },
+    {
+      id: 'zazen-sitting',
+      exerciseId: 'zazen-silent-sitting',
+      name: 'Silent Seated Stillness',
+      description: 'Open-awareness sitting until the closing bell',
+      durationMinutes: 10,
+      restDurationMinutes: 0,
+    },
+  ],
+  get totalDurationMinutes() {
+    return calculateTotalDuration(this.steps, this.warmupDurationMinutes, this.cooldownDurationMinutes);
+  },
+};
+
+/**
+ * Desk Reset & Posture Mobility (Western standard)
+ */
+export const DESK_RESET_SERIES: ExerciseSeries = {
+  id: 'desk-reset-series',
+  name: 'Desk Reset & Posture Mobility',
+  description: 'Standard posture & mobility reset for neck, upper back, chest, and hips',
+  warmupDurationMinutes: 0.25,
+  cooldownDurationMinutes: 0.25,
+  steps: [
+    {
+      id: 'desk-chin-tucks',
+      exerciseId: 'chin-tucks',
+      name: 'Chin Tucks',
+      description: 'Release forward-head neck tension',
+      durationMinutes: 1,
+      restDurationMinutes: 0.25,
+    },
+    {
+      id: 'desk-thoracic-ext',
+      exerciseId: 'seated-thoracic-extension',
+      name: 'Seated Thoracic Extension',
+      description: 'Open upper back over chair',
+      durationMinutes: 1,
+      restDurationMinutes: 0.25,
+    },
+    {
+      id: 'desk-chest-open',
+      exerciseId: 'chest-expansion',
+      name: 'Chest Expansion',
+      description: 'Open chest and front shoulders',
+      durationMinutes: 1,
+      restDurationMinutes: 0.25,
+    },
+    {
+      id: 'desk-side-bends',
+      exerciseId: 'side-bends',
+      name: 'Side Bends',
+      description: 'Lateral spine mobility',
+      durationMinutes: 1,
+      restDurationMinutes: 0.25,
+    },
+    {
+      id: 'desk-leg-swings',
+      exerciseId: 'leg-swings',
+      name: 'Leg Swings',
+      description: 'Loosen tight hip flexors',
+      durationMinutes: 1,
+      restDurationMinutes: 0,
+    },
+  ],
+  get totalDurationMinutes() {
+    return calculateTotalDuration(this.steps, this.warmupDurationMinutes, this.cooldownDurationMinutes);
+  },
+};
+
+/**
+ * Core AMRAP & Calisthenics Interval (2 min Sit-Ups + 30s Rest × 2 + Plank)
+ */
+export const CORE_AMRAP_SERIES: ExerciseSeries = {
+  id: 'core-amrap-series',
+  name: 'Core AMRAP & Calisthenics',
+  description: 'Timed 2-minute sit-up intervals with 30s rest, jumping jacks, and plank hold',
+  warmupDurationMinutes: 0.5,
+  cooldownDurationMinutes: 0.5,
+  steps: [
+    {
+      id: 'core-warmup-jacks',
+      exerciseId: 'jumping-jacks',
+      name: 'Jumping Jacks Warm-Up',
+      description: '20 jumping jacks to raise heart rate',
+      durationMinutes: 0.75,
+      restDurationMinutes: 0.25,
+      mode: 'reps',
+      targetReps: 20,
+    },
+    {
+      id: 'core-situps-round-1',
+      exerciseId: 'situps',
+      name: 'Sit-Ups (AMRAP Round 1)',
+      description: 'As many quality sit-ups as possible in 2 minutes',
+      durationMinutes: 2,
+      restDurationMinutes: 0.5,
+      mode: 'timed',
+    },
+    {
+      id: 'core-situps-round-2',
+      exerciseId: 'situps',
+      name: 'Sit-Ups (AMRAP Round 2)',
+      description: 'Second 2-minute timed sit-up block',
+      durationMinutes: 2,
+      restDurationMinutes: 0.5,
+      mode: 'timed',
+    },
+    {
+      id: 'core-plank-finish',
+      exerciseId: 'plank-hold',
+      name: 'Forearm Plank Hold',
+      description: '60-second isometric core finisher',
+      durationMinutes: 1,
+      restDurationMinutes: 0,
+      mode: 'hold',
+    },
+  ],
+  get totalDurationMinutes() {
+    return calculateTotalDuration(this.steps, this.warmupDurationMinutes, this.cooldownDurationMinutes);
+  },
+};
+
+/**
+ * Collection of all built-in exercise & mindfulness series
  */
 export const JAPANESE_EXERCISE_SERIES = {
   RAJIO_TAISO: RAJIO_TAISO_SERIES,
   TAI_CHI_MORNING: TAI_CHI_MORNING_SERIES,
   SHINRIN_YOKU: SHINRIN_YOKU_SERIES,
+  IKIGAI_REFLECTION: IKIGAI_REFLECTION_SERIES,
+  ZAZEN_SITTING: ZAZEN_SITTING_SERIES,
+  DESK_RESET: DESK_RESET_SERIES,
+  CORE_AMRAP: CORE_AMRAP_SERIES,
 } as const;
 
 /**

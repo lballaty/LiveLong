@@ -26,10 +26,14 @@ export interface StepAnimationRef {
 
 export interface ExerciseStep {
   readonly id: string;
+  readonly exerciseId?: string;
   readonly name: string;
   readonly description?: string;
   readonly durationMinutes: number;
   readonly restDurationMinutes: number;
+  readonly mode?: 'timed' | 'reps' | 'hold' | 'interval' | 'breath' | 'stillness';
+  readonly targetReps?: number;
+  readonly rounds?: number;
   readonly instructions?: string;
   readonly videoUrl?: string;
   readonly imageUrl?: string;

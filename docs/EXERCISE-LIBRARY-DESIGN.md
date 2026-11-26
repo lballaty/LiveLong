@@ -21,10 +21,10 @@ Because exercises live inline inside each routine's `SeriesStep[]`:
 
 ---
 
-## 2. Target 3-Tier Model (`Exercise` → `Routine` → `Session`)
+## 2. Target 4-Part Model (`Exercise` [1-iteration Step + Flow + Media] → `Block` → `Routine` → `Session`)
 
-### Tier 1: `ExerciseDefinition` (Canonical Exercise Library)
-Stored in `web-app/src/data/exercise-library.ts` (built-in) plus user-created exercises in `localStorage` (`livelong_custom_exercises`):
+### Part 1: `ExerciseDefinition` (Canonical Exercise Library)
+Implemented in `web-app/src/data/exercise-library.ts` with **neutral movement/practice slugs** (`situps`, `jumping-jacks`, `leg-swings`, `side-bends`, `ikigai-purpose-prompts`, `zazen-posture-breath`, etc.) and **tags** (`rajio-taiso`, `western`, `calisthenics`, `amrap`, `zazen`, `ikigai`, etc.) instead of encoding philosophy in the slug:
 
 ```ts
 export type ExerciseCategory =
@@ -35,44 +35,39 @@ export type ExerciseCategory =
   | 'mindfulness'
   | 'breathing';
 
-export type ExerciseModality = 'eastern' | 'western' | 'universal';
-
-export interface ExerciseMediaBinding {
-  animation?: {
-    pack: string;        // e.g. 'rajio-taiso.side-bends' or 'mobility.leg-swings'
-    version?: string;    // pinned semver, e.g. '0.1.0-draft.1'
-    fallbackType?: 'robot-poc' | 'breathing' | 'stillness';
-  };
-  audio?: {
-    cueId: string;               // e.g. 'exercise.leg-swings'
-    defaultVoiceScript: string;  // Web Speech fallback when .mp3 pack is absent
-    completionCueId?: string;    // optional end-of-step cue
-  };
-}
+export type ExercisePrescriptionMode =
+  | 'timed'      // e.g. 2 min Sit-Ups AMRAP
+  | 'reps'       // e.g. 20 Jumping Jacks
+  | 'hold'       // e.g. 60s Plank
+  | 'interval'   // e.g. Tabata 20s/10s
+  | 'breath'     // e.g. 4-4-4-4 Box Breathing
+  | 'stillness'; // e.g. Zazen / Ikigai reflection
 
 export interface ExerciseDefinition {
-  id: string;                    // stable canonical slug, e.g. 'mobility.leg-swings'
+  id: string;                    // neutral slug, e.g. 'situps', 'leg-swings'
   name: string;
   description: string;
-  instructions: string;
+  flow: string;                  // how 1 iteration (the atomic Step) is carried out
   category: ExerciseCategory;
-  modality: ExerciseModality;
+  tags: string[];
+  defaultMode: ExercisePrescriptionMode;
   defaultDurationSeconds: number;
   defaultRestSeconds: number;
+  defaultTargetReps?: number;
   supportedVariants: ExerciseVariant[]; // ['standing', 'chair']
-  media: ExerciseMediaBinding;
+  media: ExerciseMediaBinding;          // bound animation + audio cueId & voiceScript
   isDefault: boolean;
 }
 ```
 
-### Tier 2: `SeriesStep` inside a `Routine` (`UnifiedProfile`)
-`SeriesStep` adds `exerciseId?: string` referencing `ExerciseDefinition.id`:
-- A routine step **only needs to store routine-specific overrides** (`durationMinutes`, `durationSeconds`, `restMinutes`, `restSeconds`, and optional `instructions` / `voiceScript` overrides).
-- At playback, `resolveSeriesStep(step, exerciseLibrary)` merges the canonical `ExerciseDefinition` with any step-level overrides.
+### Part 2: `SeriesStep` / Block inside a `Routine` (`UnifiedProfile`)
+`SeriesStep` adds `exerciseId?: string`, `mode?`, `targetReps?`, `rounds?`:
+- **Step = 1 iteration** of the exercise (`flow`), while the **Routine Block** prescribes *how* it runs (`timed` AMRAP, `reps`, `hold`, `interval`, `breath`, `stillness`) + rest + chimes + music.
+- At initialization/playback, `resolveSeriesStep(step)` merges the canonical `ExerciseDefinition` with any block-level overrides.
 - **Backward compatibility:** Existing custom routines without `exerciseId` continue to work unchanged using their inline fields.
 
-### Tier 3: `SessionPlan` (`Session`)
-Unchanged: sequences `SessionPlanItem[]` (`profileId`, `transitionRestSeconds`, `musicOverrideId`).
+### Part 3: `SessionPlan` (`Session`)
+Sequences 1+ Routines (`SessionPlanItem[]` with `profileId`, `transitionRestSeconds`, `musicOverrideId`) and runs under the user's execution preferences (character, standing/chair, views, audio levels).
 
 ---
 

@@ -92,17 +92,64 @@ export interface StepAnimationRef {
   version?: string;
 }
 
+export type ExerciseCategory =
+  | 'mobility'
+  | 'strength'
+  | 'balance'
+  | 'cardio'
+  | 'mindfulness'
+  | 'breathing';
+
+export type ExercisePrescriptionMode =
+  | 'timed'
+  | 'reps'
+  | 'hold'
+  | 'interval'
+  | 'breath'
+  | 'stillness';
+
+export interface ExerciseMediaBinding {
+  animation?: StepAnimationRef & {
+    fallbackType?: 'robot-poc' | 'breathing' | 'stillness';
+  };
+  audio: {
+    cueId: string;
+    defaultVoiceScript: string;
+    completionCueId?: string;
+  };
+}
+
+export interface ExerciseDefinition {
+  id: string;
+  name: string;
+  description: string;
+  flow: string;
+  category: ExerciseCategory;
+  tags: string[];
+  defaultMode: ExercisePrescriptionMode;
+  defaultDurationSeconds: number;
+  defaultRestSeconds: number;
+  defaultTargetReps?: number;
+  supportedVariants: ExerciseVariant[];
+  media: ExerciseMediaBinding;
+  isDefault: boolean;
+}
+
 /**
- * Step in a series (exercise, meditation, etc.)
+ * Step (prescribed block) in a series (exercise, meditation, etc.)
  */
 export interface SeriesStep {
   id: string;
+  exerciseId?: string;
   name: string;
   description: string;
   durationMinutes: number;
   durationSeconds: number;
   restMinutes: number;
   restSeconds: number;
+  mode?: ExercisePrescriptionMode;
+  targetReps?: number;
+  rounds?: number;
   instructions?: string;
   cueId?: string;
   voiceScript?: string;
@@ -176,12 +223,16 @@ export interface UnifiedTimerState {
 export function convertExerciseSeriesToUnified(series: any): UnifiedProfile {
   const steps: SeriesStep[] = series.steps.map((step: any) => ({
     id: step.id,
+    exerciseId: step.exerciseId,
     name: step.name,
     description: step.description || '',
     durationMinutes: Math.floor(step.durationMinutes),
     durationSeconds: Math.round((step.durationMinutes % 1) * 60),
     restMinutes: Math.floor(step.restDurationMinutes),
     restSeconds: Math.round((step.restDurationMinutes % 1) * 60),
+    mode: step.mode,
+    targetReps: step.targetReps,
+    rounds: step.rounds,
     instructions: step.instructions,
     cueId: step.cueId,
     voiceScript: step.voiceScript,
