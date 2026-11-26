@@ -34,7 +34,15 @@ const PROFILE_MUSIC_STORAGE_KEY = 'livelong_profile_music';
 const CUSTOM_MUSIC_STORAGE_KEY = 'livelong_custom_music';
 const SESSION_PLANS_STORAGE_KEY = 'livelong_session_plans';
 const PROFILE_ORDER_STORAGE_KEY = 'livelong_profile_order';
+const PINNED_IDS_STORAGE_KEY = 'livelong_pinned_ids';
 const USER_DEFAULT_PREFS_KEY = 'livelong_user_default_preferences';
+
+const DEFAULT_PINNED_IDS = [
+  'default-session-morning-longevity',
+  'default-session-desk-focus',
+  'rajio-taiso-series',
+  'box-breathing-profile',
+];
 
 function loadStoredJson<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -171,6 +179,7 @@ interface UnifiedTimerStore {
   sessionPlans: SessionPlan[];
   activeSessionPlan: SessionPlan | null;
   activeSessionIndex: number;
+  pinnedIds: string[];
 
   // Preferences & Progress
   preferences: PracticePreferences;
@@ -193,6 +202,7 @@ interface UnifiedTimerStore {
   deleteSessionPlan: (planId: string) => void;
   startSessionPlan: (planId: string) => void;
   stopSessionPlan: () => void;
+  togglePin: (id: string) => void;
   updatePreferences: (updates: Partial<PracticePreferences>) => void;
   saveAsDefaults: () => void;
   resetAllPreferences: (toFactory?: boolean) => void;
@@ -239,6 +249,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   sessionPlans: [],
   activeSessionPlan: null,
   activeSessionIndex: 0,
+  pinnedIds: [],
   preferences: DEFAULT_PREFERENCES,
   hasSavedDefaults: false,
   profileMusicMap: {},
@@ -315,6 +326,12 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
         ? buildDefaultSessionPlans(allProfiles)
         : loadStoredJson<SessionPlan[]>(SESSION_PLANS_STORAGE_KEY, []);
     const storedProfileOrder = loadStoredJson<string[]>(PROFILE_ORDER_STORAGE_KEY, []);
+    const rawPinnedIds =
+      typeof window !== 'undefined' ? window.localStorage.getItem(PINNED_IDS_STORAGE_KEY) : null;
+    const storedPinnedIds =
+      rawPinnedIds === null
+        ? DEFAULT_PINNED_IDS
+        : loadStoredJson<string[]>(PINNED_IDS_STORAGE_KEY, []);
     const hasSavedDefaults = Boolean(
       loadStoredJson<Partial<PracticePreferences> | null>(USER_DEFAULT_PREFS_KEY, null)
     );
@@ -326,6 +343,7 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       customProfiles: storedCustom,
       profileOrder: storedProfileOrder,
       sessionPlans: storedSessionPlans,
+      pinnedIds: storedPinnedIds,
       preferences: storedPrefs,
       hasSavedDefaults,
       profileMusicMap: storedProfileMusic,
@@ -547,6 +565,19 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
   stopSessionPlan: () => {
     get().stopTimer();
     set({ activeSessionPlan: null, activeSessionIndex: 0 });
+  },
+
+  togglePin: (id: string) => {
+    const current = get().pinnedIds;
+    const next = current.includes(id) ? current.filter((x) => x !== id) : [id, ...current];
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(PINNED_IDS_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+    }
+    set({ pinnedIds: next });
   },
 
   updatePreferences: (updates: Partial<PracticePreferences>) => {

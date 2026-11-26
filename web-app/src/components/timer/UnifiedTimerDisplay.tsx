@@ -19,6 +19,10 @@ type ActiveTab = 'practice' | 'practices' | 'progress' | 'settings';
 
 export default function UnifiedTimerDisplay() {
   const {
+    profiles,
+    customProfiles,
+    sessionPlans,
+    pinnedIds,
     activeProfile,
     timerState,
     preferences,
@@ -26,6 +30,8 @@ export default function UnifiedTimerDisplay() {
     isIntroPlaying,
     activeSessionPlan,
     activeSessionIndex,
+    selectProfile,
+    startSessionPlan,
     updatePreferences,
     setBreathingCycles,
     startTimer,
@@ -345,6 +351,56 @@ export default function UnifiedTimerDisplay() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
+        {activeTab === 'practice' && pinnedIds.length > 0 && (
+          <div
+            data-testid="pinned-quick-start"
+            className="max-w-6xl w-full mx-auto px-3 sm:px-6 pt-2.5 pb-1 flex items-center gap-2 overflow-x-auto"
+          >
+            <span className="text-xs font-semibold text-slate-500 shrink-0">📌 Pinned:</span>
+            {pinnedIds.map((pinId) => {
+              const plan = sessionPlans.find((s) => s.id === pinId);
+              if (plan) {
+                const isSelected = activeSessionPlan?.id === plan.id;
+                return (
+                  <button
+                    key={pinId}
+                    type="button"
+                    onClick={() => {
+                      startSessionPlan(plan.id);
+                      const all = [...profiles, ...customProfiles];
+                      const first = all.find((p) => p.id === plan.items[0]?.profileId);
+                      if (first) selectProfile(first.id);
+                    }}
+                    className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-indigo-50'
+                    }`}
+                  >
+                    {plan.icon} {plan.name}
+                  </button>
+                );
+              }
+              const prof = [...profiles, ...customProfiles].find((p) => p.id === pinId);
+              if (!prof) return null;
+              const isSelected = !activeSessionPlan && activeProfile?.id === prof.id;
+              return (
+                <button
+                  key={pinId}
+                  type="button"
+                  onClick={() => selectProfile(prof.id)}
+                  className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    isSelected
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-blue-50'
+                  }`}
+                >
+                  {prof.icon} {prof.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
         {activeTab === 'practices' && (
           <div className="py-4">
             <UnifiedProfileManager onProfileSelect={() => setActiveTab('practice')} />

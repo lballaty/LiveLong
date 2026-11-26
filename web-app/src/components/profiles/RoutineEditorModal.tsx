@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import {
   BreathingPhase,
+  ExerciseDefinition,
   SeriesStep,
   UnifiedProfile,
   createBreathingProfile,
@@ -15,6 +16,7 @@ import {
   createSimpleProfile,
   calculateSeriesTotalSeconds,
 } from '@/types/unified-profile.types';
+import { EXERCISE_LIBRARY } from '@/data/exercise-library';
 import {
   MusicTrackOption,
   backgroundMusicService,
@@ -80,6 +82,31 @@ export default function RoutineEditorModal({
       ? profile.seriesConfig.steps.map((s) => ({ ...s }))
       : [makeEmptyStep(0)]
   );
+  const [showExercisePicker, setShowExercisePicker] = useState(false);
+  const [exerciseSearch, setExerciseSearch] = useState('');
+
+  const addExerciseFromLibrary = (ex: ExerciseDefinition) => {
+    const newStep: SeriesStep = {
+      id: `${ex.id}-${Date.now()}`,
+      exerciseId: ex.id,
+      name: ex.name,
+      description: ex.description,
+      durationMinutes: Math.floor(ex.defaultDurationSeconds / 60),
+      durationSeconds: ex.defaultDurationSeconds % 60,
+      restMinutes: Math.floor(ex.defaultRestSeconds / 60),
+      restSeconds: ex.defaultRestSeconds % 60,
+      mode: ex.defaultMode,
+      targetReps: ex.defaultTargetReps,
+      instructions: ex.flow,
+      cueId: ex.media.audio.cueId,
+      voiceScript: ex.media.audio.defaultVoiceScript,
+      animation: ex.media.animation
+        ? { pack: ex.media.animation.pack, version: ex.media.animation.version }
+        : undefined,
+    };
+    setSteps((prev) => [...prev, newStep]);
+    setShowExercisePicker(false);
+  };
 
   // Breathing state
   const initialPattern = profile?.breathingConfig?.pattern || [
@@ -457,18 +484,70 @@ export default function RoutineEditorModal({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
                 <span className="text-sm font-semibold text-slate-800">
                   Steps ({steps.length})
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setSteps((prev) => [...prev, makeEmptyStep(prev.length)])}
-                  className="px-2.5 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  + Add Step
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-testid="pick-exercise-button"
+                    onClick={() => setShowExercisePicker((v) => !v)}
+                    className="px-2.5 py-1 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                  >
+                    + Pick Exercise
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSteps((prev) => [...prev, makeEmptyStep(prev.length)])}
+                    className="px-2.5 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    + Add Step
+                  </button>
+                </div>
               </div>
+
+              {showExercisePicker && (
+                <div
+                  data-testid="exercise-library-picker"
+                  className="p-2.5 bg-white border border-emerald-200 rounded-lg space-y-2"
+                >
+                  <input
+                    type="text"
+                    value={exerciseSearch}
+                    onChange={(e) => setExerciseSearch(e.target.value)}
+                    placeholder="Search exercises (e.g. sit-ups, leg swings, plank)..."
+                    aria-label="Search exercise library"
+                    className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs"
+                  />
+                  <div className="max-h-40 overflow-y-auto divide-y divide-slate-100">
+                    {EXERCISE_LIBRARY.filter((ex) => {
+                      const q = exerciseSearch.trim().toLowerCase();
+                      if (!q) return true;
+                      return (
+                        ex.name.toLowerCase().includes(q) ||
+                        ex.tags.some((t) => t.includes(q)) ||
+                        ex.category.includes(q)
+                      );
+                    }).map((ex) => (
+                      <button
+                        key={ex.id}
+                        type="button"
+                        onClick={() => addExerciseFromLibrary(ex)}
+                        className="w-full text-left px-2 py-1.5 hover:bg-emerald-50 flex items-center justify-between gap-2"
+                      >
+                        <div>
+                          <div className="text-xs font-semibold text-slate-800">{ex.name}</div>
+                          <div className="text-[11px] text-slate-500 line-clamp-1">{ex.flow}</div>
+                        </div>
+                        <span className="text-[11px] font-medium text-emerald-700 shrink-0">
+                          + Add
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                 {steps.map((step, idx) => (

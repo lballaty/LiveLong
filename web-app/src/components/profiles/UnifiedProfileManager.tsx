@@ -8,10 +8,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUnifiedTimerStore } from '@/store/unifiedTimerStore';
 import {
+  ExerciseCategory,
   UnifiedProfile,
   SessionPlan,
   createSimpleProfile,
 } from '@/types/unified-profile.types';
+import { EXERCISE_LIBRARY } from '@/data/exercise-library';
 import {
   BUILTIN_MUSIC_TRACKS,
   MusicTrackOption,
@@ -26,6 +28,8 @@ import IconPicker, { RoutineIcon } from './IconPicker';
 interface ProfileCardProps {
   profile: UnifiedProfile;
   isActive: boolean;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
   selectedMusicId: string;
   musicOptions: MusicTrackOption[];
   isPreviewingMusic?: boolean;
@@ -44,6 +48,8 @@ interface ProfileCardProps {
 const ProfileCard: React.FC<ProfileCardProps> = ({
   profile,
   isActive,
+  isPinned,
+  onTogglePin,
   selectedMusicId,
   musicOptions,
   isPreviewingMusic = false,
@@ -115,6 +121,22 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           </div>
         </div>
         <div className="flex gap-1">
+          {onTogglePin && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePin();
+              }}
+              className={`p-1 rounded text-xs ${
+                isPinned ? 'bg-amber-100 text-amber-700' : 'text-slate-400 hover:bg-slate-100'
+              }`}
+              aria-label={isPinned ? 'Unpin routine' : 'Pin routine'}
+              title={isPinned ? 'Unpin' : 'Pin for quick start'}
+            >
+              📌
+            </button>
+          )}
           {onMoveEarlier && (
             <button
               type="button"
@@ -417,6 +439,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     profileOrder,
     activeProfile,
     sessionPlans,
+    pinnedIds,
     preferences,
     profileMusicMap,
     customMusicTracks,
@@ -431,6 +454,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     updateSessionPlan,
     deleteSessionPlan,
     startSessionPlan,
+    togglePin,
     updatePreferences,
     setProfileMusic,
     addCustomMusicTrack,
@@ -480,6 +504,9 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
   const [showForm, setShowForm] = useState(false);
   const [editingProfile, setEditingProfile] = useState<UnifiedProfile | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'simple' | 'series' | 'breathing'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [exerciseCategory, setExerciseCategory] = useState<'all' | ExerciseCategory>('all');
 
   useEffect(() => {
     initializeProfiles();
@@ -493,9 +520,24 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     if (idxB === -1) return -1;
     return idxA - idxB;
   });
-  const filteredProfiles = filterType === 'all'
-    ? allProfiles
-    : allProfiles.filter(p => p.type === filterType);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const matchesQuery = (name: string, desc: string) =>
+    !normalizedQuery ||
+    name.toLowerCase().includes(normalizedQuery) ||
+    desc.toLowerCase().includes(normalizedQuery);
+
+  const filteredSessionPlans = sessionPlans.filter(
+    (plan) =>
+      (!pinnedOnly || pinnedIds.includes(plan.id)) &&
+      matchesQuery(plan.name, plan.description)
+  );
+
+  const filteredProfiles = allProfiles.filter(
+    (p) =>
+      (filterType === 'all' || p.type === filterType) &&
+      (!pinnedOnly || pinnedIds.includes(p.id)) &&
+      matchesQuery(p.name, p.description)
+  );
 
   // Group profiles by type
   const simpleProfiles = filteredProfiles.filter(p => p.type === 'simple');
@@ -552,7 +594,30 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
           </div>
         </div>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <input
+            type="text"
+            data-testid="routine-search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search sessions, routines, or exercises..."
+            aria-label="Search sessions, routines, or exercises"
+            className="flex-1 min-w-[200px] px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+          />
+          <button
+            type="button"
+            onClick={() => setPinnedOnly((v) => !v)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+              pinnedOnly
+                ? 'bg-amber-100 border-amber-300 text-amber-800'
+                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            📌 Pinned ({pinnedIds.length})
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
           {([
             { id: 'all', label: 'All' },
             { id: 'series', label: 'Exercises' },
@@ -562,7 +627,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
             <button
               key={id}
               onClick={() => setFilterType(id)}
-              className={`px-3 py-1 rounded-md transition-colors ${
+              className={`px-3 py-1 rounded-md transition-colors text-sm ${
                 filterType === id
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -574,15 +639,15 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         </div>
       </div>
 
-      {sessionPlans.length > 0 && (
+      {filteredSessionPlans.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Composed Sessions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sessionPlans.map((plan) => (
+            {filteredSessionPlans.map((plan) => (
               <div
                 key={plan.id}
                 data-testid={`session-plan-${plan.id}`}
-                className="p-4 rounded-lg border-2 border-indigo-200 bg-indigo-50/40 flex flex-col justify-between gap-3"
+                className="p-3 sm:p-4 rounded-lg border-2 border-indigo-200 bg-indigo-50/40 flex flex-col justify-between gap-3"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
@@ -591,6 +656,19 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                       <h4 className="font-semibold text-slate-900">{plan.name}</h4>
                     </div>
                     <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => togglePin(plan.id)}
+                        className={`p-1 rounded text-xs ${
+                          pinnedIds.includes(plan.id)
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'text-slate-400 hover:bg-slate-100'
+                        }`}
+                        aria-label={pinnedIds.includes(plan.id) ? 'Unpin session' : 'Pin session'}
+                        title={pinnedIds.includes(plan.id) ? 'Unpin' : 'Pin for quick start'}
+                      >
+                        📌
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -643,6 +721,8 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
+                isPinned={pinnedIds.includes(profile.id)}
+                onTogglePin={() => togglePin(profile.id)}
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
                 isPreviewingMusic={previewingCardTrack === profile.id}
@@ -705,6 +785,8 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
+                isPinned={pinnedIds.includes(profile.id)}
+                onTogglePin={() => togglePin(profile.id)}
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
                 isPreviewingMusic={previewingCardTrack === profile.id}
@@ -767,6 +849,8 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                 key={profile.id}
                 profile={profile}
                 isActive={activeProfile?.id === profile.id}
+                isPinned={pinnedIds.includes(profile.id)}
+                onTogglePin={() => togglePin(profile.id)}
                 selectedMusicId={profileMusicMap[profile.id] || profile.musicTrackId || 'none'}
                 musicOptions={allMusicOptions}
                 isPreviewingMusic={previewingCardTrack === profile.id}
@@ -815,6 +899,61 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
           </div>
         </div>
       )}
+
+      <div data-testid="exercise-library-section" className="mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Exercise Library ({EXERCISE_LIBRARY.length})
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {(['all', 'mobility', 'strength', 'balance', 'cardio', 'mindfulness', 'breathing'] as const).map(
+              (cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setExerciseCategory(cat)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
+                    exerciseCategory === cat
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {EXERCISE_LIBRARY.filter(
+            (ex) =>
+              (exerciseCategory === 'all' || ex.category === exerciseCategory) &&
+              (!normalizedQuery ||
+                ex.name.toLowerCase().includes(normalizedQuery) ||
+                ex.flow.toLowerCase().includes(normalizedQuery) ||
+                ex.tags.some((t) => t.includes(normalizedQuery)))
+          ).map((ex) => (
+            <div
+              key={ex.id}
+              data-testid={`exercise-item-${ex.id}`}
+              className="p-3 rounded-lg border border-gray-200 bg-white flex flex-col justify-between gap-1.5"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-sm font-semibold text-slate-900">{ex.name}</h4>
+                <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 capitalize shrink-0">
+                  {ex.defaultMode}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 line-clamp-2">{ex.flow}</p>
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px] text-slate-500">
+                <span>{ex.media.animation?.version ? '🎬 Anim' : '🤖 Fallback'}</span>
+                <span>·</span>
+                <span>🗣️ {ex.media.audio.cueId}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {showForm && (
         <ProfileForm
