@@ -19,22 +19,23 @@ Canonical TypeScript interfaces live in:
 - `web-app/src/types/profile.types.ts`: `Profile`, `ProfileCategory`, `ExerciseSeries`, `ExerciseStep`, `BreathingPattern`, `Session`, `IProfileRepository`, `ISessionRepository`
 - `web-app/src/types/timer.types.ts`: `TimerState`, `TimerConfig`, `TimerData`, `TimerEvent`, `ITimerController`
 
-> **Note (Open Type Drift):** `ProfileManager.tsx`, `FocusTimerDisplay.tsx`, `TimerEngine.ts`, `FocusTimerEngine.ts`, `focusTimerStore.ts`, `timerStore.ts`, and `unifiedTimerStore.ts` currently have 14 TypeScript compilation errors due to interface mismatches between legacy `Profile`/`TimerData` types and updated unified types.
+> **Consolidation Note (Closed `2026-11-25`, `f0d67cc`):** The earlier parallel legacy files (`ProfileManager.tsx`, `FocusTimerDisplay.tsx`, `TimerEngine.ts`, `FocusTimerEngine.ts`, `focusTimerStore.ts`, `timerStore.ts`) were removed. `npm --prefix web-app run type-check` passes with 0 errors.
 
 ## 4. Business Logic
 
 ### Timer Execution Flow
 1. User selects a profile (`simple`, `series`, or `breathing`) in `UnifiedTimerDisplay`.
 2. `UnifiedTimerEngine` manages countdowns and phase transitions using timestamp-based elapsed tracking to prevent drift when backgrounded.
-3. Upon completion, audio/haptic notifications fire and `SessionRepository` / `SessionPersistenceService` record the session.
+3. Upon completion, audio/haptic notifications fire and `SessionRepository` / `unifiedTimerStore` record the session.
 
 ## 5. Verification Commands (`web-app/`)
 - Type-check: `npm run type-check` (`tsc --noEmit`)
 - Lint: `npm run lint` (`next lint`)
 - Unit tests + coverage: `npm run test:ci` (`jest --ci --coverage --maxWorkers=2`)
-- E2E tests: `npm run test:e2e` (`playwright test`)
+- Live-browser UI & User Journeys: `scripts/browser-ui-suite.js` and `scripts/browser-user-journeys.js` (Chrome via `chrome-devtools-mcp`)
+- E2E specs (Playwright): `npm run test:e2e` (`playwright test`)
 
 ---
 
-**Status**: Implemented & Verified (Routine & Session Editor + SessionPlan specs)
-**Last Updated**: 2026-11-23
+**Status**: Reconciled after `f0d67cc` & `73415ca`
+**Last Updated**: 2026-11-26

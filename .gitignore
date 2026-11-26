@@ -78,3 +78,6 @@ graphify-out/
 # Links to shared project-config port registry
 port-registry.json
 PORT-RESERVATIONS.md
+
+# Agent session artifacts
+.agent/

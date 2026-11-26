@@ -29,7 +29,7 @@
 
 ## ✅ Completed (Closed)
 - [x] Pivot from Flutter prototype (`focus_productivity_timer/`) and Node bootstrap to Next.js 14 PWA (`web-app/`)
-- [x] Implement IndexedDB persistence (`IndexedDBService`, `ProfileRepository`, `SessionRepository`) and `localStorage` session recovery (`SessionPersistenceService`)
+- [x] Implement IndexedDB persistence (`IndexedDBService`, `ProfileRepository`, `SessionRepository`) and `localStorage` persistence (`unifiedTimerStore`)
 - [x] Implement unified profile system (`UnifiedProfile`, `UnifiedTimerEngine`, `UnifiedTimerDisplay`, `UnifiedProfileManager`)
 - [x] Implement breathing patterns (`Box Breathing`, `4-7-8`, `Deep Breathing`, `Wim Hof`) and Japanese longevity series (`Rajio Taiso`, `Tai Chi`, `Shinrin-yoku`, `Ikigai`, `Zazen`)
 - [x] Configure Playwright (`web-app/playwright.config.ts`) and author E2E specs under `web-app/e2e/tests/`
@@ -48,7 +48,7 @@
 
 ### `openScriptAudio` Repo (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`)
 - [x] Implement `/audio/cues/<voiceId>/manifest.json` loader, `variants` + `@n` non-repeating selection, `Woman`/`Man` voice toggle, and 3-channel mixer
-- [ ] (`waiting on upstream`) Integrate 13-cue Box Breathing `woman` & `man` voice packs once upstream TTS licensing check completes
+- [ ] (`waiting on upstream`) Integrate 13-cue Box Breathing `woman` & `man` voice packs once upstream delivery lands in `_inbound-from-openscriptaudio.md` (upstream TTS licensing check resolved 2026-11-24; `woman` v3 + `man` v1 built in `openScriptAudio/runs/`)
 - [ ] (`waiting on upstream`) Integrate Rajio Taiso and remaining longevity series voice cue packs
 
 ---
@@ -84,4 +84,4 @@
 
 ---
 
-**Last Updated**: 2026-11-23
+**Last Updated**: 2026-11-26

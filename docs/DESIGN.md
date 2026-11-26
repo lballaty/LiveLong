@@ -10,7 +10,7 @@ LiveLong ⊹ is a frontend-first Progressive Web App (PWA) located in `web-app/`
 ### Design Principles
 - **Offline-First**: Core timer, breathing, and longevity series work without network connectivity.
 - **Component-Based UI**: Reusable React/Tailwind components for timers, breathing visualizers, and profile management.
-- **Test-Driven Quality**: Jest + React Testing Library + `fake-indexeddb` for unit tests, Playwright for cross-browser and mobile E2E tests.
+- **Test-Driven Quality**: Jest + React Testing Library + `fake-indexeddb` for unit/component tests, live-browser Chrome suites (`web-app/scripts/browser-ui-suite.js`, `browser-user-journeys.js` via `chrome-devtools-mcp`) for UI/E2E verification, and Playwright specs (`web-app/e2e/tests/`) for cross-browser/mobile coverage.
 
 ## 2. Component Design
 
@@ -30,7 +30,7 @@ LiveLong ⊹ is a frontend-first Progressive Web App (PWA) located in `web-app/`
 ### Supporting Modules
 - **Breathing Visualizer**: `web-app/src/components/breathing/BreathingVisualizer.tsx` with patterns in `src/data/breathing-patterns.ts` and `src/data/breathing-profiles.ts`.
 - **Longevity Exercise Series**: `web-app/src/data/japanese-exercise-series.ts` (Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen).
-- **Background Worker**: `web-app/public/timer-worker.js` and `BackgroundTimerWorkerService.ts` to mitigate browser background throttling.
+- **Background Worker**: `web-app/public/timer-worker.js` to mitigate browser background throttling.
 
 ### Consolidation Status (Closed 2026-11-25)
 The earlier parallel engines/stores/displays (`TimerEngine.ts`, `FocusTimerEngine.ts`, `timerStore.ts`, `focusTimerStore.ts`, `components/TimerDisplay.tsx`, `components/timer/TimerDisplay.tsx`, `FocusTimerDisplay.tsx`, `ProfileManager.tsx`) have been removed. All active UI and timer logic runs through `UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, and `UnifiedProfileManager`.
@@ -51,8 +51,8 @@ The earlier parallel engines/stores/displays (`TimerEngine.ts`, `FocusTimerEngin
 - **IndexedDB (`IndexedDBService`)**:
   - `profiles` object store (indexed by `category`, `updatedAt`)
   - `sessions` object store (indexed by `profileId`, `date`, `status`)
-- **`localStorage` (`SessionPersistenceService`)**:
-  - Active timer recovery state across page reloads/backgrounding.
+- **`localStorage` (`unifiedTimerStore`)**:
+  - Active timer state, custom routines, `SessionPlan`s, and user preferences across page reloads.
 
 ## 5. Deployment Design
 
@@ -63,4 +63,4 @@ The earlier parallel engines/stores/displays (`TimerEngine.ts`, `FocusTimerEngin
 ---
 
 **Status**: Implemented & Verified (Routine & Session Editor, Review Controls, External Asset Contracts)
-**Last Updated**: 2026-11-23
+**Last Updated**: 2026-11-26
