@@ -503,7 +503,9 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
 
   const [showForm, setShowForm] = useState(false);
   const [editingProfile, setEditingProfile] = useState<UnifiedProfile | null>(null);
-  const [filterType, setFilterType] = useState<'all' | 'simple' | 'series' | 'breathing'>('all');
+  const [filterType, setFilterType] = useState<
+    'all' | 'sessions' | 'series' | 'breathing' | 'simple' | 'library'
+  >('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [exerciseCategory, setExerciseCategory] = useState<'all' | ExerciseCategory>('all');
@@ -515,10 +517,14 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
   const allProfiles = [...profiles, ...customProfiles].sort((a, b) => {
     const idxA = profileOrder.indexOf(a.id);
     const idxB = profileOrder.indexOf(b.id);
-    if (idxA === -1 && idxB === -1) return 0;
-    if (idxA === -1) return 1;
-    if (idxB === -1) return -1;
-    return idxA - idxB;
+    if (idxA !== -1 || idxB !== -1) {
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    }
+    const pinA = pinnedIds.includes(a.id) ? 0 : 1;
+    const pinB = pinnedIds.includes(b.id) ? 0 : 1;
+    return pinA - pinB;
   });
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const matchesQuery = (name: string, desc: string) =>
@@ -526,11 +532,17 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     name.toLowerCase().includes(normalizedQuery) ||
     desc.toLowerCase().includes(normalizedQuery);
 
-  const filteredSessionPlans = sessionPlans.filter(
-    (plan) =>
-      (!pinnedOnly || pinnedIds.includes(plan.id)) &&
-      matchesQuery(plan.name, plan.description)
-  );
+  const filteredSessionPlans = sessionPlans
+    .filter(
+      (plan) =>
+        (!pinnedOnly || pinnedIds.includes(plan.id)) &&
+        matchesQuery(plan.name, plan.description)
+    )
+    .sort((a, b) => {
+      const pinA = pinnedIds.includes(a.id) ? 0 : 1;
+      const pinB = pinnedIds.includes(b.id) ? 0 : 1;
+      return pinA - pinB;
+    });
 
   const filteredProfiles = allProfiles.filter(
     (p) =>
@@ -617,17 +629,20 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
           {([
             { id: 'all', label: 'All' },
+            { id: 'sessions', label: 'Sessions' },
             { id: 'series', label: 'Exercises' },
             { id: 'breathing', label: 'Breathing' },
             { id: 'simple', label: 'Focus Timers' },
+            { id: 'library', label: 'Exercise Library' },
           ] as const).map(({ id, label }) => (
             <button
               key={id}
+              type="button"
               onClick={() => setFilterType(id)}
-              className={`px-3 py-1 rounded-md transition-colors text-sm ${
+              className={`px-2.5 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium ${
                 filterType === id
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -637,9 +652,52 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
             </button>
           ))}
         </div>
+
+        {filterType === 'all' && pinnedIds.length > 0 && !pinnedOnly && !normalizedQuery && (
+          <div
+            data-testid="manager-pinned-strip"
+            className="mb-2 p-2.5 rounded-lg bg-amber-50/70 border border-amber-200 flex items-center gap-2 overflow-x-auto"
+          >
+            <span className="text-xs font-semibold text-amber-800 shrink-0">📌 Pinned:</span>
+            {pinnedIds.map((pinId) => {
+              const plan = sessionPlans.find((s) => s.id === pinId);
+              if (plan) {
+                return (
+                  <button
+                    key={pinId}
+                    type="button"
+                    onClick={() => {
+                      startSessionPlan(plan.id);
+                      const first = allProfiles.find((p) => p.id === plan.items[0]?.profileId);
+                      if (first) onProfileSelect?.(first);
+                    }}
+                    className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-amber-200 text-slate-800 hover:bg-amber-100"
+                  >
+                    {plan.icon} {plan.name}
+                  </button>
+                );
+              }
+              const prof = allProfiles.find((p) => p.id === pinId);
+              if (!prof) return null;
+              return (
+                <button
+                  key={pinId}
+                  type="button"
+                  onClick={() => {
+                    selectProfile(prof.id);
+                    onProfileSelect?.(prof);
+                  }}
+                  className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-amber-200 text-slate-800 hover:bg-amber-100"
+                >
+                  {prof.icon} {prof.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {filteredSessionPlans.length > 0 && (
+      {(filterType === 'all' || filterType === 'sessions') && filteredSessionPlans.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Composed Sessions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -900,7 +958,8 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         </div>
       )}
 
-      <div data-testid="exercise-library-section" className="mb-6">
+      {(filterType === 'library' || Boolean(normalizedQuery)) && (
+        <div data-testid="exercise-library-section" className="mb-6">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 className="text-lg font-semibold text-gray-700">
             Exercise Library ({EXERCISE_LIBRARY.length})
@@ -954,6 +1013,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
           ))}
         </div>
       </div>
+      )}
 
       {showForm && (
         <ProfileForm
