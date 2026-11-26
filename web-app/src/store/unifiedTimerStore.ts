@@ -41,6 +41,7 @@ const DEFAULT_PINNED_IDS = [
   'default-session-morning-longevity',
   'default-session-desk-focus',
   'rajio-taiso-series',
+  'tai-chi-morning-series',
   'box-breathing-profile',
 ];
 

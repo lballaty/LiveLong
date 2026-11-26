@@ -515,6 +515,12 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
   }, [initializeProfiles]);
 
   const allProfiles = [...profiles, ...customProfiles].sort((a, b) => {
+    const pinIdxA = pinnedIds.indexOf(a.id);
+    const pinIdxB = pinnedIds.indexOf(b.id);
+    const isPinnedA = pinIdxA !== -1;
+    const isPinnedB = pinIdxB !== -1;
+    if (isPinnedA !== isPinnedB) return isPinnedA ? -1 : 1;
+
     const idxA = profileOrder.indexOf(a.id);
     const idxB = profileOrder.indexOf(b.id);
     if (idxA !== -1 || idxB !== -1) {
@@ -522,9 +528,9 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
       if (idxB === -1) return -1;
       return idxA - idxB;
     }
-    const pinA = pinnedIds.includes(a.id) ? 0 : 1;
-    const pinB = pinnedIds.includes(b.id) ? 0 : 1;
-    return pinA - pinB;
+
+    if (isPinnedA && isPinnedB) return pinIdxA - pinIdxB;
+    return 0;
   });
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const matchesQuery = (name: string, desc: string) =>
@@ -539,9 +545,13 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
         matchesQuery(plan.name, plan.description)
     )
     .sort((a, b) => {
-      const pinA = pinnedIds.includes(a.id) ? 0 : 1;
-      const pinB = pinnedIds.includes(b.id) ? 0 : 1;
-      return pinA - pinB;
+      const pinIdxA = pinnedIds.indexOf(a.id);
+      const pinIdxB = pinnedIds.indexOf(b.id);
+      const isPinnedA = pinIdxA !== -1;
+      const isPinnedB = pinIdxB !== -1;
+      if (isPinnedA && isPinnedB) return pinIdxA - pinIdxB;
+      if (isPinnedA !== isPinnedB) return isPinnedA ? -1 : 1;
+      return 0;
     });
 
   const filteredProfiles = allProfiles.filter(
