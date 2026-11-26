@@ -37,6 +37,7 @@ export default function SettingsView() {
           </label>
           <select
             value={preferences.characterId}
+            aria-label="Exercise Guide Character (Cast of 6)"
             onChange={(e) =>
               updatePreferences({ characterId: e.target.value as CastCharacterId })
             }
@@ -111,6 +112,7 @@ export default function SettingsView() {
                 type="checkbox"
                 checked={preferences.soundEnabled}
                 onChange={(e) => updatePreferences({ soundEnabled: e.target.checked })}
+                aria-label="Audio Chimes"
                 className="h-4 w-4 accent-blue-500"
               />
             </div>
@@ -143,6 +145,7 @@ export default function SettingsView() {
                 type="checkbox"
                 checked={preferences.voiceCuesEnabled}
                 onChange={(e) => updatePreferences({ voiceCuesEnabled: e.target.checked })}
+                aria-label="Script / Voice Guidance"
                 className="h-4 w-4 accent-blue-500"
               />
             </div>
@@ -229,6 +232,7 @@ export default function SettingsView() {
               type="checkbox"
               checked={preferences.vibrationEnabled}
               onChange={(e) => updatePreferences({ vibrationEnabled: e.target.checked })}
+              aria-label="Haptic Vibration"
               className="h-4 w-4 accent-blue-500"
             />
           </div>

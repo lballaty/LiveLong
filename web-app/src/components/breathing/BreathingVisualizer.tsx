@@ -288,7 +288,7 @@ export default function BreathingVisualizer({
                 key={step.key}
                 data-active={isCurrent ? 'true' : 'false'}
                 className={`rounded-lg border px-2 py-1.5 text-center transition-colors ${
-                  isCurrent ? step.activeClass : 'border-slate-200 bg-slate-50 text-slate-400'
+                  isCurrent ? step.activeClass : 'border-slate-200 bg-slate-50 text-slate-500'
                 }`}
               >
                 <div className="text-[11px] font-semibold truncate">{step.label}</div>

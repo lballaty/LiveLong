@@ -284,8 +284,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Create Custom Timer</h2>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-timer-title"
+        className="bg-white rounded-lg p-6 w-full max-w-md"
+      >
+        <h2 id="create-timer-title" className="text-xl font-bold mb-4">Create Custom Timer</h2>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -296,6 +301,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                aria-label="Name"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 required
               />
@@ -308,6 +314,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                aria-label="Description"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 rows={2}
               />
@@ -321,6 +328,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
                 <input
                   type="number"
                   value={formData.workMinutes}
+                  aria-label="Work Duration minutes"
                   onChange={(e) => setFormData({ ...formData, workMinutes: parseInt(e.target.value) || 0 })}
                   className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                   min="0"
@@ -330,6 +338,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
                 <input
                   type="number"
                   value={formData.workSeconds}
+                  aria-label="Work Duration seconds"
                   onChange={(e) => setFormData({ ...formData, workSeconds: parseInt(e.target.value) || 0 })}
                   className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                   min="0"
@@ -347,6 +356,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
                 <input
                   type="number"
                   value={formData.breakMinutes}
+                  aria-label="Break Duration minutes"
                   onChange={(e) => setFormData({ ...formData, breakMinutes: parseInt(e.target.value) || 0 })}
                   className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                   min="0"
@@ -356,6 +366,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onClose, onSave }) => {
                 <input
                   type="number"
                   value={formData.breakSeconds}
+                  aria-label="Break Duration seconds"
                   onChange={(e) => setFormData({ ...formData, breakSeconds: parseInt(e.target.value) || 0 })}
                   className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                   min="0"
@@ -814,8 +825,13 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
 
       {editingProfile && editingProfile.type === 'simple' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Edit Timer: {editingProfile.name}</h2>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-timer-title"
+            className="bg-white rounded-lg p-6 w-full max-w-md"
+          >
+            <h2 id="edit-timer-title" className="text-xl font-bold mb-4">Edit Timer: {editingProfile.name}</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -844,6 +860,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                     type="text"
                     name="name"
                     defaultValue={editingProfile.name}
+                    aria-label="Name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     required
                   />
@@ -854,6 +871,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                   <textarea
                     name="description"
                     defaultValue={editingProfile.description}
+                    aria-label="Description"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     rows={2}
                   />
@@ -866,6 +884,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                       type="number"
                       name="workMinutes"
                       defaultValue={editingProfile.simpleDuration?.workMinutes || 0}
+                      aria-label="Work Duration minutes"
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                       min="0"
                       max="999"
@@ -875,6 +894,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                       type="number"
                       name="workSeconds"
                       defaultValue={editingProfile.simpleDuration?.workSeconds || 0}
+                      aria-label="Work Duration seconds"
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                       min="0"
                       max="59"
@@ -890,6 +910,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                       type="number"
                       name="breakMinutes"
                       defaultValue={editingProfile.simpleDuration?.breakMinutes || 0}
+                      aria-label="Break Duration minutes"
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                       min="0"
                       max="999"
@@ -899,6 +920,7 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
                       type="number"
                       name="breakSeconds"
                       defaultValue={editingProfile.simpleDuration?.breakSeconds || 0}
+                      aria-label="Break Duration seconds"
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md"
                       min="0"
                       max="59"

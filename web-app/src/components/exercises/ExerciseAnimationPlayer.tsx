@@ -278,7 +278,7 @@ export default function ExerciseAnimationPlayer({
                 </g>
               )}
             </svg>
-            <span className="mt-1 text-[11px] uppercase tracking-wider text-slate-400">
+            <span className="mt-1 text-[11px] uppercase tracking-wider text-slate-500">
               {view} view{isRestOrStatic ? ' · static' : ''}
             </span>
           </div>
@@ -286,7 +286,7 @@ export default function ExerciseAnimationPlayer({
       </div>
       )}
 
-      <div className="w-full flex flex-wrap justify-between items-center gap-2 mt-4 text-[11px] text-slate-400">
+      <div className="w-full flex flex-wrap justify-between items-center gap-2 mt-4 text-[11px] text-slate-500">
         <span>
           {CAST_LABELS[characterId]} · {variant === 'chair' ? 'Chair' : 'Standing'} ·{' '}
           {views === 'both' ? 'Front + Side' : views === 'side' ? 'Side' : 'Front'}

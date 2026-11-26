@@ -56,11 +56,14 @@ export default function RoutineAudioModal({
       onClick={handleClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="routine-audio-title"
         className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 id="routine-audio-title" className="text-lg font-bold text-slate-900">
             🎛️ Audio Setup: {profile.name}
           </h2>
           <button
@@ -90,6 +93,7 @@ export default function RoutineAudioModal({
           <div className="flex items-center gap-2">
             <select
               value={selectedMusicId}
+              aria-label="Background music track"
               onChange={(e) => {
                 const val = e.target.value;
                 onMusicChange(val);
@@ -201,6 +205,7 @@ export default function RoutineAudioModal({
           <div className="flex items-center gap-2">
             <select
               value={preferences.voiceId}
+              aria-label="Guided voice"
               onChange={(e) =>
                 onUpdatePreferences({ voiceId: e.target.value as VoiceOptionId })
               }

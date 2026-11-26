@@ -26,6 +26,9 @@ export function RoutineIcon({
   imgClassName?: string;
 }) {
   if (isImageIcon(icon)) {
+    // Icons are user-imported data: URLs or local paths with arbitrary dimensions, which
+    // next/image cannot optimize; a plain decorative <img> is intended here.
+    // eslint-disable-next-line @next/next/no-img-element
     return <img src={icon} alt="" className={imgClassName} />;
   }
   return <span className={className}>{icon || '⏱️'}</span>;
@@ -96,6 +99,7 @@ export default function IconPicker({
             key={emoji}
             type="button"
             onClick={() => onChange(emoji)}
+            aria-pressed={value === emoji}
             className={`text-xl p-1.5 rounded-lg ${
               value === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-slate-100'
             }`}

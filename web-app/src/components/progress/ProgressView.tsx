@@ -30,28 +30,28 @@ export default function ProgressView() {
           <div className="text-3xl font-bold text-gray-900 mt-1">
             {stats?.completedSessions ?? 0}
           </div>
-          <div className="text-xs text-gray-400 mt-1">sessions</div>
+          <div className="text-xs text-gray-500 mt-1">sessions</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <div className="text-xs text-gray-500 uppercase tracking-wider">Total Time</div>
           <div className="text-3xl font-bold text-gray-900 mt-1">
             {Math.round(stats?.totalMinutes ?? 0)}
           </div>
-          <div className="text-xs text-gray-400 mt-1">minutes</div>
+          <div className="text-xs text-gray-500 mt-1">minutes</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <div className="text-xs text-gray-500 uppercase tracking-wider">Current Streak</div>
           <div className="text-3xl font-bold text-blue-600 mt-1">
             {stats?.currentStreak ?? 0}
           </div>
-          <div className="text-xs text-gray-400 mt-1">days</div>
+          <div className="text-xs text-gray-500 mt-1">days</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <div className="text-xs text-gray-500 uppercase tracking-wider">Best Streak</div>
           <div className="text-3xl font-bold text-emerald-600 mt-1">
             {stats?.longestStreak ?? 0}
           </div>
-          <div className="text-xs text-gray-400 mt-1">days</div>
+          <div className="text-xs text-gray-500 mt-1">days</div>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ export default function ProgressView() {
                   <div className="font-medium text-gray-800">
                     {getProfileName(session.profileId)}
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-500">
                     {new Date(session.startedAt).toLocaleString()}
                   </div>
                 </div>

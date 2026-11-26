@@ -227,9 +227,14 @@ export default function RoutineEditorModal({
       data-testid="routine-editor-modal"
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
-      <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="routine-editor-title"
+        className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-slate-900">
+          <h2 id="routine-editor-title" className="text-xl font-bold text-slate-900">
             {isEditing ? `Edit Routine: ${profile?.name}` : 'Create Routine'}
           </h2>
           <button
@@ -274,6 +279,7 @@ export default function RoutineEditorModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                aria-label="Name"
                 required
               />
             </div>
@@ -291,6 +297,7 @@ export default function RoutineEditorModal({
                     }
                   }}
                   className="flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                  aria-label="Default Music & Chime"
                 >
                   {musicOptions.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -307,6 +314,7 @@ export default function RoutineEditorModal({
                   }}
                   className="px-2.5 py-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-lg disabled:opacity-40"
                   title={isPreviewingMusic ? 'Stop music preview' : 'Preview music'}
+                  aria-label={isPreviewingMusic ? 'Stop music preview' : 'Preview music'}
                 >
                   {isPreviewingMusic ? '⏹' : '▶'}
                 </button>
@@ -318,6 +326,7 @@ export default function RoutineEditorModal({
                   }}
                   className="px-2.5 py-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-lg"
                   title="Preview chime"
+                  aria-label="Preview chime"
                 >
                   🔔
                 </button>
@@ -331,6 +340,7 @@ export default function RoutineEditorModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+              aria-label="Description"
               rows={2}
             />
           </div>
@@ -348,6 +358,7 @@ export default function RoutineEditorModal({
                     max="999"
                     value={workMinutes}
                     onChange={(e) => setWorkMinutes(parseInt(e.target.value, 10) || 0)}
+                    aria-label="Work Duration minutes"
                     className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm"
                   />
                   <span className="text-xs text-slate-600">min</span>
@@ -357,6 +368,7 @@ export default function RoutineEditorModal({
                     max="59"
                     value={workSeconds}
                     onChange={(e) => setWorkSeconds(parseInt(e.target.value, 10) || 0)}
+                    aria-label="Work Duration seconds"
                     className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm"
                   />
                   <span className="text-xs text-slate-600">sec</span>
@@ -371,6 +383,7 @@ export default function RoutineEditorModal({
                     max="999"
                     value={breakMinutes}
                     onChange={(e) => setBreakMinutes(parseInt(e.target.value, 10) || 0)}
+                    aria-label="Break Duration minutes"
                     className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm"
                   />
                   <span className="text-xs text-slate-600">min</span>
@@ -380,6 +393,7 @@ export default function RoutineEditorModal({
                     max="59"
                     value={breakSeconds}
                     onChange={(e) => setBreakSeconds(parseInt(e.target.value, 10) || 0)}
+                    aria-label="Break Duration seconds"
                     className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm"
                   />
                   <span className="text-xs text-slate-600">sec</span>
@@ -400,6 +414,7 @@ export default function RoutineEditorModal({
                       max="60"
                       value={warmupMinutes}
                       onChange={(e) => setWarmupMinutes(parseInt(e.target.value, 10) || 0)}
+                      aria-label="Warmup minutes"
                       className="w-16 px-2 py-1 border border-slate-300 rounded text-sm"
                     />
                     <span className="text-xs">m</span>
@@ -409,6 +424,7 @@ export default function RoutineEditorModal({
                       max="59"
                       value={warmupSeconds}
                       onChange={(e) => setWarmupSeconds(parseInt(e.target.value, 10) || 0)}
+                      aria-label="Warmup seconds"
                       className="w-16 px-2 py-1 border border-slate-300 rounded text-sm"
                     />
                     <span className="text-xs">s</span>
@@ -423,6 +439,7 @@ export default function RoutineEditorModal({
                       max="60"
                       value={cooldownMinutes}
                       onChange={(e) => setCooldownMinutes(parseInt(e.target.value, 10) || 0)}
+                      aria-label="Cooldown minutes"
                       className="w-16 px-2 py-1 border border-slate-300 rounded text-sm"
                     />
                     <span className="text-xs">m</span>
@@ -432,6 +449,7 @@ export default function RoutineEditorModal({
                       max="59"
                       value={cooldownSeconds}
                       onChange={(e) => setCooldownSeconds(parseInt(e.target.value, 10) || 0)}
+                      aria-label="Cooldown seconds"
                       className="w-16 px-2 py-1 border border-slate-300 rounded text-sm"
                     />
                     <span className="text-xs">s</span>
@@ -461,6 +479,7 @@ export default function RoutineEditorModal({
                         value={step.name}
                         onChange={(e) => updateStep(idx, { name: e.target.value })}
                         placeholder="Step name"
+                        aria-label={`Step ${idx + 1} name`}
                         className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm font-medium"
                       />
                       <div className="flex items-center gap-1">
@@ -549,6 +568,7 @@ export default function RoutineEditorModal({
                           })
                         }
                         placeholder="Animation pack"
+                        aria-label={`Step ${idx + 1} animation pack`}
                         className="px-2 py-1 border border-slate-300 rounded"
                       />
                     </div>
@@ -564,6 +584,7 @@ export default function RoutineEditorModal({
                           })
                         }
                         placeholder="Guided script / voice cue text"
+                        aria-label={`Step ${idx + 1} guided script / voice cue text`}
                         className="px-2 py-1 border border-slate-300 rounded"
                       />
                       <input
@@ -571,6 +592,7 @@ export default function RoutineEditorModal({
                         value={step.cueId || ''}
                         onChange={(e) => updateStep(idx, { cueId: e.target.value })}
                         placeholder="Cue ID (optional, e.g. rajio-taiso.arm-swings)"
+                        aria-label={`Step ${idx + 1} cue ID`}
                         className="px-2 py-1 border border-slate-300 rounded"
                       />
                     </div>

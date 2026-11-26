@@ -138,4 +138,67 @@ describe('RoutineEditorModal', () => {
       expect.objectContaining({ id: 'custom-series-1', type: 'series' })
     );
   });
+
+  // Accessibility (WCAG AA): the editor is a named modal dialog and its duration fields are
+  // reachable by their visible label text, so assistive tech announces what each field is.
+  it('is an accessible dialog whose simple-timer duration fields are labelled and saved', () => {
+    const onSave = jest.fn();
+    render(
+      <RoutineEditorModal
+        musicOptions={BUILTIN_MUSIC_TRACKS}
+        onClose={jest.fn()}
+        onSave={onSave}
+      />
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Create Routine' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Simple Timer' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Labelled Timer' } });
+    fireEvent.change(screen.getByLabelText('Work Duration minutes'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('Work Duration seconds'), { target: { value: '30' } });
+    fireEvent.change(screen.getByLabelText('Break Duration minutes'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('Break Duration seconds'), { target: { value: '15' } });
+    fireEvent.click(screen.getByTestId('save-routine-button'));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Labelled Timer',
+        type: 'simple',
+        simpleDuration: { workMinutes: 10, workSeconds: 30, breakMinutes: 2, breakSeconds: 15 },
+      })
+    );
+  });
+
+  it('labels and saves series warmup and cooldown durations', () => {
+    const onSave = jest.fn();
+    render(
+      <RoutineEditorModal
+        musicOptions={BUILTIN_MUSIC_TRACKS}
+        onClose={jest.fn()}
+        onSave={onSave}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Labelled Series' } });
+    fireEvent.change(screen.getByLabelText('Warmup minutes'), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText('Warmup seconds'), { target: { value: '15' } });
+    fireEvent.change(screen.getByLabelText('Cooldown minutes'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('Cooldown seconds'), { target: { value: '45' } });
+    expect(screen.getByLabelText('Step 1 name')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('save-routine-button'));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Labelled Series',
+        type: 'series',
+        seriesConfig: expect.objectContaining({
+          warmupMinutes: 1,
+          warmupSeconds: 15,
+          cooldownMinutes: 2,
+          cooldownSeconds: 45,
+        }),
+      })
+    );
+  });
 });

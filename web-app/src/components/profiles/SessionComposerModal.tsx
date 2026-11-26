@@ -75,9 +75,14 @@ export default function SessionComposerModal({
       data-testid="session-composer-modal"
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
-      <div className="bg-white rounded-xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="session-composer-title"
+        className="bg-white rounded-xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-xl"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-slate-900">
+          <h2 id="session-composer-title" className="text-xl font-bold text-slate-900">
             {plan ? `Edit Session: ${plan.name}` : 'Compose Multi-Routine Session'}
           </h2>
           <button
@@ -101,6 +106,7 @@ export default function SessionComposerModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                aria-label="Session Name"
                 required
               />
             </div>
@@ -120,6 +126,7 @@ export default function SessionComposerModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+              aria-label="Description"
             />
           </div>
 
@@ -156,9 +163,10 @@ export default function SessionComposerModal({
                   key={item.id}
                   className="flex items-center justify-between gap-2 p-2 bg-white border border-slate-200 rounded-lg"
                 >
-                  <span className="text-xs font-semibold text-slate-400 w-5">{idx + 1}.</span>
+                  <span className="text-xs font-semibold text-slate-500 w-5">{idx + 1}.</span>
                   <select
                     value={item.profileId}
+                    aria-label={`Session routine ${idx + 1}`}
                     onChange={(e) =>
                       setItems((prev) =>
                         prev.map((it, i) => (i === idx ? { ...it, profileId: e.target.value } : it))
