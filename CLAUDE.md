@@ -32,7 +32,7 @@ Continue iterating until all TODO items are complete or you need clarification.
 - **Project**: LiveLong ⊹ (longevity practice timer: focus, breathing, and exercise series)
 - **Active app**: `web-app/`, an offline-first Progressive Web App
 - **Stack**: Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4, Zustand, IndexedDB via `idb`, `next-pwa`
-- **Tests**: Jest + React Testing Library + `fake-indexeddb` (unit/component), plus live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`) run in the actual Chrome browser on this device (`docs/TEST-CHECKLIST.md`).
+- **Tests**: Jest + React Testing Library + `fake-indexeddb` (unit/component), plus live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`) run in the actual Chrome browser on this device (`docs/TEST-CHECKLIST.md`) for UI verification. Playwright specs (`web-app/e2e/tests/`) cover cross-browser and mobile.
 - **External Fleet Bundle Dependencies**:
   - **`animation` repo** (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/animation`): supplies `exercise-figures-runtime.js` (`web-app/src/lib/animations/`) + exercise/character JSON packs (`web-app/public/animations/`). Inbound: `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/_inbound-from-animation.md`; reply: `~/.ai-dev-dotfiles/.coordination/fleets/animation/mailbox/_inbound-from-livelong.md`.
   - **`openScriptAudio` repo** (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`): supplies voice guidance cue packs (`web-app/public/audio/cues/<voiceId>/manifest.json` + `.mp3` clips). Inbound: `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/_inbound-from-openscriptaudio.md`; reply: `~/.ai-dev-dotfiles/.coordination/fleets/openscriptaudio/mailbox/_inbound-from-livelong.md`.
@@ -44,7 +44,7 @@ Continue iterating until all TODO items are complete or you need clarification.
 
 **Kept for later:** the Flutter prototype (`focus_productivity_timer/`) is retained as the starting point for a possible future native Flutter build. It is not the active app; do not change it unless the task is that Flutter build.
 
-`docs/DESIGN.md` is the canonical architecture record, including the open consolidation gap (parallel timer engines, stores, and displays in `web-app/src/`).
+`docs/DESIGN.md` is the canonical architecture record. There is one timer path: `UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, `UnifiedProfileManager`. The old parallel engines, stores and displays were removed (`f0d67cc`, `3c0138b`), so do not reintroduce a second implementation.
 
 ---
 
@@ -87,7 +87,7 @@ npm --prefix web-app run build        # Production build
 npm --prefix web-app run lint         # ESLint
 npm --prefix web-app run type-check   # tsc --noEmit
 npm --prefix web-app run test:ci      # Jest, CI mode with coverage
-npm --prefix web-app run test:e2e     # Playwright E2E
+npm --prefix web-app run test:e2e     # Playwright E2E (cross-browser)
 npm --prefix web-app run test:e2e:mobile  # Playwright, mobile projects
 ```
 
@@ -105,7 +105,7 @@ git commit <path>... -m "..."         # Path-form commit only
 ## ✅ Validation Before Moving On
 
 For each completed task, verify:
-- ✅ Tests written and passing (Jest and Playwright)
+- ✅ Tests written and passing (Jest; live-browser suites for UI changes, per `docs/TEST-CHECKLIST.md`)
 - ✅ `type-check` and `lint` clean for the files you touched
 - ✅ Behaviour verified in a real or headless browser, with no console errors
 - ✅ Offline behaviour still works

@@ -1,4 +1,4 @@
-# File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/TestRepo/web-app/TESTING_REQUIREMENTS.md
+# File: /Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/TESTING_REQUIREMENTS.md
 # Description: Mandatory testing requirements for the Focus & Productivity Timer PWA
 # Author: Libor Ballaty <libor@arionetworks.com>
 # Created: 2025-09-30
@@ -18,7 +18,10 @@
 - **No UI feature can be considered complete without tests**
 
 ### Technology Stack (DO NOT CHANGE)
-- **E2E/UI Testing:** Playwright (ONLY - no switching to Cypress, Selenium, etc.)
+- **UI & User-Journey Verification:** live-browser suites in the real Chrome browser via `chrome-devtools-mcp`
+  (`scripts/browser-ui-suite.js`, `scripts/browser-user-journeys.js`); steps and latest results in
+  `docs/TEST-CHECKLIST.md`
+- **Cross-browser & Mobile E2E:** Playwright (no switching to Cypress, Selenium, etc.)
 - **Component Testing:** React Testing Library
 - **Unit Testing:** Jest
 - **NO technology changes without explicit user approval**
@@ -52,8 +55,12 @@ Must test for EVERY component:
 - Accessibility (ARIA attributes, keyboard navigation)
 - Responsive behavior
 
-### 3. E2E Tests (Playwright)
+### 3. E2E Tests (live-browser journeys + Playwright)
 **Coverage Target:** 100% of user workflows
+
+Every user workflow is verified in real Chrome by `scripts/browser-user-journeys.js` and every view and control
+by `scripts/browser-ui-suite.js` (results in `docs/TEST-CHECKLIST.md`). Playwright specs add cross-browser
+(Chromium, Firefox, WebKit) and mobile-emulation coverage of the scenarios below.
 
 #### Required Test Scenarios
 
@@ -179,32 +186,26 @@ Must test for EVERY component:
 
 ## 🛠️ Playwright Configuration Requirements
 
-### Test Structure
+### Test Structure (current)
 ```
 e2e/
-├── tests/
-│   ├── timer/
-│   │   ├── timer-basic.spec.ts
-│   │   ├── timer-advanced.spec.ts
-│   │   └── timer-edge-cases.spec.ts
-│   ├── profiles/
-│   │   ├── profile-crud.spec.ts
-│   │   └── profile-validation.spec.ts
-│   ├── statistics/
-│   │   └── statistics.spec.ts
-│   ├── navigation/
-│   │   └── navigation.spec.ts
-│   ├── settings/
-│   │   └── settings.spec.ts
-│   ├── pwa/
-│   │   ├── installation.spec.ts
-│   │   └── offline.spec.ts
-│   └── accessibility/
-│       └── a11y.spec.ts
-├── fixtures/
-├── helpers/
-└── playwright.config.ts
+└── tests/
+    ├── breathing/breathing-visualizer.spec.ts
+    ├── japanese-exercises/japanese-exercise-series.spec.ts
+    ├── persistence/session-tracking.spec.ts
+    ├── profiles/profile-manager.spec.ts
+    ├── pwa/service-worker.spec.ts
+    ├── timer/timer-background.spec.ts
+    ├── timer/timer-basic.spec.ts
+    ├── timer/timer-duration.spec.ts
+    ├── timer/timer-mobile.spec.ts
+    └── ui-enhancements/enhanced-profile-ui.spec.ts
+playwright.config.ts
 ```
+
+Not yet covered by a dedicated spec: statistics, navigation, settings, PWA installation and accessibility.
+Accessibility is currently covered by React Testing Library role/label queries (for example
+`RoutineEditorModal.test.tsx`) and the live-browser suites.
 
 ### Required Playwright Features
 - Visual regression testing (screenshots)
@@ -265,31 +266,26 @@ test.describe('Component/Feature Name', () => {
 - Parallel test execution
 
 ### Test Commands
+Run from `web-app/` (or prefix with `npm --prefix web-app` from the repo root):
+
 ```bash
-# Unit tests
+# Unit & component tests (Jest + RTL), CI mode with coverage; enforces the 80% threshold
+npm run test:ci
+
+# Unit tests only / coverage report / watch mode
+npm run test:unit
+npm run test:coverage
 npm test
 
-# Component tests
-npm run test:components
-
-# E2E tests (Playwright)
+# E2E tests (Playwright): all projects, mobile projects, interactive UI, report
 npm run test:e2e
-
-# All tests
-npm run test:all
-
-# Visual regression tests
-npm run test:visual
-
-# Accessibility tests
-npm run test:a11y
-
-# Coverage report
-npm run test:coverage
-
-# Watch mode
-npm run test:watch
+npm run test:e2e:mobile
+npm run test:e2e:ui
+npm run test:e2e:report
 ```
+
+Live-browser UI and user-journey suites run in real Chrome through `chrome-devtools-mcp`
+(`scripts/browser-ui-suite.js`, `scripts/browser-user-journeys.js`); see `docs/TEST-CHECKLIST.md`.
 
 ---
 

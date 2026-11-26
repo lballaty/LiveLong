@@ -65,11 +65,11 @@ This file defines how AI assistants (Claude Code, ChatGPT, etc.) must work on th
 
 **Test Suite Locations:**
 ```
-tests/
-  ├── unit/              # Unit tests (isolated components)
-  ├── integration/       # Integration tests (component interactions)
-  ├── regression/        # Regression test suites
-  └── fixtures/          # Test data and mocks
+web-app/
+  ├── src/**/__tests__/  # Jest + React Testing Library unit/component tests, next to the code
+  ├── scripts/           # Live-browser UI suite and user-journey suite (real Chrome)
+  └── e2e/tests/         # Playwright specs (cross-browser / mobile)
+docs/TEST-CHECKLIST.md   # Step-by-step traceability and latest results for every suite
 ```
 
 ### Step 7 — Commit (Mandatory)
@@ -115,9 +115,8 @@ Questions: libor@arionetworks.com
 ## 2) Code Standards
 
 ### Language Standards
-* **Python**: 3.11+ with type hints, PEP 8 compliant
-* **JavaScript/TypeScript**: ES Modules, strict mode
-* **Flutter**: Null safety enabled
+* **TypeScript (the app, `web-app/`)**: TypeScript 5, ES Modules, strict mode, React function components
+* **Flutter (only `focus_productivity_timer/`, kept for a possible future native build)**: Null safety enabled
 * Clear comments and docstrings (inputs, outputs, errors)
 * Explicit error handling, no silent failures
 
@@ -142,16 +141,16 @@ Questions: libor@arionetworks.com
 
 **Examples:**
 
-```python
-# File: src/utils/data_loader.py
-# Purpose: Provides helper functions to load, validate, and preprocess input
-# data for the application. Handles CSV and JSON formats with schema validation.
+```typescript
+// File: web-app/src/services/timer/UnifiedTimerEngine.ts
+// Description: Drives timer, series and breathing sessions from wall-clock timestamps so the
+// countdown stays accurate across pause/resume and background tabs.
 ```
 
-```javascript
-// File: src/api/auth.js
-// Purpose: Authentication middleware for Express.js. Validates JWT tokens,
-// manages user sessions, and provides role-based access control.
+```typescript
+// File: web-app/src/components/settings/SettingsView.tsx
+// Description: Settings view for guide character, audio channels and haptics; persists
+// preferences through the unified timer store.
 ```
 
 **For files that don't support comments** (binary assets, images, compiled artifacts):
@@ -166,27 +165,29 @@ Questions: libor@arionetworks.com
 
 ### Directory Structure
 ```
-project-root/
-├── src/
-│   ├── core/           # Core business logic
-│   ├── api/            # API endpoints
-│   ├── models/         # Data models
-│   ├── utils/          # Utility functions
-│   └── config/         # Configuration
-├── tests/
-│   ├── unit/           # Unit tests
-│   ├── integration/    # Integration tests
-│   ├── regression/     # Regression test suites
-│   └── fixtures/       # Test data
+LiveLong/
+├── web-app/                # The app (Next.js 14 PWA); all npm scripts run here
+│   ├── src/
+│   │   ├── app/            # App Router entry
+│   │   ├── components/     # Feature UI and modals (tests in __tests__/)
+│   │   ├── data/           # Breathing patterns, exercise series
+│   │   ├── lib/            # Vendored animation runtime
+│   │   ├── services/       # Timer engine, audio, storage, repositories
+│   │   ├── store/          # Zustand store
+│   │   └── types/          # Shared types
+│   ├── scripts/            # Live-browser UI and user-journey suites
+│   ├── e2e/                # Playwright specs
+│   └── public/             # PWA assets, animation and audio packs
+├── focus_productivity_timer/  # Flutter prototype (kept, not active)
 ├── docs/
 │   ├── TODO.md
 │   ├── REQUIREMENTS.md
 │   ├── SPECIFICATIONS.md
-│   └── DESIGN.md
-├── scripts/            # Build/deployment scripts
-├── .claude/            # Claude Code configuration
-├── PROJECT_RULES.md    # This file
-├── CLAUDE.md           # Claude quick start
+│   ├── DESIGN.md
+│   └── TEST-CHECKLIST.md
+├── .claude/                # Claude Code project instructions
+├── PROJECT_RULES.md        # This file
+├── CLAUDE.md / AGENTS.md / GEMINI.md  # Per-agent instructions
 └── README.md
 ```
 
@@ -219,15 +220,19 @@ For each task, output in this order:
 
 ### CRITICAL: GUI Testing Requirements (MANDATORY)
 * **ALL GUI functions must be tested WITHOUT EXCEPTION**
-* **UI Testing Tool**: Playwright (DO NOT change without explicit user approval)
+* **UI verification**: the live-browser suites in the real Chrome browser via `chrome-devtools-mcp`
+  (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`), tracked in
+  `docs/TEST-CHECKLIST.md`
+* **Cross-browser / mobile E2E**: Playwright (`web-app/e2e/tests/`)
+* Do not change or drop either tool without explicit user approval
 * **Coverage Requirement**: 100% of UI components and user interactions
 * **Every UI feature must have corresponding tests before considered complete**
 * **See `web-app/TESTING_REQUIREMENTS.md` for detailed requirements**
 
 ### Test Coverage Requirements
-* **Unit tests**: All business logic functions (80% minimum coverage)
-* **Component tests**: ALL React/UI components (100% coverage)
-* **E2E tests**: ALL user workflows with Playwright (100% coverage)
+* **Unit tests**: All business logic functions (80% minimum statement coverage, enforced by Jest)
+* **Component tests**: ALL React/UI components (React Testing Library)
+* **E2E tests**: ALL user workflows in the live-browser journey suite; Playwright for cross-browser/mobile
 * **Integration tests**: API endpoints, database operations, external services
 * **Edge cases**: Error handling, boundary conditions, null/undefined values
 * **Accessibility tests**: WCAG compliance for all UI components
@@ -235,17 +240,12 @@ For each task, output in this order:
 
 ### Test Commands
 ```bash
-# Python
-pytest                          # Run all tests
-pytest --cov                    # With coverage report
-pytest tests/unit/              # Specific directory
-pytest -k "test_auth"           # Specific pattern
-
-# Node.js
-npm test                        # Run all tests
-npm run test:coverage           # With coverage report
-npm test -- --testPathPattern=auth  # Specific tests
-npm run test:watch              # Watch mode
+npm --prefix web-app run type-check     # TypeScript
+npm --prefix web-app run lint           # ESLint
+npm --prefix web-app run test:ci        # Jest, CI mode with coverage
+npm --prefix web-app run test:unit      # Jest, unit tests only
+npm --prefix web-app run test:e2e       # Playwright
+npm --prefix web-app run build          # Production build
 ```
 
 ### Test Quality Requirements
@@ -280,7 +280,8 @@ Before marking any task as complete, verify:
 ## 8) AI Assistant Specific Instructions
 
 ### For Claude Code
-* You have full autonomy in this repo via `.claude/settings.local.json`.
+* Permissions come from the global Claude Code settings in `~/.ai-dev-dotfiles` and the session's launch
+  mode; `.claude/settings.local.json` is personal and gitignored.
 * Work through `docs/TODO.md` systematically.
 * Commit frequently as you complete features.
 * Follow all steps in the workflow above.
@@ -298,6 +299,9 @@ Before marking any task as complete, verify:
 * Check `git log` for recent changes before starting work.
 * Read `docs/DESIGN.md` for architectural context.
 * Never assume - always verify against documentation.
+* Reserve every file with `queuectl` before editing it, and release it when done.
+* In the `livelong` fleet, assignments and status go through
+  `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/`; workers use their own worktree.
 
 ---
 
@@ -342,7 +346,7 @@ Questions: libor@arionetworks.com
 
 ---
 
-**Last Updated**: $(date +%Y-%m-%d)
-**Project**: ${PROJECT_NAME}
+**Last Updated**: 2026-11-26
+**Project**: LiveLong ⊹
 **Status**: Active Development
-**Applies to**: Claude Code, ChatGPT, and all AI development assistants
+**Applies to**: Claude Code, Codex, Gemini / Antigravity, ChatGPT, and all AI development assistants

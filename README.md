@@ -10,17 +10,17 @@ A productivity timer inspired by Japanese longevity wisdom, combining traditiona
 - Custom durations - Flexible timing with minutes and seconds
 
 ### 🏯 **Japanese Longevity Exercises**
-- **Rajio Taiso** - Traditional Japanese radio calisthenics
-- **Tai Chi Morning** - Gentle flowing movements
-- **Shinrin-yoku** - Forest bathing meditation
-- **Ikigai Reflection** - Purpose and meaning contemplation
-- **Zazen Sitting** - Seated Zen meditation
+- **Rajio Taiso Complete Series** - Traditional Japanese radio calisthenics, with animated guide figures
+- **Tai Chi Morning Flow** - Gentle flowing movements
+- **Shinrin-yoku Practice** - Forest bathing meditation
+- **Custom series** - Author your own step-by-step routines with guided voice cues
 
 ### 🫁 **Breathing Exercises with Visual Guides**
-- **Box Breathing** - Navy SEAL focus technique (4-4-4-4)
-- **4-7-8 Relaxation** - Dr. Andrew Weil's natural tranquilizer
+- **Box Breathing** - Equal four-count breathing (4-4-4-4)
+- **4-7-8 Relaxation** - Calming extended exhale
 - **Deep Breathing** - Simple stress relief breathing
-- **Immersive Experience** - Full-screen breathing visualizer with background animations
+- **Wim Hof Breathing** - Energising breath rounds
+- **Immersive Experience** - Breathing visualizer with background animations and audio cues
 
 ### 📱 **Progressive Web App (PWA)**
 - Install on mobile devices
@@ -54,17 +54,19 @@ A productivity timer inspired by Japanese longevity wisdom, combining traditiona
 
 ```bash
 # Install dependencies
-cd web-app && npm install
+npm --prefix web-app install
 
-# Start development server
-cd web-app && npm run dev
+# Start development server (port 9000)
+npm --prefix web-app run dev
 
 # Build for production
-cd web-app && npm run build
+npm --prefix web-app run build
 
-# Run tests
-cd web-app && npx playwright test
+# Run unit & component tests
+npm --prefix web-app run test:ci
 ```
+
+All app code and npm scripts live in `web-app/`; there is no root `package.json`.
 
 ---
 
@@ -114,60 +116,55 @@ Read GEMINI.md and follow the quick start instructions.
 
 ### 🤝 Multi-AI Coordination
 
-**All three AI assistants can work on the same project!**
+Several agents (Claude Code, Codex, Antigravity/Gemini) can work on LiveLong at once:
 
-- **Source of Truth:** `docs/TODO.md`
-- **Handoff Protocol:**
-  1. Update TODO.md with current state
-  2. Commit all changes
-  3. Document blockers or questions
-  4. Next AI checks git log and TODO.md
-
-**Example workflow:**
-- Morning: Use Claude Code for rapid feature development
-- Afternoon: Switch to Gemini for code review and optimization
-- Evening: Use ChatGPT for documentation and planning
-- **All changes tracked in TODO.md for seamless handoffs**
+- **Task tracker:** `docs/TODO.md`
+- **Fleet coordination:** agents launched through the `-w` wrappers join the `livelong` fleet; assignments and
+  status flow through `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/`.
+- **File reservation:** reserve every file with `queuectl` before editing it, and release it when done.
+- **Worktrees:** workers use their own worktree (`~/.ai-dev-dotfiles/tools/setup-worktree.sh`); the primary
+  checkout is the lead's integration surface.
+- **Per-agent instructions:** `CLAUDE.md` (Claude Code), `AGENTS.md` (Codex), `GEMINI.md` (Gemini / Antigravity).
 
 ---
 
 ## 📋 Key Files
 
 ### Configuration
-- **`.claude/settings.local.json`** - Claude Code permissions and hooks
 - **`.gemini/config.yaml`** - Gemini workflow configuration
 - **`CLAUDE.md`** - Quick start guide for Claude Code
-- **`GEMINI.md`** - Quick start guide for Google Gemini
+- **`AGENTS.md`** - Project facts for Codex agents
+- **`GEMINI.md`** - Project facts for Gemini / Antigravity agents
 - **`PROJECT_RULES.md`** - Universal development rules for all AI assistants
+
+Claude Code permissions come from the global settings in `~/.ai-dev-dotfiles`; `.claude/settings.local.json`
+is personal and gitignored.
 
 ### Documentation
 - **`docs/TODO.md`** - Current tasks and priorities
 - **`docs/REQUIREMENTS.md`** - What we're building
 - **`docs/SPECIFICATIONS.md`** - Technical implementation details
-- **`docs/DESIGN.md`** - Architecture and design decisions
+- **`docs/DESIGN.md`** - Architecture and design decisions (canonical)
+- **`docs/TEST-CHECKLIST.md`** - Test and user-journey traceability, with latest results
 
 ### Project Structure
 ```
-TestRepo/
-├── .claude/
-│   └── settings.local.json    # Claude Code configuration
-├── .gemini/
-│   ├── config.yaml            # Gemini workflow configuration
-│   └── style-guide.md         # Gemini style guide
-├── src/
-│   ├── core/                  # Core business logic
-│   ├── api/                   # API endpoints
-│   ├── models/                # Data models
-│   ├── utils/                 # Utility functions
-│   └── config/                # Configuration
-├── tests/
-│   ├── unit/                  # Unit tests
-│   ├── integration/           # Integration tests
-│   ├── regression/            # Regression test suites
-│   └── fixtures/              # Test data
-├── docs/                      # Documentation
-├── CLAUDE.md                  # Claude quick start
-├── GEMINI.md                  # Gemini quick start
+LiveLong/
+├── web-app/                   # The app: Next.js 14 PWA
+│   ├── src/
+│   │   ├── app/               # App Router entry
+│   │   ├── components/        # Session, Routines, Progress, Settings UI and modals
+│   │   ├── data/              # Breathing patterns and exercise series
+│   │   ├── lib/               # Vendored animation runtime (from the animation repo)
+│   │   ├── services/          # Timer engine, audio, storage, repositories
+│   │   ├── store/             # Zustand store (unifiedTimerStore)
+│   │   └── types/             # Shared TypeScript types
+│   ├── scripts/               # Live-browser UI and user-journey suites
+│   ├── e2e/                   # Playwright specs (cross-browser / mobile)
+│   └── public/                # PWA manifest, icons, service worker, animation & audio packs
+├── focus_productivity_timer/  # Flutter prototype, kept for a possible future native build
+├── docs/                      # Requirements, specifications, design, TODO, test checklist
+├── CLAUDE.md / AGENTS.md / GEMINI.md  # Per-agent instructions
 ├── PROJECT_RULES.md           # Development rules
 └── README.md                  # This file
 ```
@@ -200,17 +197,18 @@ When switching between AI assistants:
 
 ### Run Tests
 ```bash
-
-# Node.js
-npm test                        # All tests
-npm run test:coverage           # With coverage
-npm run test:unit               # Unit tests only
-npm run test:integration        # Integration tests only
-npm test -- --testPathPattern=auth  # Specific tests
+npm --prefix web-app run type-check   # TypeScript
+npm --prefix web-app run lint         # ESLint
+npm --prefix web-app run test:ci      # Jest + React Testing Library, with coverage
+npm --prefix web-app run test:e2e     # Playwright (cross-browser / mobile)
 ```
 
+**UI and user-journey verification** runs in the real Chrome browser on this device via `chrome-devtools-mcp`,
+using `web-app/scripts/browser-ui-suite.js` and `web-app/scripts/browser-user-journeys.js`. Steps and latest
+results are tracked in `docs/TEST-CHECKLIST.md`.
+
 ### Test Coverage Goals
-- **Minimum**: 80% code coverage
+- **Minimum**: 80% statement coverage (enforced by `web-app/jest.config.js`)
 - **Critical paths**: 100% coverage
 - **All edge cases**: Tested
 
@@ -253,23 +251,21 @@ Questions: libor@arionetworks.com
 
 ## 📊 Project Status
 
-- **Status**: Initialized
+- **Status**: Active development (offline-first PWA in `web-app/`)
 - **Created**: 2025-09-30
-- **Template**: node
-- **AI Ready**: ✅ Claude Code + Google Gemini (autonomous) + ChatGPT (guided)
-- **Multi-AI Coordination**: ✅ Enabled via docs/TODO.md
+- **AI Ready**: ✅ Claude Code, Codex, Gemini / Antigravity (autonomous) + ChatGPT (guided)
+- **Multi-AI Coordination**: ✅ `livelong` fleet mailbox + `queuectl` file reservation; tasks in `docs/TODO.md`
 
 ---
 
 ## 🚦 Next Steps
 
-1. **Fill in documentation**: Update REQUIREMENTS.md, SPECIFICATIONS.md, DESIGN.md
-2. **Define first tasks**: Add specific items to TODO.md
-3. **Start development**: Choose your AI assistant:
+1. **Check current work**: `docs/TODO.md` (open items are mostly waiting on upstream animation and voice packs)
+2. **Start development**: Choose your AI assistant:
    - **Claude Code**: Open in Claude, say "Read CLAUDE.md and start"
-   - **Google Gemini**: Share files, say "Read GEMINI.md and start"
+   - **Codex**: Reads `AGENTS.md` automatically
+   - **Gemini / Antigravity**: Say "Read GEMINI.md and start"
    - **ChatGPT**: Share PROJECT_RULES.md, say "Follow these rules"
-4. **Let AI build**: Follow the autonomous workflow
-5. **Switch AIs anytime**: All coordinate via TODO.md
+3. **Coordinate**: Reserve files before editing; report status through the fleet mailbox
 
 **Happy coding with your AI team! 🎉**

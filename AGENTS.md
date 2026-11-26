@@ -21,7 +21,7 @@ If you are in the `livelong` fleet, read your inbox at `~/.ai-dev-dotfiles/.coor
 
 ## 📋 Project
 
-- **LiveLong ⊹**: longevity practice timer (focus, guided breathing, exercise series such as Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen).
+- **LiveLong ⊹**: longevity practice timer (focus, guided breathing, exercise series such as Rajio Taiso, Tai Chi, Shinrin-yoku, plus user-authored series).
 - **Active app:** `web-app/`, an offline-first Progressive Web App with no backend.
 - **Stack:** Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4, Zustand, IndexedDB via `idb`, `next-pwa`.
 - **Architecture:** Build on the `Unified*` implementation (`UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, `UnifiedProfileManager`). See `docs/DESIGN.md` for canonical architecture.
@@ -48,6 +48,7 @@ If you are in the `livelong` fleet, read your inbox at `~/.ai-dev-dotfiles/.coor
 
 - **Unit & Component Tests:** Jest + React Testing Library + `fake-indexeddb` (`cd web-app && npx jest --ci --maxWorkers=2`).
 - **UI & User Journey Tests:** Run against the actual Chrome browser on this device (`chrome-devtools-mcp`) using `web-app/scripts/browser-ui-suite.js` and `web-app/scripts/browser-user-journeys.js` (tracked in `docs/TEST-CHECKLIST.md`). Use actual-browser testing rather than Playwright for UI verification.
+- **Cross-browser & Mobile E2E:** Playwright specs in `web-app/e2e/tests/` (`npm --prefix web-app run test:e2e`).
 - **Type-check & Lint:** `npm --prefix web-app run type-check` and `npm --prefix web-app run lint`.
 - **Commits:** Path-form commits (`git commit <path>... -m "..."`), no `Co-Authored-By` trailers.
 

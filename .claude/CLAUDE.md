@@ -1,9 +1,9 @@
 # LiveLong ⊹ - Project Development Standards
 
 ## Project Overview
-LiveLong is an offline-first Progressive Web App for longevity practice: focus timers, guided breathing, and exercise series (Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen). The app lives in `web-app/` and runs entirely in the browser with no backend.
+LiveLong is an offline-first Progressive Web App for longevity practice: focus timers, guided breathing, and exercise series (Rajio Taiso, Tai Chi, Shinrin-yoku, plus user-authored series). The app lives in `web-app/` and runs entirely in the browser with no backend.
 
-The `TestRepo` Node/Supabase scaffold is **superseded**. The earlier Flutter prototype (`focus_productivity_timer/`) is **kept** as the starting point for a possible future native Flutter build, but it is not the active app. Do not apply Flutter, SQLite, or Supabase patterns to `web-app/`, and do not change the Flutter prototype unless the task is that Flutter build. `docs/DESIGN.md` is the canonical architecture record.
+The `TestRepo` Node/Supabase scaffold has been **removed** (there is no root `package.json`). The earlier Flutter prototype (`focus_productivity_timer/`) is **kept** as the starting point for a possible future native Flutter build, but it is not the active app. Do not apply Flutter, SQLite, or Supabase patterns to `web-app/`, and do not change the Flutter prototype unless the task is that Flutter build. `docs/DESIGN.md` is the canonical architecture record.
 
 ## Tech Stack (ENFORCED)
 
@@ -13,7 +13,7 @@ The `TestRepo` Node/Supabase scaffold is **superseded**. The earlier Flutter pro
 - **Persistence:** IndexedDB via `idb`, plus `localStorage` for small settings
 - **Offline:** `next-pwa` service worker; `web-app/public/timer-worker.js` for background timing
 - **Audio:** Web Audio API chimes and optional Web Speech API voice cues (`AudioCueService`)
-- **Tests:** Jest + React Testing Library + `fake-indexeddb` (unit/integration), Playwright (E2E, desktop and mobile)
+- **Tests:** Jest + React Testing Library + `fake-indexeddb` (unit/component); live-browser UI and user-journey suites in real Chrome via `chrome-devtools-mcp` (`web-app/scripts/`, results in `docs/TEST-CHECKLIST.md`) for UI verification; Playwright (`web-app/e2e/`) for cross-browser and mobile
 
 Do not add a backend, a server database, or a new state library without a design decision recorded in `docs/DESIGN.md`.
 
@@ -25,27 +25,28 @@ web-app/
 │   ├── app/          # Next.js App Router entry (page.tsx renders UnifiedTimerDisplay)
 │   ├── components/   # Feature UI: breathing, exercises, profiles, progress, pwa, settings, timer
 │   ├── data/         # Static practice data (breathing patterns/profiles, exercise series)
-│   ├── hooks/        # React hooks
+│   ├── lib/          # Vendored animation runtime (from the animation repo)
 │   ├── services/     # audio, database, pwa, repositories, storage, timer
-│   ├── store/        # Zustand stores
+│   ├── store/        # Zustand store (unifiedTimerStore)
 │   ├── types/        # Shared TypeScript types
 │   └── utils/        # Helpers
+├── scripts/          # Live-browser UI and user-journey suites
 ├── e2e/              # Playwright: tests/, fixtures/, helpers/
-└── public/           # PWA manifest, icons, timer worker
+└── public/           # PWA manifest, icons, service & timer workers, animation and audio packs
 ```
 
 Unit tests sit next to the code in `__tests__/` folders.
 
 ## Active Implementation (build on these)
 
-The 4-view shell (Practice, Practices, Progress, Settings) runs on the `Unified*` path:
+The 4-view shell (Session, Routines, Progress, Settings) runs on the `Unified*` path:
 - `services/timer/UnifiedTimerEngine.ts`
 - `store/unifiedTimerStore.ts`
 - `components/timer/UnifiedTimerDisplay.tsx`
 - `components/profiles/UnifiedProfileManager.tsx`
 - `types/unified-profile.types.ts`
 
-Older parallel engines, stores, displays, and profile managers still exist. `docs/DESIGN.md` → *Known Architectural Consolidation Gap* lists them. Do not extend the legacy paths; extend the `Unified*` path, and remove legacy code only as an explicit, tested consolidation task.
+This is the only timer path. The older parallel engines, stores, displays and the unused `useTimer` hook and `useTimerStore` were removed (`f0d67cc`, `3c0138b`). Extend the `Unified*` path; do not reintroduce a second implementation.
 
 ## Coding Standards
 
@@ -64,8 +65,12 @@ Follow `.claude/testing-rules.md` and `web-app/TESTING_REQUIREMENTS.md`. Minimum
 npm --prefix web-app run type-check
 npm --prefix web-app run lint
 npm --prefix web-app run test:ci
-npm --prefix web-app run test:e2e
+npm --prefix web-app run build
 ```
+
+For UI changes, also run the live-browser suites (`web-app/scripts/browser-ui-suite.js`,
+`web-app/scripts/browser-user-journeys.js`) in real Chrome and record results in `docs/TEST-CHECKLIST.md`.
+Run Playwright (`npm --prefix web-app run test:e2e`) for cross-browser and mobile coverage.
 
 Required coverage areas:
 - **Timer accuracy:** countdown stays correct across pause/resume and backgrounding.

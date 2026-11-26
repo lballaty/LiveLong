@@ -23,13 +23,13 @@
 
 ### Reliability & Accessibility
 - [x] The application must work offline once installed (PWA). *(Closed in `f0d67cc`: `/sw.js` activation and offline PWA reload verified in Chrome.)*
-- [ ] Colors and contrast must support accessibility standards. *(Not yet audited.)*
+- [ ] Colors and contrast must support accessibility standards. *(Partially closed, 2026-11-26 (`b0ee536`, `11b107d`): static WCAG AA audit of all views and modals. Fixed: 9 low-contrast gray/slate-400 texts (≈2.5:1 → 4.55–4.83:1), white text on blue-500 (3.68:1 → blue-600, 5.17:1) and on yellow-500 (1.92:1 → slate-900 text, 9.31:1); 36 form fields given accessible names; `role="dialog"`/`aria-modal`/`aria-labelledby` on all 5 modals; `aria-pressed` on icon presets. Open: re-run the live-browser suites and a rendered contrast check in real Chrome; Escape-to-close and focus trapping in modals.)*
 
 ### Maintainability & Build Health
 - [x] TypeScript type-checking (`npm run type-check`) passes cleanly. *(Closed: 0 TypeScript errors.)*
-- [x] ESLint (`npm run lint`) passes cleanly. *(Closed: 0 ESLint errors; 3 pre-existing warnings in `BreathingVisualizer.tsx` and `IconPicker.tsx`.)*
-- [x] Code coverage > 80% and all unit tests passing. *(Closed in `f0d67cc`: 20/20 Jest suites, 102/102 tests passing; 80.2% statements, 82.48% lines.)*
-- [x] Single consolidated timer/profile architecture without competing parallel engines/stores. *(Closed in `f0d67cc`: legacy engines/stores/displays removed; only unused `useTimer.ts` / `useTimerStore.ts` remain to audit.)*
+- [x] ESLint (`npm run lint`) passes cleanly. *(Closed: 0 ESLint errors. 2 warnings remain in `BreathingVisualizer.tsx` (`react-hooks/exhaustive-deps`), deliberately: adding the recreated helpers or callbacks as dependencies would restart the breathing interval on every render; a clean fix needs memoised helpers. The `IconPicker.tsx` `<img>` warning is resolved with a documented disable in `b0ee536`.)*
+- [x] Code coverage > 80% and all unit tests passing. *(18/18 Jest suites, 96/96 tests passing; 80.2% statements, 82.54% lines at `11b107d`.)*
+- [x] Single consolidated timer/profile architecture without competing parallel engines/stores. *(Closed in `f0d67cc` and `3c0138b`: legacy engines/stores/displays removed, then the unused `useTimer.ts` / `useTimerStore.ts` and their tests.)*
 
 ---
 

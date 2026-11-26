@@ -23,10 +23,10 @@ If you are in the `livelong` fleet, read your inbox at `~/.ai-dev-dotfiles/.coor
 
 ## 📋 Project
 
-- **LiveLong ⊹**: longevity practice timer (focus, guided breathing, exercise series such as Rajio Taiso, Tai Chi, Shinrin-yoku, Ikigai, Zazen).
+- **LiveLong ⊹**: longevity practice timer (focus, guided breathing, exercise series such as Rajio Taiso, Tai Chi, Shinrin-yoku, plus user-authored series).
 - **Active app:** `web-app/`, an offline-first Progressive Web App with no backend.
 - **Stack:** Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4, Zustand, IndexedDB via `idb`, `next-pwa`.
-- **Tests:** Jest + React Testing Library + `fake-indexeddb` (unit/component), plus live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`) run against the actual Chrome browser on this device via `chrome-devtools-mcp` (see `docs/TEST-CHECKLIST.md`). Use actual-browser testing rather than Playwright for UI verification.
+- **Tests:** Jest + React Testing Library + `fake-indexeddb` (unit/component), plus live-browser UI & User Journey suites (`web-app/scripts/browser-ui-suite.js`, `web-app/scripts/browser-user-journeys.js`) run against the actual Chrome browser on this device via `chrome-devtools-mcp` (see `docs/TEST-CHECKLIST.md`). Use actual-browser testing rather than Playwright for UI verification; Playwright (`web-app/e2e/tests/`) covers cross-browser and mobile.
 - **External Fleet Bundle Dependencies:**
   - **`animation` repo** (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/animation`): supplies `exercise-figures-runtime.js` (`web-app/src/lib/animations/`) and exercise/character JSON packs (`web-app/public/animations/`). Inbound deliveries arrive in `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/_inbound-from-animation.md`; report defects/results to `~/.ai-dev-dotfiles/.coordination/fleets/animation/mailbox/_inbound-from-livelong.md`.
   - **`openScriptAudio` repo** (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`): supplies per-cue voice packs (`web-app/public/audio/cues/<voiceId>/manifest.json` + `.mp3` clips with `variants` + `@n` naming). Inbound deliveries arrive in `~/.ai-dev-dotfiles/.coordination/fleets/livelong/mailbox/_inbound-from-openscriptaudio.md`; report defects/results to `~/.ai-dev-dotfiles/.coordination/fleets/openscriptaudio/mailbox/_inbound-from-livelong.md`.
@@ -34,7 +34,7 @@ If you are in the `livelong` fleet, read your inbox at `~/.ai-dev-dotfiles/.coor
 - **Removed:** the original `TestRepo` scaffold is gone (2026-11-25). There is no root `package.json`; all app code and npm scripts are in `web-app/`.
 - **Kept for later:** the Flutter prototype (`focus_productivity_timer/`) is retained as the starting point for a possible future native Flutter build. It is not the active app; do not change it unless the task is that Flutter build.
 
-Build on the `Unified*` implementation (`UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, `UnifiedProfileManager`). Older parallel engines, stores, and displays still exist; `docs/DESIGN.md` → *Known Architectural Consolidation Gap* lists them.
+Build on the `Unified*` implementation (`UnifiedTimerEngine`, `unifiedTimerStore`, `UnifiedTimerDisplay`, `UnifiedProfileManager`). It is the only timer path: the older parallel engines, stores and displays and the unused `useTimer`/`useTimerStore` were removed (`f0d67cc`, `3c0138b`). Do not reintroduce a second implementation.
 
 ---
 
@@ -57,13 +57,13 @@ npm --prefix web-app run build
 npm --prefix web-app run lint
 npm --prefix web-app run type-check
 npm --prefix web-app run test:ci          # Jest
-npm --prefix web-app run test:e2e         # Playwright
+npm --prefix web-app run test:e2e         # Playwright (cross-browser)
 npm --prefix web-app run test:e2e:mobile
 ```
 
 ## ✅ Done Means
 
-Type-check, lint, Jest, and Playwright pass; behaviour verified in a browser with no console errors; offline still works; `docs/TODO.md` and affected docs updated; path-form commit (`git commit <path>... -m "..."`).
+Type-check, lint, Jest, and build pass; for UI changes the live-browser suites pass in real Chrome (recorded in `docs/TEST-CHECKLIST.md`), with no console errors; offline still works; `docs/TODO.md` and affected docs updated; path-form commit (`git commit <path>... -m "..."`).
 
 ---
 
