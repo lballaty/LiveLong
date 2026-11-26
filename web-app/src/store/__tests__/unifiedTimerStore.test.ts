@@ -382,11 +382,14 @@ describe('useUnifiedTimerStore', () => {
       expect(useUnifiedTimerStore.getState().timerState?.seriesState?.currentStepIndex).toBe(2);
     });
 
-    it('creates, updates, starts, stops, and deletes a SessionPlan', () => {
+    it('seeds default SessionPlans on fresh init and creates, updates, starts, stops, and deletes a SessionPlan', () => {
       useUnifiedTimerStore.getState().initializeProfiles();
       const profiles = useUnifiedTimerStore.getState().profiles;
+      const initialPlans = useUnifiedTimerStore.getState().sessionPlans;
+      expect(initialPlans.length).toBeGreaterThanOrEqual(4);
+
       const plan = useUnifiedTimerStore.getState().createSessionPlan({
-        name: 'Morning Stack',
+        name: 'Custom Morning Stack',
         description: 'Rajio + Breath',
         icon: '🌅',
         items: [
@@ -395,7 +398,7 @@ describe('useUnifiedTimerStore', () => {
         ],
       });
 
-      expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(1);
+      expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(initialPlans.length + 1);
       useUnifiedTimerStore.getState().startSessionPlan(plan.id);
       expect(useUnifiedTimerStore.getState().activeSessionPlan?.id).toBe(plan.id);
       expect(useUnifiedTimerStore.getState().activeSessionIndex).toBe(0);
@@ -407,7 +410,7 @@ describe('useUnifiedTimerStore', () => {
       expect(useUnifiedTimerStore.getState().activeSessionPlan).toBeNull();
 
       useUnifiedTimerStore.getState().deleteSessionPlan(plan.id);
-      expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(0);
+      expect(useUnifiedTimerStore.getState().sessionPlans).toHaveLength(initialPlans.length);
     });
 
     it('saves user defaults, resets to saved defaults, and restores factory defaults', () => {

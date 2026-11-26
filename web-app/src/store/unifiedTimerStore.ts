@@ -46,6 +46,62 @@ function loadStoredJson<T>(key: string, fallback: T): T {
   }
 }
 
+function buildDefaultSessionPlans(profiles: UnifiedProfile[]): SessionPlan[] {
+  const findId = (idOrName: string): string | null => {
+    const match = profiles.find((p) => p.id === idOrName || p.name === idOrName);
+    return match ? match.id : null;
+  };
+  const makeItems = (targets: string[]) =>
+    targets
+      .map(findId)
+      .filter((id): id is string => Boolean(id))
+      .map((profileId, idx) => ({ id: `default-item-${idx + 1}-${profileId}`, profileId }));
+
+  const now = new Date();
+  const specs = [
+    {
+      id: 'default-session-morning-longevity',
+      name: 'Morning Longevity Stack',
+      description: 'Energizing Rajio Taiso movement followed by Box Breathing for calm focus',
+      icon: '🌅',
+      targets: ['rajio-taiso-series', 'box-breathing-profile'],
+    },
+    {
+      id: 'default-session-midday-reset',
+      name: 'Midday Focus & Reset',
+      description: 'Gentle Tai Chi flow, Deep Breathing reset, and a 25-minute Pomodoro block',
+      icon: '⚡',
+      targets: ['tai-chi-morning-series', 'deep-breathing-profile', 'Pomodoro'],
+    },
+    {
+      id: 'default-session-nature-calm',
+      name: 'Nature & Calm Decompression',
+      description: 'Shinrin-yoku forest awareness paired with 4-7-8 Relaxation breathing',
+      icon: '🌲',
+      targets: ['shinrin-yoku-series', '4-7-8-breathing-profile'],
+    },
+    {
+      id: 'default-session-vitality-breath',
+      name: 'Vitality & Breath Power',
+      description: 'Wim Hof power breathing followed by full-body Rajio Taiso calisthenics',
+      icon: '🔥',
+      targets: ['wim-hof-breathing-profile', 'rajio-taiso-series'],
+    },
+  ];
+
+  return specs
+    .map((spec) => ({
+      id: spec.id,
+      name: spec.name,
+      description: spec.description,
+      icon: spec.icon,
+      items: makeItems(spec.targets),
+      createdAt: now,
+      updatedAt: now,
+    }))
+    .filter((plan) => plan.items.length >= 2);
+}
+
 const DEFAULT_PREFERENCES: PracticePreferences = {
   characterId: 'robot-r1',
   variant: 'standing',
@@ -228,7 +284,12 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
       Object.entries(rawProfileMusic).map(([k, v]) => [k, normalizeMusicTrackId(v)])
     );
     const storedCustomMusic = loadStoredJson<MusicTrackOption[]>(CUSTOM_MUSIC_STORAGE_KEY, []);
-    const storedSessionPlans = loadStoredJson<SessionPlan[]>(SESSION_PLANS_STORAGE_KEY, []);
+    const rawSessionPlans =
+      typeof window !== 'undefined' ? window.localStorage.getItem(SESSION_PLANS_STORAGE_KEY) : null;
+    const storedSessionPlans =
+      rawSessionPlans === null
+        ? buildDefaultSessionPlans(allProfiles)
+        : loadStoredJson<SessionPlan[]>(SESSION_PLANS_STORAGE_KEY, []);
     const storedProfileOrder = loadStoredJson<string[]>(PROFILE_ORDER_STORAGE_KEY, []);
     const hasSavedDefaults = Boolean(
       loadStoredJson<Partial<PracticePreferences> | null>(USER_DEFAULT_PREFS_KEY, null)

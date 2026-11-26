@@ -109,8 +109,9 @@ describe('UnifiedProfileManager', () => {
     expect(screen.queryByText('Edited Timer')).toBeNull();
 
     // Start & delete composed session
-    const startSessionBtn = screen.getByRole('button', { name: '▶ Start Session' });
-    fireEvent.click(startSessionBtn);
-    fireEvent.click(screen.getByLabelText('Delete session plan'));
+    const startSessionBtns = screen.getAllByRole('button', { name: '▶ Start Session' });
+    fireEvent.click(startSessionBtns[startSessionBtns.length - 1]);
+    const deleteSessionBtns = screen.getAllByLabelText('Delete session plan');
+    fireEvent.click(deleteSessionBtns[deleteSessionBtns.length - 1]);
   });
 });
