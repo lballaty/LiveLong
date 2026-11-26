@@ -2,7 +2,7 @@
 
 **File:** `docs/TEST-CHECKLIST.md`
 **Purpose:** Step-by-step traceability matrix showing the exact actions executed and concrete outcomes asserted for every user journey, UI control, and unit/component test.
-**Last Run:** 2026-11-26 (`feat/w12696102` @ `11b107d` for `type-check`, `lint`, `jest --ci`, `next build`; live-browser suites last run 2026-11-24 @ `0498f1e`, **not yet re-run** after the accessibility label/contrast changes in `b0ee536` and `11b107d`)
+**Last Run:** 2026-11-26 (`main` @ `5ec333d` — Jest `18/18` (`98/98`), live Chrome UI `41/41`, live Chrome User Journeys `12/12`, Mobile overflow + pin-to-top verified)
 
 ---
 
@@ -10,9 +10,9 @@
 
 | Suite | Runner | Scope | Latest Result |
 |---|---|---|---|
-| Unit & Component Tests | `npm run test:ci` (`jest --ci --coverage --maxWorkers=2`) | Engines, stores, repositories, audio services, data modules, RTL modals/pickers/settings/views | **18 / 18 suites, 96 / 96 passed (80.2% stmts, 82.54% lines)** |
-| Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, full Settings, Rajio Taiso steps, Desktop (`1280×800`) + Mobile (`390×844`) | **41 / 41 passed** |
-| Live-Browser User Journeys | Chrome via `chrome-devtools-mcp` ([browser-user-journeys.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-user-journeys.js)) | 8 multi-step end-to-end user journeys + full browser reload persistence | **15 / 15 passed (12 run + 3 post-reload)** |
+| Unit & Component Tests | `npm run test:ci` (`jest --ci --coverage --maxWorkers=2`) | Engines, stores, repositories, audio services, data modules, RTL modals/pickers/settings/views | **18 / 18 suites, 98 / 98 passed** |
+| Live-Browser UI Suite | Chrome via `chrome-devtools-mcp` ([browser-ui-suite.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-ui-suite.js)) | All 4 views, full Settings, Rajio Taiso steps, Desktop (`1280×800`) + Mobile (`500×844`) | **41 / 41 passed** |
+| Live-Browser User Journeys | Chrome via `chrome-devtools-mcp` ([browser-user-journeys.js](file:///Users/liborballaty/LocalProjects/GitHubProjectsDocuments/LiveLong/web-app/scripts/browser-user-journeys.js)) | Multi-step end-to-end user journeys + pinned session start + warmup progress + step-jump `%` | **12 / 12 passed** |
 
 ---
 
