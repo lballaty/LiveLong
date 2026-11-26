@@ -139,7 +139,7 @@ export const DEEP_BREATHING_PROFILE: Profile = {
         description: 'Simple deep breathing pattern',
         durationMinutes: calculateBreathingPatternDuration(BREATHING_PATTERNS.DEEP_BREATHING),
         restDurationMinutes: 0,
-        instructions: 'Breathe deeply and slowly, focusing on the rhythm'
+        instructions: 'Breathe in smoothly for 6 seconds, breathe out slowly for 8 seconds'
       }
     ],
     totalDurationMinutes: calculateBreathingPatternDuration(BREATHING_PATTERNS.DEEP_BREATHING),

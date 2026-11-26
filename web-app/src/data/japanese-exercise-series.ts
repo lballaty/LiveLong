@@ -34,7 +34,6 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Gentle neck rotations and arm stretches',
       durationMinutes: 1,
       restDurationMinutes: 0.25, // 15 seconds
-      instructions: 'Slowly rotate neck, stretch arms up and out',
       animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '0.1.0-draft.1' }
     },
     {
@@ -44,7 +43,6 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Radio Taiso movement 2 — cross-body arm swings with knee bounce',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Swing arms across the front and out to the sides while gently bending and straightening knees with heel raises',
       animation: { pack: 'rajio-taiso.arm-swings', version: '^1' }
     },
     {
@@ -54,7 +52,6 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Open chest and expand lungs',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Bring arms back to open chest, breathe deeply',
       animation: { pack: 'rajio-taiso.chest-expansion', version: '0.1.0-draft.1' }
     },
     {
@@ -64,7 +61,6 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Lateral trunk flexibility',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Bend to each side, reach arm overhead',
       animation: { pack: 'rajio-taiso.side-bends', version: '0.1.0-draft.1' }
     },
     {
@@ -74,17 +70,15 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Spinal rotation movements',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      instructions: 'Rotate torso left and right with arms extended',
       animation: { pack: 'rajio-taiso.trunk-twists', version: '0.1.0-draft.1' }
     },
     {
       id: 'leg-swings',
       exerciseId: 'leg-swings',
       name: 'Leg Swings',
-      description: 'Dynamic leg movements',
+      description: 'Chair-supported dynamic leg swings for hip mobility and balance',
       durationMinutes: 1,
       restDurationMinutes: 0,
-      instructions: 'Swing legs forward and back, side to side',
       animation: { pack: 'rajio-taiso.leg-swings', version: '^1' }
     }
   ],
@@ -106,51 +100,51 @@ export const TAI_CHI_MORNING_SERIES: ExerciseSeries = {
   steps: [
     {
       id: 'beginning-stance',
+      exerciseId: 'beginning-stance',
       name: 'Beginning Stance',
       description: 'Center and ground yourself',
       durationMinutes: 2,
       restDurationMinutes: 0.5,
-      instructions: 'Stand feet shoulder-width apart, breathe deeply',
       cueId: 'tai-chi.beginning-stance',
       animation: { pack: 'tai-chi.beginning-stance', version: '^1' }
     },
     {
       id: 'raise-arms',
+      exerciseId: 'raise-arms',
       name: 'Raise Arms',
       description: 'Slow arm raising movement',
       durationMinutes: 2,
       restDurationMinutes: 0.5,
-      instructions: 'Slowly raise arms to shoulder height',
       cueId: 'tai-chi.raise-arms',
       animation: { pack: 'tai-chi.raise-arms', version: '^1' }
     },
     {
       id: 'wave-hands',
+      exerciseId: 'wave-hands',
       name: 'Wave Hands Like Clouds',
       description: 'Flowing horizontal arm movements',
       durationMinutes: 3,
       restDurationMinutes: 0.5,
-      instructions: 'Move arms in smooth horizontal waves',
       cueId: 'tai-chi.wave-hands',
       animation: { pack: 'tai-chi.wave-hands', version: '^1' }
     },
     {
       id: 'single-whip',
+      exerciseId: 'single-whip',
       name: 'Single Whip',
       description: 'Classic tai chi movement',
       durationMinutes: 3,
       restDurationMinutes: 0.5,
-      instructions: 'Extend one arm, turn body slowly',
       cueId: 'tai-chi.single-whip',
       animation: { pack: 'tai-chi.single-whip', version: '^1' }
     },
     {
       id: 'embrace-tiger',
+      exerciseId: 'embrace-tiger',
       name: 'Embrace Tiger, Return to Mountain',
       description: 'Circular gathering movement',
       durationMinutes: 3,
       restDurationMinutes: 0,
-      instructions: 'Large circular arm movements, gather energy',
       cueId: 'tai-chi.embrace-tiger',
       animation: { pack: 'tai-chi.embrace-tiger', version: '^1' }
     }
@@ -175,41 +169,41 @@ export const SHINRIN_YOKU_SERIES: ExerciseSeries = {
   steps: [
     {
       id: 'sensory-awakening',
+      exerciseId: 'sensory-awakening',
       name: 'Sensory Awakening',
       description: 'Open all five senses',
       durationMinutes: 4,
       restDurationMinutes: 1,
-      instructions: 'Notice what you see, hear, smell, feel, taste',
       cueId: 'shinrin-yoku.sensory-awakening',
       animation: { pack: 'shinrin-yoku.sensory-awakening', version: '^1' }
     },
     {
       id: 'mindful-breathing',
+      exerciseId: 'mindful-breathing',
       name: 'Mindful Breathing',
       description: 'Breathe with the forest rhythm',
       durationMinutes: 5,
       restDurationMinutes: 1,
-      instructions: 'Breathe deeply, imagine breathing with trees',
       cueId: 'shinrin-yoku.mindful-breathing',
       animation: { pack: 'shinrin-yoku.mindful-breathing', version: '^1' }
     },
     {
       id: 'tree-connection',
+      exerciseId: 'tree-connection',
       name: 'Tree Connection',
       description: 'Connect with a specific tree or plant',
       durationMinutes: 6,
       restDurationMinutes: 1,
-      instructions: 'Focus on one tree, feel its presence and energy',
       cueId: 'shinrin-yoku.tree-connection',
       animation: { pack: 'shinrin-yoku.tree-connection', version: '^1' }
     },
     {
       id: 'gratitude-reflection',
+      exerciseId: 'gratitude-reflection',
       name: 'Gratitude Reflection',
       description: 'Express gratitude to nature',
       durationMinutes: 4,
       restDurationMinutes: 0,
-      instructions: 'Silently thank nature for its gifts and wisdom',
       cueId: 'shinrin-yoku.gratitude-reflection',
       animation: { pack: 'shinrin-yoku.gratitude-reflection', version: '^1' }
     }
