@@ -1,0 +1,14 @@
+# File: .worktree-config
+# Description: Per-repo config for the global worktree provisioner
+#   (~/.ai-dev-dotfiles/tools/setup-worktree.sh). LiveLong is single-branch (main); the app is
+#   the Next.js PWA in web-app/. New units of work get an agent-agnostic sibling worktree
+#   <parent>/LiveLong-<category>-<work-id> off main; the primary checkout stays the lead's
+#   integration surface. WT_PROFILE=claude generates path-bound -w profiles for all four
+#   wrappers (claude/codex/agy/hermes), since the livelong fleet mixes Antigravity and Claude.
+# Author: Libor Ballaty <liborballaty@gmail.com>, with Claude Opus 5.5 (livelong-worker-126961, 2026-11-26-worker-126961-02)
+# Created: 2026-11-26
+# Reference: ~/.ai-dev-dotfiles/docs/worktree-config.schema.md
+WT_BASE_BRANCH=main
+WT_POST_CREATE='npm --prefix web-app install >/dev/null 2>&1 || true'
+WT_CREDS=''
+WT_PROFILE=claude
