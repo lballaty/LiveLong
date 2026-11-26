@@ -297,6 +297,21 @@ export class UnifiedTimerEngine {
         currentStep: step,
         completedSteps: steps.slice(0, idx).map((s) => s.id),
       };
+      const warmupTotal =
+        this.profile.seriesConfig.warmupMinutes * 60 +
+        this.profile.seriesConfig.warmupSeconds;
+      const priorStepsTotal = steps
+        .slice(0, idx)
+        .reduce(
+          (sum, s) =>
+            sum +
+            s.durationMinutes * 60 +
+            s.durationSeconds +
+            s.restMinutes * 60 +
+            s.restSeconds,
+          0
+        );
+      this.state.totalElapsedSeconds = warmupTotal + priorStepsTotal;
       this.state.remainingSeconds = step.durationMinutes * 60 + step.durationSeconds;
       this.onUpdate?.({ ...this.state });
       return true;

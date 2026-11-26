@@ -104,6 +104,27 @@ export default function UnifiedTimerDisplay() {
       return Math.min((elapsed / phaseDuration) * 100, 100);
     }
 
+    if (activeProfile.type === 'series' && timerState.seriesState && activeProfile.seriesConfig) {
+      const { currentPhase, currentStep } = timerState.seriesState;
+      let phaseDuration = 0;
+      if (currentPhase === 'warmup') {
+        phaseDuration =
+          activeProfile.seriesConfig.warmupMinutes * 60 +
+          activeProfile.seriesConfig.warmupSeconds;
+      } else if (currentPhase === 'cooldown') {
+        phaseDuration =
+          activeProfile.seriesConfig.cooldownMinutes * 60 +
+          activeProfile.seriesConfig.cooldownSeconds;
+      } else if (currentPhase === 'rest' && currentStep) {
+        phaseDuration = currentStep.restMinutes * 60 + currentStep.restSeconds;
+      } else if (currentStep) {
+        phaseDuration = currentStep.durationMinutes * 60 + currentStep.durationSeconds;
+      }
+      if (phaseDuration === 0) return 0;
+      const elapsed = phaseDuration - timerState.remainingSeconds;
+      return Math.min(Math.max((elapsed / phaseDuration) * 100, 0), 100);
+    }
+
     return 0;
   };
 
@@ -181,11 +202,19 @@ export default function UnifiedTimerDisplay() {
     ? currentStep.restMinutes * 60 + currentStep.restSeconds
     : 0;
 
+  const warmupTotal =
+    (activeProfile?.seriesConfig?.warmupMinutes || 0) * 60 +
+    (activeProfile?.seriesConfig?.warmupSeconds || 0);
+
   const exerciseProgressPct = (() => {
-    if (!timerState || currentStepExTotal === 0) return 0;
+    if (!timerState) return 0;
+    if (seriesPhase === 'warmup') {
+      if (warmupTotal === 0) return 0;
+      return Math.min(Math.max(((warmupTotal - timerState.remainingSeconds) / warmupTotal) * 100, 0), 100);
+    }
+    if (currentStepExTotal === 0) return 0;
     if (seriesPhase === 'rest' || seriesPhase === 'cooldown') return 100;
-    if (seriesPhase === 'warmup') return 0;
-    return Math.min(((currentStepExTotal - timerState.remainingSeconds) / currentStepExTotal) * 100, 100);
+    return Math.min(Math.max(((currentStepExTotal - timerState.remainingSeconds) / currentStepExTotal) * 100, 0), 100);
   })();
 
   const restProgressPct = (() => {
@@ -367,9 +396,6 @@ export default function UnifiedTimerDisplay() {
                     type="button"
                     onClick={() => {
                       startSessionPlan(plan.id);
-                      const all = [...profiles, ...customProfiles];
-                      const first = all.find((p) => p.id === plan.items[0]?.profileId);
-                      if (first) selectProfile(first.id);
                     }}
                     className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                       isSelected
