@@ -481,14 +481,25 @@ export const useUnifiedTimerStore = create<UnifiedTimerStore>((set, get) => ({
     if (posA < 0 || posB < 0) return;
     [current[posA], current[posB]] = [current[posB], current[posA]];
 
+    const nextPinned = [...get().pinnedIds];
+    const pinPosA = nextPinned.indexOf(profileId);
+    const pinPosB = nextPinned.indexOf(neighborId);
+    const pinnedChanged = pinPosA !== -1 && pinPosB !== -1;
+    if (pinnedChanged) {
+      [nextPinned[pinPosA], nextPinned[pinPosB]] = [nextPinned[pinPosB], nextPinned[pinPosA]];
+    }
+
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(PROFILE_ORDER_STORAGE_KEY, JSON.stringify(current));
+        if (pinnedChanged) {
+          window.localStorage.setItem(PINNED_IDS_STORAGE_KEY, JSON.stringify(nextPinned));
+        }
       } catch {
         // Ignore
       }
     }
-    set({ profileOrder: current });
+    set(pinnedChanged ? { profileOrder: current, pinnedIds: nextPinned } : { profileOrder: current });
   },
 
   duplicateProfile: (profileId: string) => {

@@ -175,7 +175,10 @@ async () => {
   }
   document.querySelector('[data-testid="save-session-plan-button"]')?.click();
   await wait(150);
-  await clickBtnText('[data-testid^="session-plan-"] button', '▶ Start Session');
+  const fullStackCard = Array.from(document.querySelectorAll('[data-testid^="session-plan-"]')).find((el) =>
+    el.textContent?.includes('Full Daily Stack')
+  );
+  fullStackCard?.querySelector('button:last-of-type')?.click();
   await wait(200);
   const bannerText = document.querySelector('[data-testid="active-session-plan-banner"]')?.textContent || '';
   assert('J5.SessionPlan', 'Composed session launches with Routine 1/2 banner', bannerText.includes('Full Daily Stack') && bannerText.includes('1/2'));

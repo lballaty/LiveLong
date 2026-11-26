@@ -519,18 +519,15 @@ export default function UnifiedProfileManager({ onProfileSelect }: UnifiedProfil
     const pinIdxB = pinnedIds.indexOf(b.id);
     const isPinnedA = pinIdxA !== -1;
     const isPinnedB = pinIdxB !== -1;
+    if (isPinnedA && isPinnedB) return pinIdxA - pinIdxB;
     if (isPinnedA !== isPinnedB) return isPinnedA ? -1 : 1;
 
     const idxA = profileOrder.indexOf(a.id);
     const idxB = profileOrder.indexOf(b.id);
-    if (idxA !== -1 || idxB !== -1) {
-      if (idxA === -1) return 1;
-      if (idxB === -1) return -1;
-      return idxA - idxB;
-    }
-
-    if (isPinnedA && isPinnedB) return pinIdxA - pinIdxB;
-    return 0;
+    if (idxA === -1 && idxB === -1) return 0;
+    if (idxA === -1) return 1;
+    if (idxB === -1) return -1;
+    return idxA - idxB;
   });
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const matchesQuery = (name: string, desc: string) =>
