@@ -2,7 +2,7 @@
 
 **File:** `docs/TEST-CHECKLIST.md`
 **Purpose:** Step-by-step traceability matrix showing the exact actions executed and concrete outcomes asserted for every user journey, UI control, and unit/component test.
-**Last Run:** 2026-11-26 (`main` @ `5ec333d` — Jest `18/18` (`98/98`), live Chrome UI `41/41`, live Chrome User Journeys `12/12`, Mobile overflow + pin-to-top verified)
+**Last Run:** 2026-11-28 (`main` + `rajio-taiso-0.1.0-draft.2` — Jest `18/18` (`98/98`), live Chrome UI `41/41` with all 6 Rajio Taiso steps `external`, live Chrome User Journeys `12/12`)
 
 ---
 
@@ -38,7 +38,7 @@
 | **1.1** | Session Animation Mount | Load **Session** → `[data-testid="exercise-animation-player"]` has `data-animation-source="external"`, SVG `aria-label` contains `Robot (R1)`, and `getBoundingClientRect()` width & height are `> 50px`. | ✅ Passed |
 | **1.2–1.4** | Running HUD Audio Controls | Count `<input type="range">` inside `[data-testid="audio-channel-mixer"]` (`=== 0`); locate Chimes/Script/Music mute pills; click Chimes pill twice → `aria-label` flips (`Mute chimes` ↔ `Unmute chimes`). | ✅ Passed |
 | **1.5–1.8** | Playback State & Live SVG Motion | Snapshot SVG `innerHTML` → click **Start** → wait `600ms` → SVG `innerHTML` changed and **Pause** appears → click **Pause** → **Resume** appears → click **Resume** → click **Stop** → **Start** returns. | ✅ Passed |
-| **1.9.1–1.10** | Rajio Taiso Steps 1–6 & Fallback | Click `Next Step ▶` 5 times across all 6 steps: `h2` matches steps `1..6` and `data-animation-source` is `external` for steps `1, 3, 4, 5` and `robot-poc` for steps `2, 6`; click `◀ Prev Step` 5 times → returns to `1. Neck and Arm Stretches`. | ✅ Passed |
+| **1.9.1–1.10** | Rajio Taiso Steps 1–6 (`0.1.0-draft.2`) | Click `Next Step ▶` 5 times across all 6 steps: `h2` matches steps `1..6` and `data-animation-source` is `external` for all 6 steps (`1..6`); click `◀ Prev Step` 5 times → returns to `1. Neck and Arm Stretches`. | ✅ Passed |
 | **2.1–2.2** | Settings Structure | Open **Settings** → `[data-testid="settings-view"]` contains 3 range sliders, 4 checkboxes, and `Drop-In Voice & Animation Bundles` text. | ✅ Passed |
 | **2.3** | Settings Cast Live Preview | Select `f30-slim` in Cast `<select>` → wait `220ms` → Settings inline preview SVG `aria-label` changes to `Woman, about 30`. | ✅ Passed |
 | **2.4–2.5** | Settings Voice, Sliders & Test Cue | Click **Man**, click **Woman**, click **Test Audio Cue**; set Chime/Voice/Music sliders to `55`, `80`, `30` → `%` labels display `55%`, `80%`, `30%`. | ✅ Passed |

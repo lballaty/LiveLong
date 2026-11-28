@@ -1,10 +1,13 @@
 // File: exercise-figures-runtime.d.ts
-// Description: Type declarations for exercise-figures-runtime.js 0.1.0-draft.1 (generated from src/lib.ts by tsc).
+// Description: Type declarations for exercise-figures-runtime.js 0.1.0-draft.2 (generated from src/lib.ts by tsc).
 // Author: Libor Ballaty <liborballaty@gmail.com>, with Claude Opus 5.5 (animation-lead-038475, draft export)
 // Created: 2026-11-23
 type Side = 'L' | 'R';
 /** Every key a pose may set: rig DOFs (degrees), pelvis/foot placement (figure units), whole-body channels (degrees). */
-export type PoseKeyName = 'pelvis.tilt' | 'pelvis.obliquity' | 'pelvis.yaw' | 'lumbar.flex' | 'lumbar.lat' | 'lumbar.twist' | 'thoracic.flex' | 'thoracic.lat' | 'thoracic.twist' | 'neck.flex' | 'neck.lat' | 'neck.rot' | 'head.nod' | `shoulder${Side}.${'flex' | 'abd' | 'rot'}` | `elbow${Side}.flex` | `forearm${Side}.pron` | `wrist${Side}.${'flex' | 'dev'}` | `hip${Side}.${'flex' | 'abd' | 'rot'}` | `knee${Side}.flex` | `ankle${Side}.${'dorsi' | 'inv'}` | `foot${Side}.${'pitch' | 'yaw'}` | `toe${Side}.ext` | 'pelvis.x' | 'pelvis.y' | 'pelvis.z' | 'stance.width' | `foot${Side}.${'x' | 'z'}` | 'trunk.lean' | 'spine.lat' | 'spine.twist' | 'leg.shin' | 'leg.thigh';
+export type PoseKeyName = 'pelvis.tilt' | 'pelvis.obliquity' | 'pelvis.yaw' | 'lumbar.flex' | 'lumbar.lat' | 'lumbar.twist' | 'thoracic.flex' | 'thoracic.lat' | 'thoracic.twist' | 'neck.flex' | 'neck.lat' | 'neck.rot' | 'head.nod' | `shoulder${Side}.${'flex' | 'abd' | 'rot'}` | `elbow${Side}.flex` | `forearm${Side}.pron` | `wrist${Side}.${'flex' | 'dev'}` | `hip${Side}.${'flex' | 'abd' | 'rot'}` | `knee${Side}.flex` | `ankle${Side}.${'dorsi' | 'inv'}` | `foot${Side}.${'pitch' | 'yaw'}` | `toe${Side}.ext` | 'pelvis.x' | 'pelvis.y' | 'pelvis.z' | 'stance.width' | `foot${Side}.${'x' | 'z'}`
+/** Support (runtime 0.1.0-draft.2): stance.side −1 stands a single-leg variant on the left foot (+1/absent: right);
+ *  prop.chair 1 draws a chair in front of the figure, back toward it; handL/R.hold 0..1 rests that hand on its top rail. */
+ | 'stance.side' | 'prop.chair' | `hand${Side}.hold` | 'trunk.lean' | 'spine.lat' | 'spine.twist' | 'leg.shin' | 'leg.thigh';
 /** Degrees (or figure units for placement keys), or a fraction of the character's own range for that joint. */
 export type PackTarget = number | {
     rom: number;

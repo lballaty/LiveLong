@@ -85,6 +85,7 @@
         "footL.pitch", "footL.yaw", "footR.pitch", "footR.yaw", "toeL.ext", "toeR.ext",
         "pelvis.x", "pelvis.y", "pelvis.z",
         "stance.width", "footL.x", "footL.z", "footR.x", "footR.z",
+        "stance.side", "prop.chair", "handL.hold", "handR.hold",
         "trunk.lean", "spine.lat", "spine.twist", "leg.shin", "leg.thigh"
       ]
     }

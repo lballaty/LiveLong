@@ -43,7 +43,8 @@
 
 ### `animation` Repo (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/animation`)
 - [x] Integrate `rajio-taiso-0.1.0-draft.1` (`exercise-figures-runtime.js` + `neck-arm-stretch`, `chest-expansion`, `side-bends`, `trunk-twists`, characters `robot-r1` default, `m25-athletic`, `f30-slim`, `f72-stooped`)
-- [ ] (`waiting on upstream`) Integrate next `rajio-taiso` draft with sideways `arm-swings`, `leg-swings`, `chair` variants, and remaining 3 cast members (`m50-heavier`, `f50-fuller`, `m75-slim`)
+- [x] Integrate `rajio-taiso-0.1.0-draft.2` (updated `exercise-figures-runtime.js`, sideways `arm-swings`, chair-supported `leg-swings`)
+- [ ] (`waiting on upstream`) Integrate next `rajio-taiso` draft with `chair` variants and remaining 3 cast members (`m50-heavier`, `f50-fuller`, `m75-slim`)
 - [ ] (`waiting on upstream`) Integrate remaining series animation packs (`tai-chi-morning-series`, `shinrin-yoku-series`)
 
 ### `openScriptAudio` Repo (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`)

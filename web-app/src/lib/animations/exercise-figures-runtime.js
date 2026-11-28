@@ -1,6 +1,6 @@
 /*!
  * File: exercise-figures-runtime.js
- * Description: Exercise-figures runtime 0.1.0-draft.1 — line-art exercise animations (SVG) from JSON packs.
+ * Description: Exercise-figures runtime 0.1.0-draft.2 — line-art exercise animations (SVG) from JSON packs.
  *   Framework-agnostic ESM, zero dependencies, no eval or Function constructor, no network access. Built from the animation
  *   repo (src/lib.ts) by vite.lib.config.ts; do not edit — rebuild instead.
  * Author: Libor Ballaty <liborballaty@gmail.com>, with Claude Opus 5.5 (animation-lead-038475, draft export)
@@ -131,6 +131,69 @@ function clampPose(pose, rom = {}) {
   }
   return out;
 }
+function chairDims(B) {
+  const k = B.thigh / DEFAULT_BODY.thigh;
+  return { k, seatY: B.seatHeight, halfX: 11.5 * k, zBack: -9 * k, zFront: 15 * k, seatT: 1.8 * k, back: 27 * k };
+}
+const FINGER_DROP = 30;
+function chairBackProp(B) {
+  const d = chairDims(B), k = d.k;
+  const railZ = 19 * k, railLocalZ = d.zBack - 2 * k;
+  const offset = [0, 0, railZ - railLocalZ];
+  const railY = d.seatY + d.back;
+  const a = FINGER_DROP * Math.PI / 180, sa = Math.sin(a), ca = Math.cos(a);
+  const frame = [-1, 0, 0, 0, sa, -ca, 0, -ca, -sa];
+  const fingers = [0, -sa, ca];
+  const grip = {};
+  for (const [side, s] of [["L", 1], ["R", -1]]) {
+    const palm = [s * B.shoulderOffset[0], railY + 1 * k, railZ];
+    const wrist = [palm[0] - fingers[0] * 0.45 * B.hand, palm[1] - fingers[1] * 0.45 * B.hand, palm[2] - fingers[2] * 0.45 * B.hand];
+    const hand = [wrist[0] + fingers[0] * B.hand, wrist[1] + fingers[1] * B.hand, wrist[2] + fingers[2] * B.hand];
+    grip[side] = { wrist, frame, hand };
+  }
+  return { offset, railZ, railY, grip };
+}
+const transpose = (m) => [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]];
+function rotAxis(axis, rad) {
+  const [x, y, z] = axis, c = Math.cos(rad), s = Math.sin(rad), t = 1 - c;
+  return [
+    t * x * x + c,
+    t * x * y - s * z,
+    t * x * z + s * y,
+    t * x * y + s * z,
+    t * y * y + c,
+    t * y * z - s * x,
+    t * x * z - s * y,
+    t * y * z + s * x,
+    t * z * z + c
+  ];
+}
+function rotBetween(u, v) {
+  const c = Math.max(-1, Math.min(1, dot(u, v))), ax = cross(u, v), sl = len(ax);
+  if (sl < 1e-12) {
+    if (c > 0) return [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    const p = norm(cross(u, Math.abs(u[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]));
+    return rotAxis(p, Math.PI);
+  }
+  return rotAxis([ax[0] / sl, ax[1] / sl, ax[2] / sl], Math.atan2(sl, c));
+}
+function axisAngle(m) {
+  const cos = Math.max(-1, Math.min(1, (m[0] + m[4] + m[8] - 1) / 2)), angle = Math.acos(cos);
+  if (angle < 1e-12) return { axis: [1, 0, 0], angle: 0 };
+  if (Math.PI - angle < 1e-6) {
+    const d = [m[0], m[4], m[8]], i = d.indexOf(Math.max(...d));
+    const col = [m[i] + (i === 0 ? 1 : 0), m[3 + i] + (i === 1 ? 1 : 0), m[6 + i] + (i === 2 ? 1 : 0)];
+    return { axis: norm(col), angle };
+  }
+  const v = [m[7] - m[5], m[2] - m[6], m[3] - m[1]];
+  return { axis: norm(v), angle };
+}
+function blendRotation(A, B, w) {
+  if (w <= 0) return A;
+  const rel = mul(transpose(A), B), { axis, angle } = axisAngle(rel);
+  if (w >= 1) return B;
+  return mul(A, rotAxis(axis, angle * w));
+}
 const DEG = 180 / Math.PI;
 const DEFAULT_BODY = {
   thigh: 24.5,
@@ -174,9 +237,9 @@ function solveSkeleton(input, body = DEFAULT_BODY, support = "standing", rom = {
     for (const side of SIDES$2) {
       const s = sgn(side), want = half + g(`foot${side}.x`);
       const lo = B.hipHalfWidth + drop * Math.tan(adLo * Math.PI / 180), hi = B.hipHalfWidth + drop * Math.tan(abHi * Math.PI / 180);
-      const out = Math.min(hi, Math.max(lo, want));
-      if (out !== want) warnings.push(`foot${side} placement ${want.toFixed(1)} out of hip range; clamped to ${out.toFixed(1)}`);
-      plant[side] = [s * out, plant[side][1], plant[side][2] + g(`foot${side}.z`)];
+      const out2 = Math.min(hi, Math.max(lo, want));
+      if (out2 !== want) warnings.push(`foot${side} placement ${want.toFixed(1)} out of hip range; clamped to ${out2.toFixed(1)}`);
+      plant[side] = [s * out2, plant[side][1], plant[side][2] + g(`foot${side}.z`)];
     }
   }
   const plantedFoot = {};
@@ -189,6 +252,8 @@ function solveSkeleton(input, body = DEFAULT_BODY, support = "standing", rom = {
     plant[side] = add(pivot, apply(R, sub(plant[side], pivot)));
     plantedFoot[side] = R;
   }
+  const standOn = g("stance.side") < 0 ? "L" : "R";
+  const chair = g("prop.chair") > 0 ? chairBackProp(B) : null;
   const hipAt = (P2, side) => add(P2, apply(Rp, mirror$1([B.hipHalfWidth, 0, 0], side)));
   const poleFor = (side) => {
     const forward = apply(rotY(g("pelvis.yaw") + sgn(side) * g(`hip${side}.rot`) + sgn(side) * g(`foot${side}.yaw`)), [0, 0, 1]);
@@ -196,7 +261,7 @@ function solveSkeleton(input, body = DEFAULT_BODY, support = "standing", rom = {
   };
   let P = support === "chair" ? [0, B.seatHeight + B.seatedHipOffset, 0] : [g("pelvis.x"), restHipY + g("pelvis.y"), g("pelvis.z")];
   if (support !== "chair") {
-    const planted = support === "standing" ? ["L", "R"] : ["R"];
+    const planted = support === "standing" ? ["L", "R"] : [standOn];
     const reach = B.thigh + B.shank;
     const over = (y) => Math.max(...planted.map((s) => dist(hipAt([P[0], y, P[2]], s), plant[s]))) - reach;
     const bisectReach = (top2) => {
@@ -272,16 +337,38 @@ function solveSkeleton(input, body = DEFAULT_BODY, support = "standing", rom = {
   for (const side of SIDES$2) {
     const s = sgn(side);
     const shoulder = add(chestBase, apply(Rt, mirror$1(B.shoulderOffset, side)));
-    const Rua = chain(Rt, rotX(-g(`shoulder${side}.flex`)), rotZ(s * g(`shoulder${side}.abd`)), rotY(s * g(`shoulder${side}.rot`)));
-    const elbow = add(shoulder, apply(Rua, [0, -B.upperArm, 0]));
-    const Rfa = chain(Rua, rotX(-g(`elbow${side}.flex`)));
-    const wrist = add(elbow, apply(Rfa, [0, -B.forearm, 0]));
-    const Rhand = chain(Rfa, rotY(-s * g(`forearm${side}.pron`)), rotX(-g(`wrist${side}.flex`)), rotZ(s * g(`wrist${side}.dev`)));
+    let Rua = chain(Rt, rotX(-g(`shoulder${side}.flex`)), rotZ(s * g(`shoulder${side}.abd`)), rotY(s * g(`shoulder${side}.rot`)));
+    let elbow = add(shoulder, apply(Rua, [0, -B.upperArm, 0]));
+    let Rfa = chain(Rua, rotX(-g(`elbow${side}.flex`)));
+    let wrist = add(elbow, apply(Rfa, [0, -B.forearm, 0]));
+    const handOn = (R) => chain(R, rotY(-s * g(`forearm${side}.pron`)), rotX(-g(`wrist${side}.flex`)), rotZ(s * g(`wrist${side}.dev`)));
+    let Rhand = handOn(Rfa);
+    const hold = chair ? Math.max(0, Math.min(1, g(`hand${side}.hold`))) : 0;
+    if (chair && hold > 0) {
+      const grip = chair.grip[side];
+      const target = add(wrist, sub(grip.wrist, wrist), hold);
+      const e2 = twoBone(shoulder, target, B.upperArm, B.forearm, sub(elbow, shoulder));
+      const upDir = norm(sub(e2, shoulder));
+      Rua = chain(rotBetween(norm(sub(elbow, shoulder)), upDir), Rua);
+      const fwDir = norm(sub(target, e2));
+      const nrm = cross(upDir, fwDir);
+      if (len(nrm) > 1e-6) {
+        const h = apply(Rua, [1, 0, 0]), n = norm(nrm), want = dot(h, n) >= 0 ? n : [-n[0], -n[1], -n[2]];
+        const ang = Math.atan2(dot(cross(h, want), upDir), dot(h, want));
+        Rua = chain(rotAxis(upDir, ang), Rua);
+      }
+      const l = apply(transpose(Rua), fwDir);
+      const flex = Math.atan2(l[2], -l[1]) * DEG;
+      elbow = e2;
+      Rfa = chain(Rua, rotX(-flex));
+      wrist = add(elbow, apply(Rfa, [0, -B.forearm, 0]));
+      Rhand = blendRotation(handOn(Rfa), grip.frame, hold);
+    }
     const hand = add(wrist, apply(Rhand, [0, -B.hand, 0]));
     Object.assign(joints, { [`shoulder${side}`]: shoulder, [`elbow${side}`]: elbow, [`wrist${side}`]: wrist, [`hand${side}`]: hand });
     Object.assign(frames, { [`upperArm${side}`]: Rua, [`forearm${side}`]: Rfa, [`hand${side}`]: Rhand });
     const hip = hipAt(P, side);
-    const free = support === "single-leg" && side === "L";
+    const free = support === "single-leg" && side !== standOn;
     let knee, ankle, Rfoot;
     if (free) {
       const Rth = chain(Rp, rotX(-g(`hip${side}.flex`)), rotZ(s * g(`hip${side}.abd`)), rotY(s * g(`hip${side}.rot`)));
@@ -303,7 +390,11 @@ function solveSkeleton(input, body = DEFAULT_BODY, support = "standing", rom = {
     Object.assign(joints, { [`hip${side}`]: hip, [`knee${side}`]: knee, [`ankle${side}`]: ankle, [`ball${side}`]: ball, [`toe${side}`]: toe, [`heel${side}`]: heel });
     Object.assign(frames, { [`foot${side}`]: Rfoot, [`toe${side}`]: Rtoe });
   }
-  return warnings.length ? { support, pose: p, joints, frames, warnings } : { support, pose: p, joints, frames };
+  const out = { support, pose: p, joints, frames };
+  if (support === "single-leg") out.stance = standOn;
+  if (chair) out.prop = { chairBack: chair };
+  if (warnings.length) out.warnings = warnings;
+  return out;
 }
 const REFERENCE_HEIGHT = 95;
 const CHIN_DROP = 5.3;
@@ -503,13 +594,14 @@ function strokes(parent, w = LINE) {
   const node = pen(parent, w);
   return (paths) => node.setAttribute("d", paths.filter((p) => p.length >= 2).map((p) => open(p)).join(" "));
 }
-function createChair(parent, body, view) {
+function createChair(parent, body, view, offset = [0, 0, 0]) {
   const k = body.height / 95, seatY = body.rig.seatHeight;
+  const at = (v) => [v[0] + offset[0], v[1] + offset[1], v[2] + offset[2]];
   const P2 = (v) => {
-    const p = project(v, view);
+    const p = project(at(v), view);
     return [p.x, p.y];
   };
-  const depth = (v) => project(v, view).depth;
+  const depth = (v) => project(at(v), view).depth;
   const x = 11.5 * k, zb = -9 * k, zf = 15 * k, t = 1.8 * k, back = 27 * k;
   const ROD = [[0, 0.75], [1, 0.65]];
   const g = el("g", {}, parent);
@@ -828,6 +920,7 @@ function createRobot3D(parent, body, view) {
   };
   return {
     g: root,
+    arms: { L: groups.armL, R: groups.armR },
     draw(s) {
       const j = s.joints, F = s.frames;
       const Rp = F.pelvis, Rt = F.thoracic;
@@ -1222,6 +1315,7 @@ function createFigure3D(parent, body, view) {
   });
   return {
     g: root,
+    arms: { L: groups.armL, R: groups.armR },
     draw(s) {
       const j = s.joints;
       seat(sweep(s, seatRings));
@@ -1417,14 +1511,25 @@ function createFigureCard(host, body, view, opts = {}) {
   host.appendChild(svg);
   const scene = el("g", filter ? { filter } : {}, svg);
   const chair = createChair(scene, body, view);
+  const heldInFront = towardCamera(view)[2] > 0.3, heldOffset = chairBackProp(body.rig).offset;
+  const heldBehind = heldInFront ? null : createChair(scene, body, view, heldOffset);
   const figure = createFigure3D(scene, body, view);
+  const held = heldBehind ?? createChair(scene, body, view, heldOffset);
+  const over = el("g", {}, scene);
   let chairOn = false;
   chair.g.style.display = "none";
+  held.g.style.display = "none";
   return {
     svg,
     draw(s) {
       if (chairOn) chair.draw();
       figure.draw(s);
+      held.g.style.display = s.prop ? "" : "none";
+      if (!s.prop) return;
+      held.draw();
+      if (heldInFront) {
+        for (const sd of ["L", "R"]) if ((s.pose[`hand${sd}.hold`] ?? 0) >= 0.5) over.appendChild(figure.arms[sd]);
+      }
     },
     setChair(on) {
       chairOn = on;
@@ -1487,8 +1592,11 @@ function centreOfMass(s) {
   const total = parts.reduce((a, [m]) => a + m, 0);
   return parts.reduce((acc, [m, p]) => [acc[0] + m * p[0] / total, acc[1] + m * p[1] / total, acc[2] + m * p[2] / total], [0, 0, 0]);
 }
+const CONTACT = 0.6;
 function supportPolygon(s) {
-  const feet = s.support === "single-leg" ? ["R"] : ["L", "R"];
+  const stance = s.stance ?? "R", other = stance === "L" ? "R" : "L";
+  const resting = Math.max(s.joints[`heel${other}`][1], s.joints[`toe${other}`][1]) < CONTACT;
+  const feet = s.support === "single-leg" ? resting ? [stance, other] : [stance] : ["L", "R"];
   const pts = [];
   for (const sd of feet) {
     const h = s.joints[`heel${sd}`], t = s.joints[`toe${sd}`];
@@ -1601,7 +1709,7 @@ function table(v, body) {
   for (const n of names) channels[n] = snaps.map((s) => s[n] ?? rest[n] ?? 0);
   return { beats: keys.map((k) => k.beat), eases: keys.map((k) => k.ease), channels, rest };
 }
-const NEGATE_ON_MIRROR = /* @__PURE__ */ new Set(["pelvis.obliquity", "pelvis.yaw", "pelvis.x", "lumbar.lat", "lumbar.twist", "thoracic.lat", "thoracic.twist", "neck.lat", "neck.rot", "spine.lat", "spine.twist"]);
+const NEGATE_ON_MIRROR = /* @__PURE__ */ new Set(["stance.side", "pelvis.obliquity", "pelvis.yaw", "pelvis.x", "lumbar.lat", "lumbar.twist", "thoracic.lat", "thoracic.twist", "neck.lat", "neck.rot", "spine.lat", "spine.twist"]);
 function mirror(v) {
   const out = {};
   for (const [k, x] of Object.entries(v)) {
@@ -1723,7 +1831,7 @@ function createExercisePlayer$1(host, o) {
     }
   };
 }
-const RUNTIME_VERSION$1 = "0.1.0-draft.1";
+const RUNTIME_VERSION$1 = "0.1.0-draft.2";
 const PACK_FORMAT_VERSION$1 = 1;
 const POSE_KEYS = [
   ...Object.keys(LIMITS),
@@ -1735,6 +1843,10 @@ const POSE_KEYS = [
   "footL.z",
   "footR.x",
   "footR.z",
+  "stance.side",
+  "prop.chair",
+  "handL.hold",
+  "handR.hold",
   "trunk.lean",
   "spine.lat",
   "spine.twist",

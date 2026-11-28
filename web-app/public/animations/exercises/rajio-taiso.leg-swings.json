@@ -1,0 +1,202 @@
+{
+  "kind": "exercise-pack",
+  "formatVersion": 1,
+  "id": "rajio-taiso.leg-swings",
+  "version": "0.1.0-draft.2",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.2",
+  "series": "rajio-taiso",
+  "step": "leg-swings",
+  "livelongStepId": "leg-swings",
+  "title": "Leg swings (holding a chair)",
+  "views": [
+    "front",
+    "side"
+  ],
+  "tempoBpm": 72,
+  "cycleBeats": 12,
+  "mirror": true,
+  "variants": {
+    "standing": {
+      "support": "single-leg",
+      "stance": "natural",
+      "rest": {
+        "stance.side": 1,
+        "prop.chair": 1,
+        "handL.hold": 1,
+        "shoulderL.flex": 20,
+        "shoulderL.abd": 10,
+        "elbowL.flex": 35,
+        "forearmL.pron": 80,
+        "handR.hold": 1,
+        "shoulderR.flex": 20,
+        "shoulderR.abd": 10,
+        "elbowR.flex": 35,
+        "forearmR.pron": 80,
+        "pelvis.x": 0,
+        "pelvis.y": 0,
+        "hipL.flex": 0,
+        "hipL.abd": 0,
+        "kneeL.flex": 0,
+        "ankleL.dorsi": 0
+      },
+      "staticBeat": 6,
+      "keyframes": [
+        {
+          "beat": 0,
+          "label": "both hands on the chair, both feet down",
+          "pose": {
+            "handL.hold": 1,
+            "shoulderL.flex": 20,
+            "shoulderL.abd": 10,
+            "elbowL.flex": 35,
+            "forearmL.pron": 80,
+            "handR.hold": 1,
+            "shoulderR.flex": 20,
+            "shoulderR.abd": 10,
+            "elbowR.flex": 35,
+            "forearmR.pron": 80,
+            "pelvis.x": 0,
+            "pelvis.y": 0,
+            "hipL.flex": 0,
+            "hipL.abd": 0,
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 0
+          }
+        },
+        {
+          "beat": 1.5,
+          "label": "left hand off the chair, weight onto the right leg",
+          "pose": {
+            "handL.hold": 0,
+            "shoulderL.flex": 0,
+            "shoulderL.abd": 6,
+            "elbowL.flex": 6,
+            "forearmL.pron": 75,
+            "pelvis.x": -4.5,
+            "hipL.abd": 5.5
+          }
+        },
+        {
+          "beat": 2,
+          "label": "left foot lifts",
+          "pose": {
+            "hipL.flex": -3,
+            "kneeL.flex": 10,
+            "ankleL.dorsi": 13
+          }
+        },
+        {
+          "beat": 2.75,
+          "label": "left leg back",
+          "pose": {
+            "hipL.flex": {
+              "rom": -0.5
+            },
+            "hipL.abd": 5,
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 12
+          }
+        },
+        {
+          "beat": 3.5,
+          "label": "left leg passing under the hip",
+          "pose": {
+            "hipL.flex": 0,
+            "hipL.abd": 6,
+            "kneeL.flex": 14,
+            "ankleL.dorsi": 14
+          }
+        },
+        {
+          "beat": 4.5,
+          "label": "left leg back again",
+          "pose": {
+            "hipL.flex": {
+              "rom": -0.5
+            },
+            "hipL.abd": 5,
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 12
+          }
+        },
+        {
+          "beat": 5.5,
+          "label": "left leg passing under the hip",
+          "pose": {
+            "hipL.flex": 0,
+            "hipL.abd": 6,
+            "kneeL.flex": 14,
+            "ankleL.dorsi": 14,
+            "pelvis.x": -5.5
+          }
+        },
+        {
+          "beat": 6.5,
+          "label": "left leg out to the side",
+          "pose": {
+            "hipL.abd": {
+              "rom": 0.5
+            },
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 0
+          }
+        },
+        {
+          "beat": 7.5,
+          "label": "left leg back in",
+          "pose": {
+            "hipL.flex": 0,
+            "hipL.abd": 6,
+            "kneeL.flex": 14,
+            "ankleL.dorsi": 14
+          }
+        },
+        {
+          "beat": 8.5,
+          "label": "left leg out to the side again",
+          "pose": {
+            "hipL.abd": {
+              "rom": 0.5
+            },
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 0
+          }
+        },
+        {
+          "beat": 9.25,
+          "label": "left foot down beside the right",
+          "pose": {
+            "pelvis.x": -4.5,
+            "hipL.abd": 5.5,
+            "hipL.flex": 0,
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 0
+          }
+        },
+        {
+          "beat": 11,
+          "label": "weight on both feet, left hand back on the chair",
+          "pose": {
+            "handL.hold": 1,
+            "shoulderL.flex": 20,
+            "shoulderL.abd": 10,
+            "elbowL.flex": 35,
+            "forearmL.pron": 80,
+            "handR.hold": 1,
+            "shoulderR.flex": 20,
+            "shoulderR.abd": 10,
+            "elbowR.flex": 35,
+            "forearmR.pron": 80,
+            "pelvis.x": 0,
+            "pelvis.y": 0,
+            "hipL.flex": 0,
+            "hipL.abd": 0,
+            "kneeL.flex": 0,
+            "ankleL.dorsi": 0
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "kind": "exercise-pack",
+  "formatVersion": 1,
+  "id": "rajio-taiso.arm-swings",
+  "version": "0.1.0-draft.2",
+  "status": "draft",
+  "minRuntimeVersion": "0.1.0-draft.2",
+  "series": "rajio-taiso",
+  "step": "arm-swings",
+  "livelongStepId": "arm-swings",
+  "title": "Arm swings",
+  "views": [
+    "front",
+    "side"
+  ],
+  "tempoBpm": 72,
+  "cycleBeats": 2,
+  "mirror": false,
+  "variants": {
+    "standing": {
+      "support": "standing",
+      "rest": {
+        "shoulderL.abd": 6,
+        "shoulderR.abd": 6,
+        "shoulderL.flex": 0,
+        "shoulderR.flex": 0,
+        "elbowL.flex": 6,
+        "elbowR.flex": 6,
+        "forearmL.pron": 75,
+        "forearmR.pron": 75,
+        "pelvis.y": 0,
+        "footL.pitch": 0,
+        "footR.pitch": 0,
+        "wristL.flex": 0,
+        "wristR.flex": 0
+      },
+      "staticBeat": 1,
+      "keyframes": [
+        {
+          "beat": 0,
+          "label": "arms crossed low in front, knees bent, heels down",
+          "pose": {
+            "shoulderL.flex": 32,
+            "shoulderR.flex": 38,
+            "shoulderL.abd": -22,
+            "shoulderR.abd": -22,
+            "elbowL.flex": 15,
+            "elbowR.flex": 15,
+            "forearmL.pron": 80,
+            "forearmR.pron": 80,
+            "wristL.flex": 0,
+            "wristR.flex": 0,
+            "shoulderL.rot": -40,
+            "shoulderR.rot": -40,
+            "pelvis.y": -0.6,
+            "footL.pitch": 0,
+            "footR.pitch": 0
+          }
+        },
+        {
+          "beat": 1,
+          "label": "arms out to the sides, heels up, knees straight",
+          "pose": {
+            "shoulderL.flex": 0,
+            "shoulderR.flex": 0,
+            "shoulderL.abd": {
+              "rom": 0.5
+            },
+            "shoulderR.abd": {
+              "rom": 0.5
+            },
+            "elbowL.flex": 5,
+            "elbowR.flex": 5,
+            "shoulderL.rot": 0,
+            "shoulderR.rot": 0,
+            "forearmL.pron": 80,
+            "forearmR.pron": 80,
+            "wristL.flex": 0,
+            "wristR.flex": 0,
+            "footL.pitch": {
+              "rom": 0.3
+            },
+            "footR.pitch": {
+              "rom": 0.3
+            },
+            "pelvis.y": 2
+          }
+        }
+      ]
+    }
+  }
+}

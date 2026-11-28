@@ -23,7 +23,7 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
     defaultRestSeconds: 15,
     supportedVariants: ['standing', 'chair'],
     media: {
-      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '0.1.0-draft.1', fallbackType: 'robot-poc' },
+      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '0.1.0-draft.2', fallbackType: 'robot-poc' },
       audio: {
         cueId: 'exercise.neck-arm-stretch',
         defaultVoiceScript: 'Slowly rotate your neck, then stretch your arms up and out.',
@@ -43,7 +43,7 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
     defaultRestSeconds: 15,
     supportedVariants: ['standing', 'chair'],
     media: {
-      animation: { pack: 'rajio-taiso.arm-swings', version: '^1', fallbackType: 'robot-poc' },
+      animation: { pack: 'rajio-taiso.arm-swings', version: '0.1.0-draft.2', fallbackType: 'robot-poc' },
       audio: {
         cueId: 'exercise.arm-swings',
         defaultVoiceScript: 'Swing your arms across the front and out to the sides with a gentle knee bounce.',
@@ -63,7 +63,7 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
     defaultRestSeconds: 15,
     supportedVariants: ['standing', 'chair'],
     media: {
-      animation: { pack: 'rajio-taiso.chest-expansion', version: '0.1.0-draft.1', fallbackType: 'robot-poc' },
+      animation: { pack: 'rajio-taiso.chest-expansion', version: '0.1.0-draft.2', fallbackType: 'robot-poc' },
       audio: {
         cueId: 'exercise.chest-expansion',
         defaultVoiceScript: 'Bring your arms wide and back to open your chest and breathe deeply.',
@@ -83,7 +83,7 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
     defaultRestSeconds: 15,
     supportedVariants: ['standing', 'chair'],
     media: {
-      animation: { pack: 'rajio-taiso.side-bends', version: '0.1.0-draft.1', fallbackType: 'robot-poc' },
+      animation: { pack: 'rajio-taiso.side-bends', version: '0.1.0-draft.2', fallbackType: 'robot-poc' },
       audio: {
         cueId: 'exercise.side-bends',
         defaultVoiceScript: 'Reach one arm overhead and bend smoothly to each side.',
@@ -103,7 +103,7 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
     defaultRestSeconds: 15,
     supportedVariants: ['standing', 'chair'],
     media: {
-      animation: { pack: 'rajio-taiso.trunk-twists', version: '0.1.0-draft.1', fallbackType: 'robot-poc' },
+      animation: { pack: 'rajio-taiso.trunk-twists', version: '0.1.0-draft.2', fallbackType: 'robot-poc' },
       audio: {
         cueId: 'exercise.trunk-twists',
         defaultVoiceScript: 'Rotate your torso smoothly left and right with relaxed arms.',
@@ -114,8 +114,8 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
   {
     id: 'leg-swings',
     name: 'Leg Swings',
-    description: 'Chair-supported dynamic leg swings for hip mobility and balance',
-    flow: 'Hold chair back lightly → swing outside leg forward and back with control → switch legs halfway',
+    description: 'Chair-supported dynamic leg lifts for hip mobility and balance',
+    flow: 'Hold chair back lightly → raise leg gently back twice and lift to the side twice → alternate legs',
     category: 'balance',
     tags: ['mobility', 'balance', 'hips', 'rajio-taiso', 'western'],
     defaultMode: 'timed',
@@ -123,10 +123,10 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
     defaultRestSeconds: 0,
     supportedVariants: ['standing'],
     media: {
-      animation: { pack: 'rajio-taiso.leg-swings', version: '^1', fallbackType: 'robot-poc' },
+      animation: { pack: 'rajio-taiso.leg-swings', version: '0.1.0-draft.2', fallbackType: 'robot-poc' },
       audio: {
         cueId: 'exercise.leg-swings',
-        defaultVoiceScript: 'Hold a chair lightly for balance and swing one leg forward and back, then switch.',
+        defaultVoiceScript: 'Hold a chair lightly for balance and lift one leg back and to the side, then alternate.',
       },
     },
     isDefault: true,

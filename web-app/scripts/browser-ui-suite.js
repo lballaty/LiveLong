@@ -87,11 +87,11 @@ async () => {
   // Step through all 6 Rajio Taiso steps and verify external vs fallback sources
   const expectedStepSources = [
     { title: '1. Neck and Arm Stretches', source: 'external' },
-    { title: '2. Arm Swings', source: 'robot-poc' },
+    { title: '2. Arm Swings', source: 'external' },
     { title: '3. Chest Expansion', source: 'external' },
     { title: '4. Side Bends', source: 'external' },
     { title: '5. Trunk Twists', source: 'external' },
-    { title: '6. Leg Swings', source: 'robot-poc' },
+    { title: '6. Leg Swings', source: 'external' },
   ];
   for (let i = 0; i < expectedStepSources.length; i++) {
     if (i > 0) {

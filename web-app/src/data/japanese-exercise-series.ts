@@ -34,7 +34,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Gentle neck rotations and arm stretches',
       durationMinutes: 1,
       restDurationMinutes: 0.25, // 15 seconds
-      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '0.1.0-draft.1' }
+      animation: { pack: 'rajio-taiso.neck-arm-stretch', version: '0.1.0-draft.2' }
     },
     {
       id: 'arm-swings',
@@ -43,7 +43,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Radio Taiso movement 2 — cross-body arm swings with knee bounce',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      animation: { pack: 'rajio-taiso.arm-swings', version: '^1' }
+      animation: { pack: 'rajio-taiso.arm-swings', version: '0.1.0-draft.2' }
     },
     {
       id: 'chest-expansion',
@@ -52,7 +52,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Open chest and expand lungs',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      animation: { pack: 'rajio-taiso.chest-expansion', version: '0.1.0-draft.1' }
+      animation: { pack: 'rajio-taiso.chest-expansion', version: '0.1.0-draft.2' }
     },
     {
       id: 'side-bends',
@@ -61,7 +61,7 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Lateral trunk flexibility',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      animation: { pack: 'rajio-taiso.side-bends', version: '0.1.0-draft.1' }
+      animation: { pack: 'rajio-taiso.side-bends', version: '0.1.0-draft.2' }
     },
     {
       id: 'trunk-twists',
@@ -70,16 +70,16 @@ export const RAJIO_TAISO_SERIES: ExerciseSeries = {
       description: 'Spinal rotation movements',
       durationMinutes: 1,
       restDurationMinutes: 0.25,
-      animation: { pack: 'rajio-taiso.trunk-twists', version: '0.1.0-draft.1' }
+      animation: { pack: 'rajio-taiso.trunk-twists', version: '0.1.0-draft.2' }
     },
     {
       id: 'leg-swings',
       exerciseId: 'leg-swings',
       name: 'Leg Swings',
-      description: 'Chair-supported dynamic leg swings for hip mobility and balance',
+      description: 'Chair-supported dynamic leg lifts for hip mobility and balance',
       durationMinutes: 1,
       restDurationMinutes: 0,
-      animation: { pack: 'rajio-taiso.leg-swings', version: '^1' }
+      animation: { pack: 'rajio-taiso.leg-swings', version: '0.1.0-draft.2' }
     }
   ],
   get totalDurationMinutes() {
