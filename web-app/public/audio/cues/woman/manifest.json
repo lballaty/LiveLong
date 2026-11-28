@@ -1,0 +1,96 @@
+{
+  "version": "1.1.0",
+  "format": "mp3",
+  "cues": {
+    "breathing.intro": "breathing.intro.mp3",
+    "breathing.inhale": "breathing.inhale.mp3",
+    "breathing.hold-in": "breathing.hold-in.mp3",
+    "breathing.exhale": "breathing.exhale.mp3",
+    "breathing.hold-out": "breathing.hold-out.mp3",
+    "breathing.inhale.short": "breathing.inhale.short.mp3",
+    "breathing.hold-in.short": "breathing.hold-in.short.mp3",
+    "breathing.exhale.short": "breathing.exhale.short.mp3",
+    "breathing.hold-out.short": "breathing.hold-out.short.mp3",
+    "breathing.encourage": "breathing.encourage.mp3",
+    "session.rest": "session.rest.mp3",
+    "session.complete": "session.complete.mp3",
+    "breathing.inhale.last": "breathing.inhale.last.mp3"
+  },
+  "variants": {
+    "breathing.encourage": [
+      "breathing.encourage.mp3",
+      "breathing.encourage@2.mp3",
+      "breathing.encourage@3.mp3",
+      "breathing.encourage@4.mp3",
+      "breathing.encourage@5.mp3",
+      "breathing.encourage@6.mp3",
+      "breathing.encourage@7.mp3"
+    ],
+    "breathing.exhale": [
+      "breathing.exhale.mp3",
+      "breathing.exhale@2.mp3"
+    ],
+    "breathing.exhale.short": [
+      "breathing.exhale.short.mp3",
+      "breathing.exhale.short@2.mp3",
+      "breathing.exhale.short@3.mp3",
+      "breathing.exhale.short@4.mp3",
+      "breathing.exhale.short@5.mp3",
+      "breathing.exhale.short@6.mp3"
+    ],
+    "breathing.hold-in": [
+      "breathing.hold-in.mp3",
+      "breathing.hold-in@2.mp3",
+      "breathing.hold-in@3.mp3"
+    ],
+    "breathing.hold-in.short": [
+      "breathing.hold-in.short.mp3",
+      "breathing.hold-in.short@2.mp3",
+      "breathing.hold-in.short@3.mp3",
+      "breathing.hold-in.short@4.mp3",
+      "breathing.hold-in.short@5.mp3",
+      "breathing.hold-in.short@6.mp3"
+    ],
+    "breathing.hold-out": [
+      "breathing.hold-out.mp3",
+      "breathing.hold-out@2.mp3",
+      "breathing.hold-out@3.mp3"
+    ],
+    "breathing.hold-out.short": [
+      "breathing.hold-out.short.mp3",
+      "breathing.hold-out.short@2.mp3",
+      "breathing.hold-out.short@3.mp3",
+      "breathing.hold-out.short@4.mp3",
+      "breathing.hold-out.short@5.mp3",
+      "breathing.hold-out.short@6.mp3"
+    ],
+    "breathing.inhale": [
+      "breathing.inhale.mp3",
+      "breathing.inhale@2.mp3",
+      "breathing.inhale@3.mp3"
+    ],
+    "breathing.inhale.last": [
+      "breathing.inhale.last.mp3",
+      "breathing.inhale.last@2.mp3",
+      "breathing.inhale.last@3.mp3"
+    ],
+    "breathing.inhale.short": [
+      "breathing.inhale.short.mp3",
+      "breathing.inhale.short@2.mp3",
+      "breathing.inhale.short@4.mp3",
+      "breathing.inhale.short@5.mp3",
+      "breathing.inhale.short@6.mp3"
+    ],
+    "session.complete": [
+      "session.complete.mp3",
+      "session.complete@2.mp3",
+      "session.complete@3.mp3",
+      "session.complete@4.mp3"
+    ],
+    "session.rest": [
+      "session.rest.mp3",
+      "session.rest@2.mp3",
+      "session.rest@3.mp3"
+    ]
+  }
+}

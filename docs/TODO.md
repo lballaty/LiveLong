@@ -49,7 +49,8 @@
 
 ### `openScriptAudio` Repo (`/Users/liborballaty/LocalProjects/GitHubProjectsDocuments/openScriptAudio`)
 - [x] Implement `/audio/cues/<voiceId>/manifest.json` loader, `variants` + `@n` non-repeating selection, `Woman`/`Man` voice toggle, and 3-channel mixer
-- [ ] (`waiting on upstream`) Integrate 13-cue Box Breathing `woman` & `man` voice packs once upstream delivery lands in `_inbound-from-openscriptaudio.md` (upstream TTS licensing check resolved 2026-11-24; `woman` v3 + `man` v1 built in `openScriptAudio/runs/`)
+- [x] Integrate Box Breathing `woman` v3 voice pack (`web-app/public/audio/cues/woman/`: `manifest.json` v1.1.0, 13 cues + 39 variants = 52 `.mp3` clips)
+- [ ] (`waiting on upstream`) Integrate Box Breathing `man` voice pack once operator variant review completes in `openScriptAudio`
 - [ ] (`waiting on upstream`) Integrate Rajio Taiso and remaining longevity series voice cue packs
 
 ---

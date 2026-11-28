@@ -2,7 +2,7 @@
 
 **File:** `docs/TEST-CHECKLIST.md`
 **Purpose:** Step-by-step traceability matrix showing the exact actions executed and concrete outcomes asserted for every user journey, UI control, and unit/component test.
-**Last Run:** 2026-11-28 (`main` + `rajio-taiso-0.1.0-draft.2` — Jest `18/18` (`98/98`), live Chrome UI `41/41` with all 6 Rajio Taiso steps `external`, live Chrome User Journeys `12/12`)
+**Last Run:** 2026-11-28 (`main` + `rajio-taiso-0.1.0-draft.2` + `woman` v3 voice pack — Jest `18/18` (`98/98`), live Chrome UI `41/41` with all 6 Rajio Taiso steps `external`, live Chrome User Journeys `12/12`, `/audio/cues/woman/manifest.json` & `.mp3` `200 OK`)
 
 ---
 
